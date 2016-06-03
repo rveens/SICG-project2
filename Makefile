@@ -4,7 +4,7 @@ OBJS = demo.o solver.o
 
 all: project2
 
-project1: $(OBJS)
+project2: $(OBJS)
 	$(CXX) -o $@ $^ -lGLU -lGL -lglut -lpng
 clean:
 	rm -f $(OBJS) project2
