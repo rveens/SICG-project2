@@ -1,5 +1,6 @@
 *.o
 project2
+.ycm_extra_conf.*
 
 
 ## Ignore Visual Studio temporary files, build results, and

@@ -1,15 +1,31 @@
+#include "Solver.h"
+
 #define IX(i,j) ((i)+(N+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
 #define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) {
 #define END_FOR }}
 
-void add_source ( int N, float * x, float * s, float dt )
+
+Solver::Solver(float _dt, float _diff, float _visc) : dt(_dt),
+	diff(_diff), visc(_visc)
+{
+
+}
+
+Solver::~Solver()
+{
+
+}
+
+/* private functions: */
+
+void Solver::add_source ( int N, float * x, float * s)
 {
 	int i, size=(N+2)*(N+2);
 	for ( i=0 ; i<size ; i++ ) x[i] += dt*s[i];
 }
 
-void set_bnd ( int N, int b, float * x )
+void Solver::set_bnd ( int N, int b, float * x )
 {
 	int i;
 
@@ -25,7 +41,7 @@ void set_bnd ( int N, int b, float * x )
 	x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
 }
 
-void lin_solve ( int N, int b, float * x, float * x0, float a, float c )
+void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 {
 	int i, j, k;
 
@@ -37,13 +53,13 @@ void lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 	}
 }
 
-void diffuse ( int N, int b, float * x, float * x0, float diff, float dt )
+void Solver::diffuse ( int N, int b, float * x, float * x0)
 {
 	float a=dt*diff*N*N;
 	lin_solve ( N, b, x, x0, a, 1+4*a );
 }
 
-void advect ( int N, int b, float * d, float * d0, float * u, float * v, float dt )
+void Solver::advect ( int N, int b, float * d, float * d0, float * u, float * v)
 {
 	int i, j, i0, j0, i1, j1;
 	float x, y, s0, t0, s1, t1, dt0;
@@ -60,7 +76,7 @@ void advect ( int N, int b, float * d, float * d0, float * u, float * v, float d
 	set_bnd ( N, b, d );
 }
 
-void project ( int N, float * u, float * v, float * p, float * div )
+void Solver::project ( int N, float * u, float * v, float * p, float * div )
 {
 	int i, j;
 
@@ -79,21 +95,24 @@ void project ( int N, float * u, float * v, float * p, float * div )
 	set_bnd ( N, 1, u ); set_bnd ( N, 2, v );
 }
 
-void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt )
+
+/* public functions: */
+
+void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v )
 {
-	add_source ( N, x, x0, dt );
-	SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, dt );
-	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, dt );
+	add_source ( N, x, x0);
+	SWAP ( x0, x ); diffuse ( N, 0, x, x0);
+	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v);
 }
 
-void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt )
+void Solver::vel_step ( int N, float * u, float * v, float * u0, float * v0)
 {
-	add_source ( N, u, u0, dt ); add_source ( N, v, v0, dt );
-	SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, dt );
-	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, dt );
+	add_source ( N, u, u0); add_source ( N, v, v0);
+	SWAP ( u0, u ); diffuse ( N, 1, u, u0);
+	SWAP ( v0, v ); diffuse ( N, 2, v, v0);
 	project ( N, u, v, u0, v0 );
 	SWAP ( u0, u ); SWAP ( v0, v );
-	advect ( N, 1, u, u0, u0, v0, dt ); advect ( N, 2, v, v0, u0, v0, dt );
+	advect ( N, 1, u, u0, u0, v0 ); advect ( N, 2, v, v0, u0, v0 );
 	project ( N, u, v, u0, v0 );
 }
 
