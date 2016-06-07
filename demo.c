@@ -117,7 +117,7 @@ static void draw_velocity ( void )
 
 	h = 1.0f/N;
 
-	glColor3f ( 1.0f, 1.0f, 1.0f );
+	glColor3f ( 1.0f, 0.0f, 0.0f );
 	glLineWidth ( 1.0f );
 
 	glBegin ( GL_LINES );
@@ -265,8 +265,13 @@ static void display_func ( void )
 {
 	pre_display ();
 
-		if ( dvel ) draw_velocity ();
-		else		draw_density ();
+	if (dvel) {
+		draw_density();
+		draw_velocity();
+	}
+	else {
+		draw_density();
+	}
 
 	post_display ();
 }
@@ -328,9 +333,9 @@ int main ( int argc, char ** argv )
 	if ( argc == 1 ) {
 		N = 64;
 		dt = 0.1f;
-		diff = 0.0f;
-		visc = 0.0f;
-		force = 5.0f;
+		diff = 0.00001f; // was 0
+		visc = 0.0001f; // was 0
+		force = 2.0f; // was 5
 		source = 100.0f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
 			N, dt, diff, visc, force, source );
