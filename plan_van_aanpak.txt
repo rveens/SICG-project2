@@ -1,0 +1,33 @@
+--------------------------------------------------------------------------------
+			       Required Features
+--------------------------------------------------------------------------------
+	x Density Advection
+	x Velocity Advection
+	x Pressure Projection
+	- Vorticity Confinment
+	? Boundaries
+		The boundaries of your grid should form a solid boundary. This implies
+		path clipping at the boundary during the advection, and correctly defining the pressure
+		solver at the boundary.
+	- Fixed Objects
+		Any edge between neighbouring voxels could be marked as boundary
+		edge, allowing for arbitrary, fixed solid boundaries.
+	- Moving Solid objects
+		Implement fluid-solid interaction with moving (solid) objects. Allow
+		the user to drag solid objects within the flow. The objects come to rest at exact grid
+		offsets. The movement of the object must exert a force on the fluid. Proper boundary
+		conditions should be applied.
+	- Moving Rigid bodies
+		Similar to the above, but allow object(s) to rotate.
+	- Two-way Coupling (extension to moving objects)
+		Not only do the objects affect the flow, but the flow also exerts forces on the objects.
+	- Particles and Fluids
+		Put your particle system from the previous assignment in your
+		fluid-simulation system. Allow the velocity field to exert forces on the particles. Simulate
+		a piece of cloth interacting with the fluid.
+
+--------------------------------------------------------------------------------
+				     Focus
+--------------------------------------------------------------------------------
+- Rigid bodies implementation van notesg.
+- Vorticity Confinment
