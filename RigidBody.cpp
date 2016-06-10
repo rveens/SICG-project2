@@ -1,7 +1,7 @@
 #include "RigidBody.h"
 
-RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody,
-			Matrix2d IbodyInv, Matrix2d rotation, Vector2d linmom, Vector2d angmom)
+RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & Ibody,
+			Matrix2d & IbodyInv, Matrix2d & rotation, Vector2d & linmom, Vector2d & angmom)
 	: m_ConstructPos(ConstructPos), m_Mass(mass), m_Ibody(Ibody), m_IbodyInv(IbodyInv), 
 	m_LinearMomentum(linmom), m_AngularMomentum(angmom)
 {
@@ -123,7 +123,7 @@ std::vector<double> RigidBody::derivEval(std::vector<double> input)
 	return der;
 }
 
-Matrix2d RigidBody::star(Vector2d a)
+Matrix2d RigidBody::star(Vector2d & a)
 {
 	Matrix2d out;
 

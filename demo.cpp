@@ -33,6 +33,7 @@ static int dvel;
 
 static float * u, * v, * u_prev, * v_prev;
 static float * dens, * dens_prev;
+static int * solid; // whether cell contains air/smoke/fluid or is solid
 
 static int win_id;
 static int win_x, win_y;
@@ -55,6 +56,7 @@ static void free_data ( void )
 	if ( v_prev ) free ( v_prev );
 	if ( dens ) free ( dens );
 	if ( dens_prev ) free ( dens_prev );
+	if ( solid ) free ( solid );
 }
 
 static void clear_data ( void )
@@ -63,6 +65,15 @@ static void clear_data ( void )
 
 	for ( i=0 ; i<size ; i++ ) {
 		u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = 0.0f;
+	}
+}
+
+static void clear_solid_data(void) // needs to be cleared separately, for press C event
+{
+	int i, size = (N + 2)*(N + 2);
+
+	for (i = 0; i<size; i++) {
+		solid[i] = 0;
 	}
 }
 
@@ -76,13 +87,66 @@ static int allocate_data ( void )
 	v_prev		= (float *) malloc ( size*sizeof(float) );
 	dens		= (float *) malloc ( size*sizeof(float) );	
 	dens_prev	= (float *) malloc ( size*sizeof(float) );
+	solid	    = (int *) malloc ( size*sizeof(int) );
 
-	if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev ) {
+	if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev || !solid ) {
 		fprintf ( stderr, "cannot allocate data\n" );
 		return ( 0 );
 	}
 
 	return ( 1 );
+}
+
+/*
+----------------------------------------------------------------------
+set the locations of solid cells with borders
+
++++++++++++++++++++++       ++    |    ++          +++++++
++++++++++++++++++++++       ++ 4  |  6 ++          +++++++    <---- border
+++     |     |     ++     ++++    |    ++++
+++  1  |  2  |  3  ++     ++++----+----++++
+++     |     |     ++        |    |    |
+++-----+-----+-----++      2 | 10 | 11 | 2
+++     |     |     ++        |    |    |
+++  4  |  5  |  6  ++     ---+----+----+---
+++     |     |     ++        |    |    |
+++-----+-----+-----++      8 | 12 | 13 | 8
+++     |     |     ++        |    |    |
+++  7  |  8  |  9  ++     ++++----+----++++
+++     |     |     ++     ++++    |    ++++
++++++++++++++++++++++       ++ 4  |  6 ++
++++++++++++++++++++++       ++    |    ++
+
+----------------------------------------------------------------------
+*/
+
+/* set outside boundary of solids, of thickness t+1 */
+static void set_solid_boundary(int t)
+{
+	int i, j;
+	
+	// set left/right/top/bottom boundary
+	for ( i=t+1 ; i<=N-t ; i++ ) {
+		solid[IX(t,i)] = 6; // left boundary: border to the right
+		solid[IX(N+1-t,i)] = 4; // right boundary: border to the left
+		solid[IX(i,t)] = 2; // bottom boundary: border above
+		solid[IX(i,N+1-t)] = 8; // top boundary: border below
+	}
+	// corners: solid - no border
+	solid[IX(t, t)] = 11;
+	solid[IX(t, N+1-t)] = 13;
+	solid[IX(N+1-t, t)] = 10;
+	solid[IX(N+1-t, N+1-t)] = 12;
+
+	// set solids without border around boundary (only if t>0)
+	for ( i=0; i<t; i++ ){
+		for ( j=i ; j<=N+1-i ; j++ ){
+			solid[IX(i, j)] = 5;
+			solid[IX(N+1-i, j)] = 5;
+			solid[IX(j, i)] = 5;
+			solid[IX(j, N+1-i)] = 5;
+		}
+	}
 }
 
 
@@ -167,7 +231,7 @@ static void draw_density ( void )
   ----------------------------------------------------------------------
 */
 
-static void get_from_UI ( float * d, float * u, float * v )
+static void get_from_UI ( float * d, float * u, float * v, int * solid )
 {
 	int i, j, size = (N+2)*(N+2);
 
@@ -180,7 +244,7 @@ static void get_from_UI ( float * d, float * u, float * v )
 	i = (int)((       mx /(float)win_x)*N+1);
 	j = (int)(((win_y-my)/(float)win_y)*N+1);
 
-	if ( i<1 || i>N || j<1 || j>N ) return;
+	if ( solid[IX(i,j)] != 0 ) return;
 
 	if ( mouse_down[0] ) {
 		u[IX(i,j)] = force * (mx-omx);
@@ -250,9 +314,9 @@ static void reshape_func ( int width, int height )
 
 static void idle_func ( void )
 {
-	get_from_UI ( dens_prev, u_prev, v_prev );
-	solver->vel_step ( N, u, v, u_prev, v_prev);
-	solver->dens_step ( N, dens, dens_prev, u, v);
+	get_from_UI ( dens_prev, u_prev, v_prev, solid );
+	solver->vel_step ( N, u, v, u_prev, v_prev, solid );
+	solver->dens_step ( N, dens, dens_prev, u, v, solid );
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -362,6 +426,8 @@ int main ( int argc, char ** argv )
 
 	if ( !allocate_data () ) exit ( 1 );
 	clear_data ();
+	clear_solid_data();
+	set_solid_boundary(5);
 
 	win_x = 512;
 	win_y = 512;

@@ -3,8 +3,8 @@
 
 #define IX(i,j) ((i)+(N+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
-#define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) {
-#define END_FOR }}
+#define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) { if (solid[((i)+(N+2)*(j))]==0) {
+#define END_FOR }}}
 
 
 Solver::Solver(float _dt, float _diff, float _visc) : dt(_dt),
@@ -26,23 +26,110 @@ void Solver::add_source ( int N, float * x, float * s)
 	for ( i=0 ; i<size ; i++ ) x[i] += dt*s[i];
 }
 
-void Solver::set_bnd ( int N, int b, float * x )
-{
-	int i;
+/* old version */
+//void Solver::set_bnd ( int N, int b, float * x )
+//{
+//	int i;
+//
+//	for ( i=1 ; i<=N ; i++ ) {
+//		x[IX(0  ,i)] = b==1 ? -x[IX(1,i)] : x[IX(1,i)];
+//		x[IX(N+1,i)] = b==1 ? -x[IX(N,i)] : x[IX(N,i)];
+//		x[IX(i,0  )] = b==2 ? -x[IX(i,1)] : x[IX(i,1)];
+//		x[IX(i,N+1)] = b==2 ? -x[IX(i,N)] : x[IX(i,N)];
+//	}
+//	x[IX(0  ,0  )] = 0.5f*(x[IX(1,0  )]+x[IX(0  ,1)]);
+//	x[IX(0  ,N+1)] = 0.5f*(x[IX(1,N+1)]+x[IX(0  ,N)]);
+//	x[IX(N+1,0  )] = 0.5f*(x[IX(N,0  )]+x[IX(N+1,1)]);
+//	x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
+//}
 
-	for ( i=1 ; i<=N ; i++ ) {
-		x[IX(0  ,i)] = b==1 ? -x[IX(1,i)] : x[IX(1,i)];
-		x[IX(N+1,i)] = b==1 ? -x[IX(N,i)] : x[IX(N,i)];
-		x[IX(i,0  )] = b==2 ? -x[IX(i,1)] : x[IX(i,1)];
-		x[IX(i,N+1)] = b==2 ? -x[IX(i,N)] : x[IX(i,N)];
+/* test version with thick outside boundary and inner cube */
+//void Solver::set_bnd ( int N, int b, float * x )
+//{
+//	int i;
+//	int s=5; // boundary size/thickness - 1
+//
+//
+//	for (i = s + 1; i <= N - s; i++) {
+//		x[IX(s        , i        )] = b == 1 ? -x[IX(s + 1, i)] : x[IX(s + 1, i)];
+//		x[IX(N + 1 - s, i        )] = b == 1 ? -x[IX(N - s, i)] : x[IX(N - s, i)];
+//		x[IX(i        , s        )] = b == 2 ? -x[IX(i, s + 1)] : x[IX(i, s + 1)];
+//		x[IX(i        , N + 1 - s)] = b == 2 ? -x[IX(i, N - s)] : x[IX(i, N - s)];
+//	}
+//	x[IX(s        , s        )] = 0.5f*(x[IX(s + 1, s)] + x[IX(s, s + 1)]);
+//	x[IX(s        , N + 1 - s)] = 0.5f*(x[IX(s + 1, N + 1 - s)] + x[IX(s, N - s)]);
+//	x[IX(N + 1 - s, s        )] = 0.5f*(x[IX(N - s, s)] + x[IX(N + 1 - s, s + 1)]);
+//	x[IX(N + 1 - s, N + 1 - s)] = 0.5f*(x[IX(N - s, N + 1 - s)] + x[IX(N + 1 - s, N - s)]);
+//
+//	
+//	s = 20; // inner cube
+//	for (i = s + 1; i <= N - s; i++) {
+//		x[IX(s        , i        )] = b == 1 ? -x[IX(s - 1, i)] : x[IX(s - 1, i)];
+//		x[IX(N + 1 - s, i        )] = b == 1 ? -x[IX(N+2-s, i)] : x[IX(N+2-s, i)];
+//		x[IX(i        , s        )] = b == 2 ? -x[IX(i, s - 1)] : x[IX(i, s - 1)];
+//		x[IX(i        , N + 1 - s)] = b == 2 ? -x[IX(i, N+2-s)] : x[IX(i, N+2-s)];
+//	}
+//	x[IX(s        , s        )] = 0.5f*(x[IX(s + 1, s)] + x[IX(s, s + 1)]);
+//	x[IX(s        , N + 1 - s)] = 0.5f*(x[IX(s + 1, N + 1 - s)] + x[IX(s, N - s)]);
+//	x[IX(N + 1 - s, s        )] = 0.5f*(x[IX(N - s, s)] + x[IX(N + 1 - s, s + 1)]);
+//	x[IX(N + 1 - s, N + 1 - s)] = 0.5f*(x[IX(N - s, N + 1 - s)] + x[IX(N + 1 - s, N - s)]);
+//}
+
+void Solver::set_bnd ( int N, int b, float * x, int * solid )
+{
+	int i, j, size = (N + 2)*(N + 2);
+
+	for ( i=0 ; i<=N+1; i++ ) {
+		for ( j=0; j<=N+1; j++ ){
+			switch (solid[IX(i,j)]) {
+				case 0: // no solid:
+					break;
+				case 1: // left top:
+					break;
+				case 2: // top:
+					x[IX(i,j)] = b==2 ? -x[IX(i,j+1)] : x[IX(i,j+1)];
+					break;
+				case 3: // right top:
+					break;
+				case 4: // left:
+					x[IX(i,j)] = b==1 ? -x[IX(i-1,j)] : x[IX(i-1,j)];
+					break;
+				case 5: // solid - no border:
+					x[IX(i,j)] = 0;
+					break;
+				case 6: // right:
+					x[IX(i,j)] = b==1 ? -x[IX(i+1,j)] : x[IX(i+1,j)];
+					break;
+				case 7: // left bottom:
+					break;
+				case 8: // bottom:
+					x[IX(i,j)] = b==2 ? -x[IX(i,j-1)] : x[IX(i,j-1)];
+					break;
+				case 9: // right bottom:
+					break;
+				case 10: // inner corner left top:
+					x[IX(i, j)] = 0.5f*(x[IX(i-1, j)] + x[IX(i, j+1)]);
+					break;
+				case 11: // inner corner right top:
+					x[IX(i, j)] = 0.5f*(x[IX(i+1, j)] + x[IX(i, j+1)]);
+					break;
+				case 12: // inner corner left bottom:
+					x[IX(i, j)] = 0.5f*(x[IX(i-1, j)] + x[IX(i, j-1)]);
+					break;
+				case 13: // inner corner right bottom:
+					x[IX(i, j)] = 0.5f*(x[IX(i+1, j)] + x[IX(i, j-1)]);
+					break;
+			}
+		}
 	}
-	x[IX(0  ,0  )] = 0.5f*(x[IX(1,0  )]+x[IX(0  ,1)]);
-	x[IX(0  ,N+1)] = 0.5f*(x[IX(1,N+1)]+x[IX(0  ,N)]);
-	x[IX(N+1,0  )] = 0.5f*(x[IX(N,0  )]+x[IX(N+1,1)]);
-	x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
+	
+	
+	
+	
 }
 
-void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c )
+
+void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c, int * solid )
 {
 	int i, j, k;
 
@@ -50,17 +137,17 @@ void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 		FOR_EACH_CELL
 			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
 		END_FOR
-		set_bnd ( N, b, x );
+		set_bnd ( N, b, x, solid );
 	}
 }
 
-void Solver::diffuse ( int N, int b, float * x, float * x0)
+void Solver::diffuse ( int N, int b, float * x, float * x0, int * solid)
 {
 	float a=dt*diff*N*N;
-	lin_solve ( N, b, x, x0, a, 1+4*a );
+	lin_solve ( N, b, x, x0, a, 1+4*a, solid );
 }
 
-void Solver::advect ( int N, int b, float * d, float * d0, float * u, float * v)
+void Solver::advect ( int N, int b, float * d, float * d0, float * u, float * v, int * solid)
 {
 	int i, j, i0, j0, i1, j1;
 	float x, y, s0, t0, s1, t1, dt0;
@@ -74,10 +161,10 @@ void Solver::advect ( int N, int b, float * d, float * d0, float * u, float * v)
 		d[IX(i,j)] = s0*(t0*d0[IX(i0,j0)]+t1*d0[IX(i0,j1)])+
 					 s1*(t0*d0[IX(i1,j0)]+t1*d0[IX(i1,j1)]);
 	END_FOR
-	set_bnd ( N, b, d );
+	set_bnd ( N, b, d, solid );
 }
 
-void Solver::project ( int N, float * u, float * v, float * p, float * div )
+void Solver::project ( int N, float * u, float * v, float * p, float * div, int * solid )
 {
 	int i, j;
 
@@ -85,21 +172,21 @@ void Solver::project ( int N, float * u, float * v, float * p, float * div )
 		div[IX(i,j)] = -0.5f*(u[IX(i+1,j)]-u[IX(i-1,j)]+v[IX(i,j+1)]-v[IX(i,j-1)])/N;
 		p[IX(i,j)] = 0;
 	END_FOR	
-	set_bnd ( N, 0, div ); set_bnd ( N, 0, p );
+	set_bnd ( N, 0, div, solid ); set_bnd ( N, 0, p, solid );
 
-	lin_solve ( N, 0, p, div, 1, 4 );
+	lin_solve ( N, 0, p, div, 1, 4, solid );
 
 	FOR_EACH_CELL
 		u[IX(i,j)] -= 0.5f*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
 		v[IX(i,j)] -= 0.5f*N*(p[IX(i,j+1)]-p[IX(i,j-1)]);
 	END_FOR
-	set_bnd ( N, 1, u ); set_bnd ( N, 2, v );
+	set_bnd ( N, 1, u, solid ); set_bnd ( N, 2, v, solid );
 }
 
-void Solver::confine_vorticity(int N, float * u, float * v)
+void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 {
 	// TODO: bring this out as a parameter!
-	float eps = 7.0f;
+	float eps = 6.0f;
 	
 	// initialise variables
 	float h = 1.0f / N;
@@ -119,7 +206,7 @@ void Solver::confine_vorticity(int N, float * u, float * v)
 		vorticity[IX(i, j)] = dv_dx - du_dy;
 	END_FOR
 	// set boundaries to be equal to neighbouring cells
-	set_bnd(N, 0, vorticity);
+	set_bnd(N, 0, vorticity, solid);
 
 	// compute and add vorticity confinement velocity per cell, via force
 	float epsilontest = 0.00001f;
@@ -138,23 +225,23 @@ void Solver::confine_vorticity(int N, float * u, float * v)
 
 /* public functions: */
 
-void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v )
+void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int * solid )
 {
 	add_source ( N, x, x0);
-	SWAP ( x0, x ); diffuse ( N, 0, x, x0);
-	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v);
+	SWAP ( x0, x ); diffuse ( N, 0, x, x0, solid);
+	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, solid);
 }
 
-void Solver::vel_step ( int N, float * u, float * v, float * u0, float * v0)
+void Solver::vel_step ( int N, float * u, float * v, float * u0, float * v0, int * solid)
 {
 	add_source ( N, u, u0); add_source ( N, v, v0);
-	confine_vorticity(N, u, v);
-	SWAP ( u0, u ); diffuse ( N, 1, u, u0);
-	SWAP ( v0, v ); diffuse ( N, 2, v, v0);
-	project ( N, u, v, u0, v0 );
+	confine_vorticity(N, u, v, solid);
+	SWAP ( u0, u ); diffuse ( N, 1, u, u0, solid);
+	SWAP ( v0, v ); diffuse ( N, 2, v, v0, solid);
+	project ( N, u, v, u0, v0, solid );
 	SWAP ( u0, u ); SWAP ( v0, v );
-	advect ( N, 1, u, u0, u0, v0 ); advect ( N, 2, v, v0, u0, v0 );
-	project ( N, u, v, u0, v0 );
+	advect ( N, 1, u, u0, u0, v0, solid ); advect ( N, 2, v, v0, u0, v0, solid );
+	project ( N, u, v, u0, v0, solid );
 	
 }
 
