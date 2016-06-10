@@ -1,4 +1,5 @@
 #include "Solver.h"
+#include <cmath>
 
 #define IX(i,j) ((i)+(N+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
@@ -95,6 +96,45 @@ void Solver::project ( int N, float * u, float * v, float * p, float * div )
 	set_bnd ( N, 1, u ); set_bnd ( N, 2, v );
 }
 
+void Solver::confine_vorticity(int N, float * u, float * v)
+{
+	// TODO: bring this out as a parameter!
+	float eps = 7.0f;
+	
+	// initialise variables
+	float h = 1.0f / N;
+	int i, j, size = (N + 2)*(N + 2);
+	float dv_dx, du_dy, dvort_dx, dvort_dy, Nx, Ny;
+
+	// allocate memory for vorticity field
+	float * vorticity;
+	vorticity = new float[size];
+
+	// TODO: MISSING exception handler?
+
+	// compute vorticity = nabla x (u,v,0)
+	FOR_EACH_CELL
+		dv_dx = (v[IX(i + 1, j)] - v[IX(i - 1, j)]) / (2*h); // derivative of v in x-direction
+		du_dy = (u[IX(i, j + 1)] - u[IX(i, j - 1)]) / (2*h); // derivative of u in y-direction
+		vorticity[IX(i, j)] = dv_dx - du_dy;
+	END_FOR
+	// set boundaries to be equal to neighbouring cells
+	set_bnd(N, 0, vorticity);
+
+	// compute and add vorticity confinement velocity per cell, via force
+	float epsilontest = 0.00001f;
+	FOR_EACH_CELL
+		dvort_dx = (std::fabs(vorticity[IX(i - 1, j)]) - std::fabs(vorticity[IX(i + 1, j)])) / (2*h);
+		dvort_dy = (std::fabs(vorticity[IX(i, j - 1)]) - std::fabs(vorticity[IX(i, j + 1)])) / (2*h);
+		//Nx = (dvort_dx == 0 && dvort_dy == 0) ? 0 : dvort_dx / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy); // this is unstable
+		//Ny = (dvort_dx == 0 && dvort_dy == 0) ? 0 : dvort_dy / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy); // this is unstable
+		Nx = (dvort_dx*dvort_dx < epsilontest && dvort_dy*dvort_dy < epsilontest) ? 0 : dvort_dx / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy);
+		Ny = (dvort_dx*dvort_dx < epsilontest && dvort_dy*dvort_dy < epsilontest) ? 0 : dvort_dy / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy);
+		u[IX(i, j)] += eps*h*Ny*vorticity[IX(i, j)]*dt; // v_conf = f_conf * dt
+		v[IX(i, j)] -= eps*h*Nx*vorticity[IX(i, j)]*dt; // f_conf = eps*h*(N x vorticity)
+	END_FOR
+}
+
 
 /* public functions: */
 
@@ -108,12 +148,14 @@ void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v )
 void Solver::vel_step ( int N, float * u, float * v, float * u0, float * v0)
 {
 	add_source ( N, u, u0); add_source ( N, v, v0);
+	confine_vorticity(N, u, v);
 	SWAP ( u0, u ); diffuse ( N, 1, u, u0);
 	SWAP ( v0, v ); diffuse ( N, 2, v, v0);
 	project ( N, u, v, u0, v0 );
 	SWAP ( u0, u ); SWAP ( v0, v );
 	advect ( N, 1, u, u0, u0, v0 ); advect ( N, 2, v, v0, u0, v0 );
 	project ( N, u, v, u0, v0 );
+	
 }
 
 void Solver::rigidbodySolve()
