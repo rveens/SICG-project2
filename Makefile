@@ -1,6 +1,6 @@
 CXX = g++ -std=c++11 -I./Eigen -Wall
 CXXFLAGS = -g -O2 -Wall -Wno-sign-compare -Iinclude -DHAVE_CONFIG_H 
-OBJS = demo.o Solver.o 
+OBJS = demo.o Solver.o RigidBody.o
 
 all: project2
 
