@@ -9,17 +9,17 @@ using namespace Eigen;
 class RigidBody
 {
 public:
-	RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody,
-			Matrix2d IbodyInv, Matrix2d rotation, Vector2d linmom, Vector2d angmom);
+	RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody, Matrix2d IbodyInv, 
+			Matrix2d rotation);
 	virtual ~RigidBody(void);
 
 	/* public functions: */
+	virtual void draw();
 
 	void reset();
-	void draw();
 	void setState(std::vector<double> state);
 	std::vector<double> getState();
-	std::vector<double> derivEval(double timeStep);
+	std::vector<double> derivEval();
 	std::vector<double> derivEval(std::vector<double> input);
 
 	/* public variables: */

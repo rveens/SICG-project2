@@ -19,6 +19,9 @@
 #include <GL/glut.h>
 
 #include "Solver.h"
+#include "RigidBodySquare.h"
+
+#include "Eigen/Dense"
 
 /* macros */
 
@@ -253,6 +256,7 @@ static void idle_func ( void )
 	get_from_UI ( dens_prev, u_prev, v_prev );
 	solver->vel_step ( N, u, v, u_prev, v_prev);
 	solver->dens_step ( N, dens, dens_prev, u, v);
+	solver->rigidbodySolve();
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -349,7 +353,11 @@ int main ( int argc, char ** argv )
 		source = atof(argv[6]);
 	}
 
+	/* init stuff */
 	solver = new Solver(dt, diff, visc);
+	RigidBody *rb = new RigidBodySquare(Vector2d({0, 0}), Vector2d({1, 1}), 1, Matrix2d::Zero());
+	solver->addRigidBody(rb);
+	/* end init stuff */
 
 	printf ( "\n\nHow to use this demo:\n\n" );
 	printf ( "\t Add densities with the right mouse button\n" );

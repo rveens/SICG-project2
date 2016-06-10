@@ -1,6 +1,10 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+#include <vector>
+
+#include "RigidBody.h"
+
 class Solver
 {
 public:
@@ -12,12 +16,14 @@ public:
 	void vel_step(int N, float * u, float * v, float * u0, float * v0);
 
 	void rigidbodySolve();
+	void addRigidBody(RigidBody *rb);
 
 private:
 	/* private variables: */
 	float dt;
 	float diff;
 	float visc;
+	std::vector<RigidBody *> m_rbodies;
 
 	/* private functions: */ 
 

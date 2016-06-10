@@ -1,9 +1,10 @@
 #include "RigidBody.h"
 
-RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody,
-			Matrix2d IbodyInv, Matrix2d rotation, Vector2d linmom, Vector2d angmom)
+RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody, Matrix2d IbodyInv, 
+		Matrix2d rotation)
 	: m_ConstructPos(ConstructPos), m_Mass(mass), m_Ibody(Ibody), m_IbodyInv(IbodyInv), 
-	m_LinearMomentum(linmom), m_AngularMomentum(angmom)
+	m_Rotation(rotation), m_LinearMomentum(Vector2d::Zero()),
+	m_AngularMomentum(Vector2d::Zero())
 {
 
 }
@@ -67,8 +68,7 @@ std::vector<double> RigidBody::getState()
 	return state;
 }
 
-// FIXME waar was timeStep ook al weer voor?
-std::vector<double> RigidBody::derivEval(double timeStep)
+std::vector<double> RigidBody::derivEval()
 {
 	std::vector<double> der;
 
@@ -92,7 +92,6 @@ std::vector<double> RigidBody::derivEval(double timeStep)
 
 std::vector<double> RigidBody::derivEval(std::vector<double> input)
 {
-	// FIXME
 	std::vector<double> der;
 
 	Vector2d tVelocity = Vector2d(input[6], input[7]) / m_Mass;
