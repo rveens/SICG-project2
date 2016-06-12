@@ -1,4 +1,6 @@
 #include "Solver.h"
+#include "EulerStep.h"
+
 #include <cmath>
 
 #define IX(i,j) ((i)+(N+2)*(j))
@@ -8,7 +10,7 @@
 
 
 Solver::Solver(float _dt, float _diff, float _visc) : dt(_dt),
-	diff(_diff), visc(_visc)
+	diff(_diff), visc(_visc), m_Integrator(new EulerStep())
 {
 
 }
@@ -141,12 +143,12 @@ void Solver::rigidbodySolve()
 {
 	// loop through rbodies and compute forces
 	for (RigidBody *rb : m_rbodies) {
-
+		// TODO
 	}
 
 	// loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
-
+		m_Integrator->integrate(rb, dt);
 	}
 }
 

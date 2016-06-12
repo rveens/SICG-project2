@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "RigidBody.h"
+#include "Integrator.h"
 
 class Solver
 {
@@ -19,6 +20,8 @@ public:
 	void addRigidBody(RigidBody *rb);
 
 private:
+	Integrator *m_Integrator;
+	
 	/* private variables: */
 	float dt;
 	float diff;
