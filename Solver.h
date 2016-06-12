@@ -17,6 +17,7 @@ public:
 	void vel_step(int N, float * u, float * v, float * u0, float * v0);
 
 	void rigidbodySolve();
+	void drawRigidBodies();
 	void addRigidBody(RigidBody *rb);
 
 private:

@@ -1,11 +1,12 @@
 #include "RigidBody.h"
 
 #include <iostream>
+#include <GL/glut.h>
 
 RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody, Matrix2d IbodyInv, 
 		Matrix2d rotation)
 	: m_ConstructPos(ConstructPos), m_Mass(mass), m_Ibody(Ibody), m_IbodyInv(IbodyInv), 
-	m_Position(Vector2d(0, 0)), m_Rotation(rotation), m_LinearMomentum(Vector2d(0, 0)),
+	m_Position(ConstructPos), m_Rotation(rotation), m_LinearMomentum(Vector2d(0, 0)),
 	m_AngularMomentum(Vector2d(0, 0)),
 	m_Iinv(Matrix2d::Zero()), m_Velocity(Vector2d(0, 0)), m_Omega(Vector2d(0, 0)), 
 	m_Force(Vector2d(0, 0)), m_Torque(Vector2d(0, 0))
@@ -31,8 +32,6 @@ void RigidBody::draw()
 void RigidBody::setState(VectorXd state)
 {
 	int i = 0;
-
-	std::cout << state;
 
 	m_Position[0] = state(i++);
 	m_Position[1] = state(i++);

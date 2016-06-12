@@ -15,7 +15,7 @@ public:
 			Matrix2d rotation);
 	virtual ~RigidBodySquare(void);
 
-	void draw();
+	virtual void draw();
 
 private:
 	Vector2d m_Size;

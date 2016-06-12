@@ -152,6 +152,12 @@ void Solver::rigidbodySolve()
 	}
 }
 
+void Solver::drawRigidBodies()
+{
+	for (RigidBody *rb : m_rbodies)
+		rb->draw();
+}
+
 void Solver::addRigidBody(RigidBody *rb)
 {
 	m_rbodies.push_back(rb);

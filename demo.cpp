@@ -273,6 +273,7 @@ static void display_func ( void )
 	else {
 		draw_density();
 	}
+	solver->drawRigidBodies();
 
 	post_display ();
 }
@@ -355,7 +356,7 @@ int main ( int argc, char ** argv )
 
 	/* init stuff */
 	solver = new Solver(dt, diff, visc);
-	RigidBody *rb = new RigidBodySquare(Vector2d({0, 0}), Vector2d({1, 1}), 1, Matrix2d::Zero());
+	RigidBody *rb = new RigidBodySquare(Vector2d(0.4, 0.4), Vector2d(0.2, 0.2), 1, Matrix2d::Zero());
 	solver->addRigidBody(rb);
 	/* end init stuff */
 

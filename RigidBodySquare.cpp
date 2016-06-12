@@ -26,10 +26,24 @@ void RigidBodySquare::draw()
 	glColor3f(1.f, 1.f, 1.f);
 	glBegin(GL_QUADS);
 
-	glVertex2f(m_Position[0]-m_Size[0]/2.0, m_Position[1]-m_Size[1]/2.0);
-	glVertex2f(m_Position[0]+m_Size[0]/2.0, m_Position[1]-m_Size[1]/2.0);
-	glVertex2f(m_Position[0]+m_Size[0]/2.0, m_Position[1]+m_Size[1]/2.0);
-	glVertex2f(m_Position[0]-m_Size[0]/2.0, m_Position[1]+m_Size[1]/2.0);
+	/* printf("1: (%f, %f)\n", m_Position[0]-m_Size[0]/2.0, m_Position[1]-m_Size[1]/2.0); */
+	/* printf("2: (%f, %f)\n", m_Position[0]+m_Size[0]/2.0, m_Position[1]-m_Size[1]/2.0); */
+	/* printf("3: (%f, %f)\n", m_Position[0]+m_Size[0]/2.0, m_Position[1]+m_Size[1]/2.0); */
+	/* printf("4: (%f, %f)\n", m_Position[0]-m_Size[0]/2.0, m_Position[1]+m_Size[1]/2.0); */
+
+	/* glVertex2f(m_Position[0]-m_Size[0]/2.0, m_Position[1]-m_Size[1]/2.0); */
+	/* glVertex2f(m_Position[0]+m_Size[0]/2.0, m_Position[1]-m_Size[1]/2.0); */
+	/* glVertex2f(m_Position[0]+m_Size[0]/2.0, m_Position[1]+m_Size[1]/2.0); */
+	/* glVertex2f(m_Position[0]-m_Size[0]/2.0, m_Position[1]+m_Size[1]/2.0); */
+
+	printf("1: (%f, %f)\n", m_Position[0], m_Position[1]);
+	printf("2: (%f, %f)\n", m_Position[0]+m_Size[0], m_Position[1]);
+	printf("3: (%f, %f)\n", m_Position[0]+m_Size[0], m_Position[1]+m_Size[1]);
+	printf("4: (%f, %f)\n", m_Position[0], m_Position[1]+m_Size[1]);
+	glVertex2f(m_Position[0], m_Position[1]);
+	glVertex2f(m_Position[0]+m_Size[0], m_Position[1]);
+	glVertex2f(m_Position[0]+m_Size[0], m_Position[1]+m_Size[1]);
+	glVertex2f(m_Position[0], m_Position[1]+m_Size[1]);
 
 	glEnd();
 }
