@@ -100,12 +100,12 @@ VectorXd RigidBody::derivEval()
 
 VectorXd RigidBody::derivEval(VectorXd input)
 {
-	VectorXd der(10);
+	VectorXd der(12);
 	int i = 0;
 
 	der.setZero();
 	
-	Vector2d tVelocity = Vector2d({input[6], input[7]}) / m_Mass;
+	Vector2d tVelocity = Vector2d(input[6], input[7]) / m_Mass;
 	der(i++) = tVelocity[0];
 	der(i++) = tVelocity[1];
 
@@ -114,7 +114,7 @@ VectorXd RigidBody::derivEval(VectorXd input)
 	tRot(0, 1) = input[3];
 	tRot(1, 0) = input[4];
 	tRot(1, 1) = input[5];
-	Vector2d tL = Vector2d({input[8], input[9]});
+	Vector2d tL = Vector2d(input[8], input[9]);
 	Vector2d tOmega = m_IbodyInv * tL;
 
 	Matrix2d tRdot = star(tOmega) * tRot;

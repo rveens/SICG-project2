@@ -20,6 +20,10 @@
 
 #include "Solver.h"
 #include "RigidBodySquare.h"
+#include "GravityForce.h"
+#include "EulerStep.h"
+#include "MidpointStep.h"
+#include "RungeKuttaStep.h"
 
 #include "Eigen/Dense"
 
@@ -225,6 +229,16 @@ static void key_func ( unsigned char key, int x, int y )
 		case 'V':
 			dvel = !dvel;
 			break;
+		case '1':
+			if (solver)
+			solver->setIntegrator(new EulerStep());
+			break;
+		case '2':
+			solver->setIntegrator(new MidpointStep());
+			break;
+		case '3':
+			solver->setIntegrator(new RungeKuttaStep());
+			break;
 	}
 }
 
@@ -355,9 +369,10 @@ int main ( int argc, char ** argv )
 	}
 
 	/* init stuff */
-	solver = new Solver(dt, diff, visc);
+	solver = new Solver(dt, 0.001, diff, visc);
 	RigidBody *rb = new RigidBodySquare(Vector2d(0.4, 0.4), Vector2d(0.2, 0.2), 1, Matrix2d::Zero());
 	solver->addRigidBody(rb);
+	solver->addForce(new GravityForce(rb));
 	/* end init stuff */
 
 	printf ( "\n\nHow to use this demo:\n\n" );
