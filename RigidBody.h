@@ -46,5 +46,5 @@ public:
 	Vector2d m_Torque;
 private:
 	// helper function, compute a* matrix
-	Matrix2d star(Vector2d input);
+	Matrix2d star(Vector2d a);
 };

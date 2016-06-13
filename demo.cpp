@@ -370,7 +370,16 @@ int main ( int argc, char ** argv )
 
 	/* init stuff */
 	solver = new Solver(dt, 0.001, diff, visc);
-	RigidBody *rb = new RigidBodySquare(Vector2d(0.4, 0.4), Vector2d(0.2, 0.2), 1, Matrix2d::Zero());
+	Matrix2d rot = Matrix2d::Zero();
+	rot(0, 0) = 0.7071;
+	rot(0, 1) = -0.7071;
+	rot(1, 0) = 0.7071;
+	rot(1, 1) = 0.7071;
+	/* rot(0, 0) = 1.0; */
+	/* rot(0, 1) = 0.0; */
+	/* rot(1, 0) = 0.0; */
+	/* rot(1, 1) = 1.0; */
+	RigidBody *rb = new RigidBodySquare(Vector2d(0.5, 0.5), Vector2d(0.2, 0.2), 1, rot);
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
 	/* end init stuff */

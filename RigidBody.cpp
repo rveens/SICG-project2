@@ -55,7 +55,7 @@ void RigidBody::setState(VectorXd state)
 
 VectorXd RigidBody::getState()
 {
-	VectorXd state = VectorXd::Zero(12);
+	VectorXd state = VectorXd::Zero(10);
 	int i = 0;
 
 	state(i++) = m_Position[0];
@@ -76,7 +76,7 @@ VectorXd RigidBody::getState()
 
 VectorXd RigidBody::derivEval()
 {
-	VectorXd der = VectorXd::Zero(12);
+	VectorXd der = VectorXd::Zero(10);
 
 	int i = 0;
 
@@ -100,7 +100,7 @@ VectorXd RigidBody::derivEval()
 
 VectorXd RigidBody::derivEval(VectorXd input)
 {
-	VectorXd der(12);
+	VectorXd der(10);
 	int i = 0;
 
 	der.setZero();
@@ -134,19 +134,18 @@ VectorXd RigidBody::derivEval(VectorXd input)
 
 Matrix2d RigidBody::star(Vector2d a)
 {
-	Matrix2d out;
+	std::cout << "a (omega)" << std::endl;
+	std::cout << a << std::endl;
 
-	out.setZero();
+	Matrix2d out = Matrix2d::Zero();
 
 	if (a.isZero())
 		return out;
 
-	out(0, 1) = -a[2];
-	out(0, 2) = a[1];
-	out(1, 0) = a[2];
-	out(1, 2) = -a[0];
-	out(2, 0) = -a[1];
-	out(2, 1) = a[0];
+	out(0, 0) = 0;
+	out(0, 1) = a[0];
+	out(1, 0) = -a[1];
+	out(1, 1) = 0;
 
 	return out;
 }
