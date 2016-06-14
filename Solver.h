@@ -4,26 +4,35 @@
 #include <vector>
 
 #include "RigidBody.h"
+#include "Integrator.h"
+#include "Force.h"
 
 class Solver
 {
 public:
-	Solver (float _dt, float _diff, float _visc);
-	virtual ~Solver ();
+	Solver(float _dtfluid, float _dtrb, float _diff, float _visc);
+	virtual ~Solver();
 
 	/* public functions: */
 	void dens_step(int N, float * x, float * x0, float * u, float * v, int * solid);
 	void vel_step(int N, float * u, float * v, float * u0, float * v0, int * solid);
 
 	void rigidbodySolve();
+	void drawRigidBodies();
 	void addRigidBody(RigidBody *rb);
+	void addForce(Force *f);
+	void setIntegrator(Integrator *i);
 
 private:
+	Integrator *m_Integrator;
+	
 	/* private variables: */
 	float dt;
+	float dtrb;
 	float diff;
 	float visc;
 	std::vector<RigidBody *> m_rbodies;
+	std::vector<Force *> m_forces;
 
 	/* private functions: */ 
 

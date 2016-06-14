@@ -1,15 +1,23 @@
 #include "RigidBody.h"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & Ibody,
 			Matrix2d & IbodyInv, Matrix2d & rotation, Vector2d & linmom, Vector2d & angmom)
 =======
+=======
+#include <iostream>
+#include <GL/glut.h>
+
+>>>>>>> origin/master
 RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody, Matrix2d IbodyInv, 
 		Matrix2d rotation)
 >>>>>>> origin/master
 	: m_ConstructPos(ConstructPos), m_Mass(mass), m_Ibody(Ibody), m_IbodyInv(IbodyInv), 
-	m_Rotation(rotation), m_LinearMomentum(Vector2d::Zero()),
-	m_AngularMomentum(Vector2d::Zero())
+	m_Position(ConstructPos), m_Rotation(rotation), m_LinearMomentum(Vector2d(0, 0)),
+	m_AngularMomentum(Vector2d(0, 0)),
+	m_Iinv(Matrix2d::Zero()), m_Velocity(Vector2d(0, 0)), m_Omega(Vector2d(0, 0)), 
+	m_Force(Vector2d(0, 0)), m_Torque(Vector2d(0, 0))
 {
 
 }
@@ -29,23 +37,23 @@ void RigidBody::draw()
 
 }
 
-void RigidBody::setState(std::vector<double> state)
+void RigidBody::setState(VectorXd state)
 {
 	int i = 0;
 
-	m_Position[0] = state[i++];
-	m_Position[1] = state[i++];
+	m_Position[0] = state(i++);
+	m_Position[1] = state(i++);
 
-	m_Rotation(0, 0) = state[i++];
-	m_Rotation(0, 1) = state[i++];
-	m_Rotation(1, 0) = state[i++];
-	m_Rotation(1, 1) = state[i++];
+	m_Rotation(0, 0) = state(i++);
+	m_Rotation(0, 1) = state(i++);
+	m_Rotation(1, 0) = state(i++);
+	m_Rotation(1, 1) = state(i++);
 
-	m_LinearMomentum[0] = state[i++];
-	m_LinearMomentum[1] = state[i++];
+	m_LinearMomentum[0] = state(i++);
+	m_LinearMomentum[1] = state(i++);
 
-	m_AngularMomentum[0] = state[i++];
-	m_AngularMomentum[1] = state[i++];
+	m_AngularMomentum[0] = state(i++);
+	m_AngularMomentum[1] = state(i++);
 
 	/* compute some stuff */
 	m_Velocity = m_LinearMomentum / m_Mass;
@@ -53,92 +61,99 @@ void RigidBody::setState(std::vector<double> state)
 	m_Omega = m_Iinv * m_AngularMomentum;
 }
 
-std::vector<double> RigidBody::getState()
+VectorXd RigidBody::getState()
 {
-	std::vector<double> state;
+	VectorXd state = VectorXd::Zero(10);
+	int i = 0;
 
-	state.push_back(m_Position[0]);
-	state.push_back(m_Position[1]);
+	state(i++) = m_Position[0];
+	state(i++) = m_Position[1];
 
-	for (int i = 0; i < 2; i++)
+	for (int k = 0; k < 2; k++)
 		for (int j = 0; j < 2; j++)
-			state.push_back(m_Rotation(i, j));
+			state(i++) = m_Rotation(k, j);
 
-	state.push_back(m_LinearMomentum[0]);
-	state.push_back(m_LinearMomentum[1]);
+	state(i++) = m_LinearMomentum[0];
+	state(i++) = m_LinearMomentum[1];
 
-	state.push_back(m_AngularMomentum[0]);
-	state.push_back(m_AngularMomentum[1]);
+	state(i++) = m_AngularMomentum[0];
+	state(i++) = m_AngularMomentum[1];
 
 	return state;
 }
 
-std::vector<double> RigidBody::derivEval()
+VectorXd RigidBody::derivEval()
 {
-	std::vector<double> der;
+	VectorXd der = VectorXd::Zero(10);
 
-	der.push_back(m_Velocity[0]);
-	der.push_back(m_Velocity[1]);
+	int i = 0;
+
+	der(i++) = m_Velocity[0];
+	der(i++) = m_Velocity[1];
 
 	Matrix2d Rdot = star(m_Omega) * m_Rotation;
 
-	for (int i = 0; i < 2; i++)
+	for (int k = 0; k < 2; k++)
 		for (int j = 0; j < 2; j++)
-			der.push_back(Rdot(i, j));
+			der(i++) = Rdot(k, j);
 
-	der.push_back(m_Force[0]);
-	der.push_back(m_Force[1]);
+	der(i++) = m_Force[0];
+	der(i++) = m_Force[1];
 
-	der.push_back(m_Torque[0]);
-	der.push_back(m_Torque[1]);
+	der(i++) = m_Torque[0];
+	der(i++) = m_Torque[1];
 	
 	return der;
 }
 
-std::vector<double> RigidBody::derivEval(std::vector<double> input)
+VectorXd RigidBody::derivEval(VectorXd input)
 {
-	std::vector<double> der;
+	VectorXd der(10);
+	int i = 0;
 
+	der.setZero();
+	
 	Vector2d tVelocity = Vector2d(input[6], input[7]) / m_Mass;
-	der.push_back(tVelocity[0]);
-	der.push_back(tVelocity[1]);
+	der(i++) = tVelocity[0];
+	der(i++) = tVelocity[1];
 
-	Matrix2d tRot = Matrix2d();
+	Matrix2d tRot = Matrix2d::Zero();
 	tRot(0, 0) = input[2];
 	tRot(0, 1) = input[3];
 	tRot(1, 0) = input[4];
 	tRot(1, 1) = input[5];
-	//FIXME
-	/* Vector2d tOmega = tRot * m_IbodyInv * tRot.transpose(); */
-	Vector2d tOmega;
+	Vector2d tL = Vector2d(input[8], input[9]);
+	Vector2d tOmega = m_IbodyInv * tL;
 
 	Matrix2d tRdot = star(tOmega) * tRot;
 
-	for (int i = 0; i < 2; i++)
+	for (int k = 0; k < 2; k++)
 		for (int j = 0; j < 2; j++)
-			der.push_back(tRdot(i, j));
+			der(i++) = tRdot(k, j);
 
-	der.push_back(input[6]);
-	der.push_back(input[7]);
+	der[i++] = input[6];
+	der[i++] = input[7];
 
-	der.push_back(input[8]);
-	der.push_back(input[9]);
+	der[i++] = input[8];
+	der[i++] = input[9];
 
 	return der;
 }
 
 Matrix2d RigidBody::star(Vector2d & a)
 {
-	Matrix2d out;
+	std::cout << "a (omega)" << std::endl;
+	std::cout << a << std::endl;
 
-	out.setZero();
+	Matrix2d out = Matrix2d::Zero();
 
-	out(0, 1) = -a[2];
-	out(0, 2) = a[1];
-	out(1, 0) = a[2];
-	out(1, 2) = -a[0];
-	out(2, 0) = -a[1];
-	out(2, 1) = a[0];
+	if (a.isZero())
+		return out;
+
+	out(0, 0) = 0;
+	out(0, 1) = a[0];
+	out(1, 0) = -a[1];
+	out(1, 1) = 0;
 
 	return out;
 }

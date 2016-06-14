@@ -22,10 +22,10 @@ public:
 	virtual void draw();
 
 	void reset();
-	void setState(std::vector<double> state);
-	std::vector<double> getState();
-	std::vector<double> derivEval();
-	std::vector<double> derivEval(std::vector<double> input);
+	void setState(VectorXd state);
+	VectorXd getState();
+	VectorXd derivEval();
+	VectorXd derivEval(VectorXd input);
 
 	/* public variables: */
 
@@ -51,5 +51,9 @@ public:
 	Vector2d m_Torque;
 private:
 	// helper function, compute a* matrix
+<<<<<<< HEAD
 	Matrix2d star(Vector2d & input);
+=======
+	Matrix2d star(Vector2d a);
+>>>>>>> origin/master
 };

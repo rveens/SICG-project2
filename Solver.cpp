@@ -1,5 +1,8 @@
 #include "Solver.h"
+#include "RungeKuttaStep.h"
+
 #include <cmath>
+#include <iostream>
 
 #define IX(i,j) ((i)+(N+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
@@ -7,7 +10,8 @@
 #define END_FOR }}}
 
 
-Solver::Solver(float _dt, float _diff, float _visc) : dt(_dt),
+Solver::Solver(float _dtfluid, float _dtrb, float _diff, float _visc) :
+	m_Integrator(new RungeKuttaStep()), dt(_dtfluid), dtrb(_dtrb),
 	diff(_diff), visc(_visc)
 {
 
@@ -15,7 +19,7 @@ Solver::Solver(float _dt, float _diff, float _visc) : dt(_dt),
 
 Solver::~Solver()
 {
-
+	delete m_Integrator;
 }
 
 /* private functions: */
@@ -227,14 +231,23 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 void Solver::rigidbodySolve()
 {
 	// loop through rbodies and compute forces
-	for (RigidBody *rb : m_rbodies) {
-
+	for (Force *f : m_forces) {
+		f->calculateForce();
 	}
 
 	// loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
-
+		m_Integrator->integrate(rb, dtrb);
+		/* printf("m_Velocity: (%f, %f)\n", rb->m_Velocity[0], rb->m_Velocity[1]); */
+		/* printf("m_Position: (%f, %f)\n", rb->m_Position[0], rb->m_Position[1]); */
+		/* printf("m_Force: (%f, %f)\n", rb->m_Force[0], rb->m_Force[1]); */
 	}
+}
+
+void Solver::drawRigidBodies()
+{
+	for (RigidBody *rb : m_rbodies)
+		rb->draw();
 }
 
 void Solver::addRigidBody(RigidBody *rb)
@@ -242,7 +255,26 @@ void Solver::addRigidBody(RigidBody *rb)
 	m_rbodies.push_back(rb);
 }
 
+<<<<<<< HEAD
 void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int * solid )
+=======
+void Solver::addForce(Force *f)
+{
+	m_forces.push_back(f);
+}
+
+void Solver::setIntegrator(Integrator *i)
+{
+	if (!i)
+		return;
+
+	delete m_Integrator;
+	m_Integrator = i;
+	std::cout << "Integrator switched to: " << i->getString() << std::endl;
+}
+
+void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v )
+>>>>>>> origin/master
 {
 	add_source ( N, x, x0);
 	SWAP ( x0, x ); diffuse ( N, 0, x, x0, solid);
