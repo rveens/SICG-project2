@@ -255,9 +255,6 @@ void Solver::addRigidBody(RigidBody *rb)
 	m_rbodies.push_back(rb);
 }
 
-<<<<<<< HEAD
-void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int * solid )
-=======
 void Solver::addForce(Force *f)
 {
 	m_forces.push_back(f);
@@ -273,8 +270,7 @@ void Solver::setIntegrator(Integrator *i)
 	std::cout << "Integrator switched to: " << i->getString() << std::endl;
 }
 
-void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v )
->>>>>>> origin/master
+void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int * solid )
 {
 	add_source ( N, x, x0);
 	SWAP ( x0, x ); diffuse ( N, 0, x, x0, solid);

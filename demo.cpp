@@ -19,8 +19,6 @@
 #include <GL/glut.h>
 
 #include "Solver.h"
-<<<<<<< HEAD
-=======
 #include "RigidBodySquare.h"
 #include "GravityForce.h"
 #include "EulerStep.h"
@@ -28,7 +26,6 @@
 #include "RungeKuttaStep.h"
 
 #include "Eigen/Dense"
->>>>>>> origin/master
 
 /* macros */
 
@@ -434,9 +431,6 @@ int main ( int argc, char ** argv )
 		source = atof(argv[6]);
 	}
 
-<<<<<<< HEAD
-	solver = new Solver(dt, diff, visc);
-=======
 	/* init stuff */
 	solver = new Solver(dt, 0.001, diff, visc);
 	Matrix2d rot = Matrix2d::Zero();
@@ -452,7 +446,6 @@ int main ( int argc, char ** argv )
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
 	/* end init stuff */
->>>>>>> origin/master
 
 	printf ( "\n\nHow to use this demo:\n\n" );
 	printf ( "\t Add densities with the right mouse button\n" );

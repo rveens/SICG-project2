@@ -9,13 +9,7 @@ using namespace Eigen;
 class RigidBody
 {
 public:
-<<<<<<< HEAD
-	RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & Ibody,
-			Matrix2d & IbodyInv, Matrix2d & rotation, Vector2d & linmom, Vector2d & angmom);
-=======
-	RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d Ibody, Matrix2d IbodyInv, 
-			Matrix2d rotation);
->>>>>>> origin/master
+	RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & rotation);
 	virtual ~RigidBody(void);
 
 	/* public functions: */
@@ -51,9 +45,6 @@ public:
 	Vector2d m_Torque;
 private:
 	// helper function, compute a* matrix
-<<<<<<< HEAD
-	Matrix2d star(Vector2d & input);
-=======
-	Matrix2d star(Vector2d a);
->>>>>>> origin/master
+
+	Matrix2d star(Vector2d & a);
 };

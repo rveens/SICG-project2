@@ -11,8 +11,8 @@ using namespace Eigen;
 class RigidBodySquare : public RigidBody
 {
 public:
-	RigidBodySquare(const Vector2d & ConstructPos, Vector2d size, int mass,
-			Matrix2d rotation);
+	RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size, int mass,
+			Matrix2d & rotation);
 	virtual ~RigidBodySquare(void);
 
 	virtual void draw();

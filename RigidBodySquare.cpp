@@ -5,8 +5,8 @@
 
 #include <iostream>
 
-RigidBodySquare::RigidBodySquare(const Vector2d & ConstructPos, Vector2d size, int mass,
-		Matrix2d rotation) : RigidBody(ConstructPos, mass, Matrix2d::Zero(), Matrix2d::Zero(), rotation),
+RigidBodySquare::RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size, int mass,
+		Matrix2d & rotation) : RigidBody(ConstructPos, mass, rotation),
 					m_Size(size)
 {
 	// calc Ibody
