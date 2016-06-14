@@ -21,11 +21,14 @@ void CollisionSolver::detectCollisions(std::vector<RigidBody *> &rbodies)
 	};
 
 	struct INTVL {
-		double si;
-		double ei;
+		double si = 0.0;
+		double ei = 0.0;
 		RigidBody *rb;
-		bool overlap;
+		bool overlap = false;
+		int dimension = 0;
 	};
+
+	std::map<RigidBody *, std::vector<INTVL>> intervals_overlapping;
 
 	// for each dimension
 	for (int i = 0; i < 2; i++) {
@@ -42,6 +45,7 @@ void CollisionSolver::detectCollisions(std::vector<RigidBody *> &rbodies)
 			itv.si = coords[i];
 			itv.ei = coords[i+2];
 			itv.overlap = false;
+			itv.dimension = i;
 			intervals[coords[i]] = itv;
 		}
 
@@ -70,12 +74,21 @@ void CollisionSolver::detectCollisions(std::vector<RigidBody *> &rbodies)
 				}
 			}
 		}
-		// print the overlapping intervals
-		for (auto itv : intervals) {
-			if (itv.second.overlap) {
+		// add overlapping intervals to a list
+		for (auto pair : intervals) {
+			// note: pair.second is a ITVL type
+			if (pair.second.overlap) {
+				intervals_overlapping[pair.second.rb].push_back(pair.second);
 				printf("overlap on interval:\n");
-				printf("si: %f, ei:%f, dim:%d\n", itv.second.si, itv.second.ei, i);
+				printf("si: %f, ei:%f, dim:%d\n", pair.second.si, pair.second.ei, i);
 			}
+		}
+	}
+
+	// check if there there is a collision:
+	for (auto pair : intervals_overlapping) {
+		if (pair.second.size() == 2) {
+			printf("overlap!\n");
 		}
 	}
 }
