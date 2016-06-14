@@ -442,7 +442,9 @@ int main ( int argc, char ** argv )
 	/* rot(0, 1) = 0.0; */
 	/* rot(1, 0) = 0.0; */
 	/* rot(1, 1) = 1.0; */
-	RigidBody *rb = new RigidBodySquare(Vector2d(0.5, 0.5), Vector2d(0.2, 0.2), 1, rot);
+	Vector2d init_position(0.5, 0.5);
+	Vector2d rb_size(0.2, 0.2);
+	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
 	/* end init stuff */
