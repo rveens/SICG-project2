@@ -47,4 +47,6 @@ private:
 	// helper function, compute a* matrix
 
 	Matrix2d star(Vector2d & a);
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

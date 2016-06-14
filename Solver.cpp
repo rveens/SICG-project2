@@ -79,58 +79,115 @@ void Solver::add_source ( int N, float * x, float * s)
 //	x[IX(N + 1 - s, N + 1 - s)] = 0.5f*(x[IX(N - s, N + 1 - s)] + x[IX(N + 1 - s, N - s)]);
 //}
 
-void Solver::set_bnd ( int N, int b, float * x, int * solid )
+/* solver for viscuous fluids, with no-slip boundary condition */
+//void Solver::set_bnd(int N, int b, float * x, int * solid)
+//{
+//	int i, j, size = (N + 2)*(N + 2);
+//	if (b == 2) b = 1;
+//
+//	for (i = 0; i <= N + 1; i++) {
+//		for (j = 0; j <= N + 1; j++){
+//			switch (solid[IX(i, j)]) {
+//			case 0: // no solid:
+//				// no change
+//				break;
+//			case 1: // left top:
+//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]) : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]);
+//				break;
+//			case 2: // top:
+//				x[IX(i, j)] = b == 1 ? -x[IX(i, j + 1)] : x[IX(i, j + 1)];
+//				break;
+//			case 3: // right top:
+//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]) : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]);
+//				break;
+//			case 4: // left:
+//				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : x[IX(i - 1, j)];
+//				break;
+//			case 5: // solid - no border:
+//				x[IX(i, j)] = 0;
+//				break;
+//			case 6: // right:
+//				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : x[IX(i + 1, j)];
+//				break;
+//			case 7: // left bottom:
+//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]) : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]);
+//				break;
+//			case 8: // bottom:
+//				x[IX(i, j)] = b == 1 ? -x[IX(i, j - 1)] : x[IX(i, j - 1)];
+//				break;
+//			case 9: // right bottom:
+//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]) : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]);
+//				break;
+//			case 10: // inner corner left top:
+//				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]);
+//				break;
+//			case 11: // inner corner right top:
+//				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]);
+//				break;
+//			case 12: // inner corner left bottom:
+//				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]);
+//				break;
+//			case 13: // inner corner right bottom:
+//				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]);
+//				break;
+//			}
+//		}
+//	}
+//}
+
+/* solver for normal (non-viscuous) fluids */
+void Solver::set_bnd(int N, int b, float * x, int * solid)
 {
 	int i, j, size = (N + 2)*(N + 2);
 
-	for ( i=0 ; i<=N+1; i++ ) {
-		for ( j=0; j<=N+1; j++ ){
-			switch (solid[IX(i,j)]) {
-				case 0: // no solid:
-					x[IX(i, j)] = 0;
-					break;
-				case 1: // left top:
-					break;
-				case 2: // top:
-					x[IX(i,j)] = b==2 ? -x[IX(i,j+1)] : x[IX(i,j+1)];
-					break;
-				case 3: // right top:
-					break;
-				case 4: // left:
-					x[IX(i,j)] = b==1 ? -x[IX(i-1,j)] : x[IX(i-1,j)];
-					break;
-				case 5: // solid - no border:
-					x[IX(i,j)] = 0;
-					break;
-				case 6: // right:
-					x[IX(i,j)] = b==1 ? -x[IX(i+1,j)] : x[IX(i+1,j)];
-					break;
-				case 7: // left bottom:
-					break;
-				case 8: // bottom:
-					x[IX(i,j)] = b==2 ? -x[IX(i,j-1)] : x[IX(i,j-1)];
-					break;
-				case 9: // right bottom:
-					break;
-				case 10: // inner corner left top:
-					x[IX(i, j)] = 0.5f*(x[IX(i-1, j)] + x[IX(i, j+1)]);
-					break;
-				case 11: // inner corner right top:
-					x[IX(i, j)] = 0.5f*(x[IX(i+1, j)] + x[IX(i, j+1)]);
-					break;
-				case 12: // inner corner left bottom:
-					x[IX(i, j)] = 0.5f*(x[IX(i-1, j)] + x[IX(i, j-1)]);
-					break;
-				case 13: // inner corner right bottom:
-					x[IX(i, j)] = 0.5f*(x[IX(i+1, j)] + x[IX(i, j-1)]);
-					break;
+	for (i = 0; i <= N + 1; i++) {
+		for (j = 0; j <= N + 1; j++){
+			switch (solid[IX(i, j)]) {
+			case 0: // no solid:
+				// no change
+				break;
+			case 1: // left top:
+				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : (b == 2 ? -x[IX(i, j + 1)] : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]));
+				break;
+			case 2: // top:
+				x[IX(i, j)] = b == 2 ? -x[IX(i, j + 1)] : x[IX(i, j + 1)];
+				break;
+			case 3: // right top:
+				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : (b == 2 ? -x[IX(i, j + 1)] : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]));
+				break;
+			case 4: // left:
+				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : x[IX(i - 1, j)];
+				break;
+			case 5: // solid - no border:
+				x[IX(i, j)] = 0;
+				break;
+			case 6: // right:
+				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : x[IX(i + 1, j)];
+				break;
+			case 7: // left bottom:
+				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : (b == 2 ? -x[IX(i, j - 1)] : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]));
+				break;
+			case 8: // bottom:
+				x[IX(i, j)] = b == 2 ? -x[IX(i, j - 1)] : x[IX(i, j - 1)];
+				break;
+			case 9: // right bottom:
+				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : (b == 2 ? -x[IX(i, j - 1)] : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]));
+				break;
+			case 10: // inner corner left top:
+				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]);
+				break;
+			case 11: // inner corner right top:
+				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]);
+				break;
+			case 12: // inner corner left bottom:
+				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]);
+				break;
+			case 13: // inner corner right bottom:
+				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]);
+				break;
 			}
 		}
 	}
-	
-	
-	
-	
 }
 
 
@@ -191,7 +248,7 @@ void Solver::project ( int N, float * u, float * v, float * p, float * div, int 
 void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 {
 	// TODO: bring this out as a parameter!
-	float eps = 6.0f;
+	float eps = 1.0f;
 	
 	// initialise variables
 	float h = 1.0f / N;

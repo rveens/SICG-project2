@@ -140,10 +140,10 @@ static void set_solid_boundary(int t)
 		solid[IX(i,N+1-t)] = 8; // top boundary: border below
 	}
 	// corners: solid - no border
-	solid[IX(t, t)] = 11;
-	solid[IX(t, N+1-t)] = 13;
-	solid[IX(N+1-t, t)] = 10;
-	solid[IX(N+1-t, N+1-t)] = 12;
+	solid[IX(t, t)] = 11; // left bottom boundary corner
+	solid[IX(t, N + 1 - t)] = 13; // left top boundary corner
+	solid[IX(N + 1 - t, t)] = 10; // right bottom boundary corner
+	solid[IX(N + 1 - t, N + 1 - t)] = 12; // right top boundary corner
 
 	// set solids without border around boundary (only if t>0)
 	for ( i=0; i<t; i++ ){
@@ -152,6 +152,38 @@ static void set_solid_boundary(int t)
 			solid[IX(N+1-i, j)] = 5;
 			solid[IX(j, i)] = 5;
 			solid[IX(j, N+1-i)] = 5;
+		}
+	}
+}
+
+/* set centered inside square boundary of solids, distance t+1 away from outer boundary */
+// WARNING creates unexpected velocity vortex, do not use
+static void set_solid_square_center(int t)
+{
+	if (t > N/2 - 1) return; // distance from boundary must be less than half the total boundary length
+	
+	int i, j;
+
+	// set left/right/top/bottom boundary
+	for (i = t + 1; i <= N - t; i++) {
+		solid[IX(t, i)] = 4; // left border
+		solid[IX(N + 1 - t, i)] = 6; // right border
+		solid[IX(i, t)] = 8; // bottom border
+		solid[IX(i, N + 1 - t)] = 2; // top border
+	}
+	// corners: solid - no border
+	solid[IX(t, t)] = 5;// 7; // left bottom
+	solid[IX(t, N + 1 - t)] = 5;// 1; // left top
+	solid[IX(N + 1 - t, t)] = 5;// 9; // right bottom
+	solid[IX(N + 1 - t, N + 1 - t)] = 5;// 3; // right top
+
+	// set solids without border inside square
+	for (i = t; i<=N/2; i++){
+		for (j = i; j <= N + 1 - i; j++){
+			solid[IX(i, j)] = 5;
+			solid[IX(N + 1 - i, j)] = 5;
+			solid[IX(j, i)] = 5;
+			solid[IX(j, N + 1 - i)] = 5;
 		}
 	}
 }
@@ -417,7 +449,7 @@ int main ( int argc, char ** argv )
 		N = 64;
 		dt = 0.1f;
 		diff = 0.00001f; // was 0
-		visc = 0.0001f; // was 0
+		visc = 0.001f; // was 0
 		force = 2.0f; // was 5
 		source = 100.0f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
@@ -462,6 +494,7 @@ int main ( int argc, char ** argv )
 	clear_data ();
 	clear_solid_data();
 	set_solid_boundary(5);
+	set_solid_square_center(25);
 
 	win_x = 512;
 	win_y = 512;
