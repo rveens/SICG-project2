@@ -87,6 +87,7 @@ void Solver::set_bnd ( int N, int b, float * x, int * solid )
 		for ( j=0; j<=N+1; j++ ){
 			switch (solid[IX(i,j)]) {
 				case 0: // no solid:
+					x[IX(i, j)] = 0;
 					break;
 				case 1: // left top:
 					break;
