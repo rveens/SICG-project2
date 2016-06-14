@@ -300,6 +300,9 @@ void Solver::rigidbodySolve()
 		/* printf("m_Position: (%f, %f)\n", rb->m_Position[0], rb->m_Position[1]); */
 		/* printf("m_Force: (%f, %f)\n", rb->m_Force[0], rb->m_Force[1]); */
 	}
+
+	// check collision test
+	colsolver.detectCollisions(m_rbodies);
 }
 
 void Solver::drawRigidBodies()

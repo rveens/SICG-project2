@@ -56,4 +56,49 @@ void RigidBodySquare::draw()
 	glVertex2f(m_Position[0] + tr_rot[0], m_Position[1] + tr_rot[1]);
 	glVertex2f(m_Position[0] + tl_rot[0], m_Position[1] + tl_rot[1]);
 	glEnd();
+
+	// draw AABB
+	if (m_Drawbb) {
+		std::array<double, 4> coords = computeAABB();
+		glColor3f(1.f, 0.f, 0.f);
+		glBegin(GL_LINE_STRIP);
+		glVertex2f(coords[0], coords[1]);
+		glVertex2f(coords[2], coords[1]);
+		glVertex2f(coords[2], coords[3]);
+		glVertex2f(coords[0], coords[3]);
+		glVertex2f(coords[0], coords[1]);
+		glEnd();
+	}
+}
+
+std::array<double, 4> RigidBodySquare::computeAABB()
+{
+	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
+	Vector2d br = Vector2d(+m_Size[0]/2, -m_Size[1]/2);
+	Vector2d tr = Vector2d(+m_Size[0]/2, +m_Size[1]/2);
+	Vector2d tl = Vector2d(-m_Size[0]/2, +m_Size[1]/2);
+
+	Vector2d bl_rot = m_Rotation * bl;
+	Vector2d br_rot = m_Rotation * br;
+	Vector2d tr_rot = m_Rotation * tr;
+	Vector2d tl_rot = m_Rotation * tl;
+	bl_rot += m_Position;
+	br_rot += m_Position;
+	tr_rot += m_Position;
+	tl_rot += m_Position;
+
+
+	std::vector<double> xcoords({bl_rot[0], br_rot[0], tr_rot[0], tl_rot[0]});
+	std::vector<double> ycoords({bl_rot[1], br_rot[1], tr_rot[1], tl_rot[1]});
+
+	std::max_element(ycoords.cbegin(), ycoords.cend());
+
+	std::array<double, 4> coords;
+
+	coords[0] = std::min_element(xcoords.cbegin(), xcoords.cend())[0];
+	coords[1] = std::min_element(ycoords.cbegin(), ycoords.cend())[0];
+	coords[2] = std::max_element(xcoords.cbegin(), xcoords.cend())[0];
+	coords[3] = std::max_element(ycoords.cbegin(), ycoords.cend())[0];
+
+	return coords;
 }

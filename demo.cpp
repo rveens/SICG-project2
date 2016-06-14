@@ -366,6 +366,7 @@ static void idle_func ( void )
 	get_from_UI ( dens_prev, u_prev, v_prev, solid );
 	solver->vel_step ( N, u, v, u_prev, v_prev, solid );
 	solver->dens_step ( N, dens, dens_prev, u, v, solid );
+	solver->rigidbodySolve();
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -465,16 +466,13 @@ int main ( int argc, char ** argv )
 
 	/* init stuff */
 	solver = new Solver(dt, 0.001, diff, visc);
-	Matrix2d rot = Matrix2d::Zero();
-	rot(0, 0) = 0.7071;
-	rot(0, 1) = -0.7071;
-	rot(1, 0) = 0.7071;
-	rot(1, 1) = 0.7071;
-	/* rot(0, 0) = 1.0; */
-	/* rot(0, 1) = 0.0; */
-	/* rot(1, 0) = 0.0; */
-	/* rot(1, 1) = 1.0; */
-	Vector2d init_position(0.5, 0.5);
+	// rb one
+	Matrix2d rot = Matrix2d::Identity();
+	/* rot(0, 0) = 0.7071; */
+	/* rot(0, 1) = -0.7071; */
+	/* rot(1, 0) = 0.7071; */
+	/* rot(1, 1) = 0.7071; */
+	Vector2d init_position(0.6, 0.6);
 	Vector2d rb_size(0.2, 0.2);
 	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
 	solver->addRigidBody(rb);

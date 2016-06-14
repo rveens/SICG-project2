@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 
 #include "Eigen/Dense"
 
@@ -13,15 +14,19 @@ public:
 	virtual ~RigidBody(void);
 
 	/* public functions: */
-	virtual void draw();
+	virtual void draw() = 0;
 
 	void reset();
 	void setState(VectorXd state);
 	VectorXd getState();
 	VectorXd derivEval();
 	VectorXd derivEval(VectorXd input);
+	virtual std::array<double, 4> computeAABB() = 0;
 
 	/* public variables: */
+
+	/* drawing variables: */
+	bool m_Drawbb = false;
 
 	/* constant quantities */
 	const Vector2d m_ConstructPos;

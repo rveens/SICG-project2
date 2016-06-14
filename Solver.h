@@ -6,6 +6,7 @@
 #include "RigidBody.h"
 #include "Integrator.h"
 #include "Force.h"
+#include "CollisionSolver.h"
 
 class Solver
 {
@@ -25,6 +26,7 @@ public:
 
 private:
 	Integrator *m_Integrator;
+	CollisionSolver colsolver;
 	
 	/* private variables: */
 	float dt;

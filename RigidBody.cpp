@@ -4,7 +4,7 @@
 
 
 RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & rotation)
-	: m_ConstructPos(ConstructPos), m_Mass(mass),
+	: m_Drawbb(false), m_ConstructPos(ConstructPos), m_Mass(mass),
 	m_Position(ConstructPos), m_Rotation(rotation), m_LinearMomentum(Vector2d(0, 0)),
 	m_AngularMomentum(Vector2d(0, 0)),
 	m_Iinv(Matrix2d::Zero()), m_Velocity(Vector2d(0, 0)), m_Omega(Vector2d(0, 0)), 
@@ -133,8 +133,8 @@ VectorXd RigidBody::derivEval(VectorXd input)
 
 Matrix2d RigidBody::star(Vector2d & a)
 {
-	std::cout << "a (omega)" << std::endl;
-	std::cout << a << std::endl;
+	/* std::cout << "a (omega)" << std::endl; */
+	/* std::cout << a << std::endl; */
 
 	Matrix2d out = Matrix2d::Zero();
 

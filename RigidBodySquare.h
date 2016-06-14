@@ -16,6 +16,7 @@ public:
 	virtual ~RigidBodySquare(void);
 
 	virtual void draw();
+	virtual std::array<double, 4> computeAABB();
 
 private:
 	Vector2d m_Size;
