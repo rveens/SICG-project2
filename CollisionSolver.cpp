@@ -69,26 +69,19 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 				}
 			}
 		}
-		printf("-----------\n");
-
 		intervals_overlapping.push_back(std::vector<INTVL>());
 		// add overlapping intervals to a list
 		for (auto pair : intervals) {
 			// note: pair.second is a ITVL type
 			if (pair.second.overlap) {
 				intervals_overlapping[i].push_back(pair.second);
-				printf("overlap on interval:\n");
-				printf("si: %f, ei:%f, dim:%d\n", pair.second.si, pair.second.ei, i);
-				printf("rb: %d\n", pair.second.rb);
 			}
 		}
-		printf("-----------\n");
 	}
 
 	// check if there there is a collision:
 	for (auto &list : intervals_overlapping) {
 		if (list.size() == 2) {
-			printf("collision!\n");
 			list[0].rb_other = list[1].rb;
 			list[1].rb_other = list[0].rb;
 

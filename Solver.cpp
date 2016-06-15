@@ -356,6 +356,10 @@ void Solver::getPointOfCollision(double timeStep)
 				m_Integrator->integrate(rb, tc);
 			}
 		} while(!colsolver.checkWithinTolerance());
+		for (auto  &intervals : colsolver.overlapping_rbs) {
+			printf("collision at:\n");
+			printf("(%f, %f)\n", intervals.second[0].si, intervals.second[2].si);
+		}
 	}
 }
 

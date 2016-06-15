@@ -29,10 +29,10 @@ public:
 	bool checkWithinTolerance();
 
 	std::map<std::tuple<RigidBody *, RigidBody *>, std::vector<INTVL>> overlapping_rbs;
+	std::vector<Collision> m_Collisions;
 
 private:
-	std::vector<Collision> m_Collisions;
-	const double m_Tolerance = 0.1;
+	const double m_Tolerance = 0.5;
 
 	// list of collisions
 };
