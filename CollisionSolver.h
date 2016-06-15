@@ -9,7 +9,8 @@
 struct INTVL {
 	double si = 0.0;
 	double ei = 0.0;
-	RigidBody *rb;
+	RigidBody *rb = 0;
+	RigidBody *rb_other = 0;
 	bool overlap = false;
 	int dimension = 0;
 };
@@ -29,7 +30,7 @@ public:
 
 private:
 	std::vector<Collision> m_Collisions;
-	std::map<RigidBody *, std::vector<INTVL>> collision_intervals;
+	std::vector<std::tuple<INTVL, INTVL>> collision_intervals;
 
 	const double tolerance = 0.01;
 };

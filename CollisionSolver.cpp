@@ -15,7 +15,9 @@ CollisionSolver::~CollisionSolver()
 
 bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 {
-	std::map<RigidBody *, std::vector<INTVL>> intervals_overlapping;
+	// dimension, list overlaping intervals
+	std::vector<std::vector<INTVL>> intervals_overlapping;
+
 	collision_intervals.clear();
 
 	// for each dimension
@@ -68,11 +70,13 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 			}
 		}
 		printf("-----------\n");
+
+		intervals_overlapping.push_back(std::vector<INTVL>());
 		// add overlapping intervals to a list
 		for (auto pair : intervals) {
 			// note: pair.second is a ITVL type
 			if (pair.second.overlap) {
-				intervals_overlapping[pair.second.rb].push_back(pair.second);
+				intervals_overlapping[i].push_back(pair.second);
 				printf("overlap on interval:\n");
 				printf("si: %f, ei:%f, dim:%d\n", pair.second.si, pair.second.ei, i);
 				printf("rb: %d\n", pair.second.rb);
@@ -82,10 +86,13 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 	}
 
 	// check if there there is a collision:
-	for (auto pair : intervals_overlapping) {
-		if (pair.second.size() == 2) {
+	for (auto &list : intervals_overlapping) {
+		if (list.size() == 2) {
 			printf("collision!\n");
-			collision_intervals[pair.first] = pair.second;
+			list[0].rb_other = list[1].rb;
+			list[1].rb_other = list[0].rb;
+
+			collision_intervals.push_back(std::make_tuple(list[0], list[1]));
 
 /* 			INTVL &intvl_a = pair.second[0]; */
 /* 			INTVL &intvl_b = pair.second[1]; */
@@ -106,7 +113,7 @@ bool CollisionSolver::checkWithinTolerance()
 	if (collision_intervals.empty())
 		return false;
 	for (auto &pair : collision_intervals) {
-
+		/* INTVL &one = pair.second[] */
 	}
 	return false;
 }
