@@ -475,18 +475,16 @@ int main ( int argc, char ** argv )
 	Vector2d init_position(0.6, 0.6);
 	Vector2d rb_size(0.2, 0.2);
 	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
+	rb->m_Drawbb = true;
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
 
 	// rb two
 	Matrix2d rot2 = Matrix2d::Identity();
-	/* rot(0, 0) = 0.7071; */
-	/* rot(0, 1) = -0.7071; */
-	/* rot(1, 0) = 0.7071; */
-	/* rot(1, 1) = 0.7071; */
-	Vector2d init_position2(0.7, 0.7);
+	Vector2d init_position2(0.8, 0.8);
 	Vector2d rb_size2(0.2, 0.2);
 	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
+	rb2->m_Drawbb = true;
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
 	/* end init stuff */

@@ -10,7 +10,6 @@ RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & rotatio
 	m_Iinv(Matrix2d::Zero()), m_Velocity(Vector2d(0, 0)), m_Omega(Vector2d(0, 0)), 
 	m_Force(Vector2d(0, 0)), m_Torque(Vector2d(0, 0))
 {
-
 }
 
 RigidBody::~RigidBody(void)

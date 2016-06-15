@@ -295,6 +295,10 @@ void Solver::rigidbodySolve()
 
 	// loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
+		// save previous state
+		rb->m_PreviousState = rb->getState();
+
+		// do next step
 		m_Integrator->integrate(rb, dtrb);
 		/* printf("m_Velocity: (%f, %f)\n", rb->m_Velocity[0], rb->m_Velocity[1]); */
 		/* printf("m_Position: (%f, %f)\n", rb->m_Position[0], rb->m_Position[1]); */
@@ -302,7 +306,39 @@ void Solver::rigidbodySolve()
 	}
 
 	// check collision test
-	colsolver.detectCollisions(m_rbodies);
+	colsolver.detectCollision(m_rbodies);
+}
+
+void Solver::getPointOfCollision(double t0, double t0plusDt)
+{
+	if (colsolver.detectCollision(m_rbodies)) {
+		// 1 set state back to previous state
+		// 2 do half a time step
+		// 3 check if within tolerance of floor ---> done
+		// 4 check for :
+		// 	collision again
+		// 	no collision
+		// if not, go back to 1
+		double tc = t0;
+
+		// 1 set state back to previous state
+		for (RigidBody *rb : m_rbodies) {
+			rb->setState(rb->m_PreviousState);
+			// 2 do half a time step
+			tc += (t0plusDt-t0)/2;
+			m_Integrator->integrate(rb, tc);
+		}
+		// 3 check if within tolerance of floor ---> done
+		;
+		// 4 check for :
+		// 	collision again -> tc -= (1/4) * (t0plusDt - t0)
+		// 	no collision	-> tc += (1/4) * (t0plusDt - t0)
+		if (colsolver.detectCollision(m_rbodies)) {
+
+		} else {
+
+		}
+	}
 }
 
 void Solver::drawRigidBodies()

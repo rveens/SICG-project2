@@ -46,6 +46,9 @@ private:
 	void project(int N, float * u, float * v, float * p, float * div, int * solid);
 	void set_bnd(int N, int b, float * x, int * solid);
 	void confine_vorticity(int N, float * u, float * v, int * solid);
+
+	// stuff for rigid bodies
+	void getPointOfCollision(double t0, double t0plusDt);
 };
 
 #endif /* SOLVER_H */

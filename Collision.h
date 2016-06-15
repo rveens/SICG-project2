@@ -2,6 +2,7 @@
 
 #include "./Eigen/Dense"
 
+/* might as well be a struct.. */ 
 class Collision
 {
 public:

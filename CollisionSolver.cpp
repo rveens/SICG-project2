@@ -13,22 +13,10 @@ CollisionSolver::~CollisionSolver()
 
 }
 
-void CollisionSolver::detectCollisions(std::vector<RigidBody *> &rbodies)
+bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 {
-	enum INTVL_TYPE {
-		Si,
-		Ei
-	};
-
-	struct INTVL {
-		double si = 0.0;
-		double ei = 0.0;
-		RigidBody *rb;
-		bool overlap = false;
-		int dimension = 0;
-	};
-
 	std::map<RigidBody *, std::vector<INTVL>> intervals_overlapping;
+	collision_intervals.clear();
 
 	// for each dimension
 	for (int i = 0; i < 2; i++) {
@@ -71,9 +59,15 @@ void CollisionSolver::detectCollisions(std::vector<RigidBody *> &rbodies)
 				} else {
 					// collision
 					intervals[active_intervals.top()].overlap = true;
+					// find other interval
+					for (auto &pair : intervals) {
+						if (pair.second.ei == std::get<0>(tup))
+							pair.second.overlap = true;
+					}
 				}
 			}
 		}
+		printf("-----------\n");
 		// add overlapping intervals to a list
 		for (auto pair : intervals) {
 			// note: pair.second is a ITVL type
@@ -81,14 +75,38 @@ void CollisionSolver::detectCollisions(std::vector<RigidBody *> &rbodies)
 				intervals_overlapping[pair.second.rb].push_back(pair.second);
 				printf("overlap on interval:\n");
 				printf("si: %f, ei:%f, dim:%d\n", pair.second.si, pair.second.ei, i);
+				printf("rb: %d\n", pair.second.rb);
 			}
 		}
+		printf("-----------\n");
 	}
 
 	// check if there there is a collision:
 	for (auto pair : intervals_overlapping) {
 		if (pair.second.size() == 2) {
-			printf("overlap!\n");
+			printf("collision!\n");
+			collision_intervals[pair.first] = pair.second;
+
+/* 			INTVL &intvl_a = pair.second[0]; */
+/* 			INTVL &intvl_b = pair.second[1]; */
+
+/* 			Collision collision; */
+/* 			collision.a = intvl_a.rb; */
+/* 			collision.b = intvl_b.rb; */
+/* 			/1* colision. *1/ */
+/* 			m_Collisions.push_back(collision); */
 		}
 	}
+
+	return !collision_intervals.empty();
+}
+
+bool CollisionSolver::checkWithinTolerance()
+{
+	if (collision_intervals.empty())
+		return false;
+	for (auto &pair : collision_intervals) {
+
+	}
+	return false;
 }
