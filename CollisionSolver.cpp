@@ -18,7 +18,7 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 	// dimension, list overlaping intervals
 	std::vector<std::vector<INTVL>> intervals_overlapping;
 
-	collision_intervals.clear();
+	overlapping_rbs.clear();
 
 	// for each dimension
 	for (int i = 0; i < 2; i++) {
@@ -92,7 +92,10 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 			list[0].rb_other = list[1].rb;
 			list[1].rb_other = list[0].rb;
 
-			collision_intervals.push_back(std::make_tuple(list[0], list[1]));
+			overlapping_rbs[std::make_tuple(list[0].rb, list[1].rb)].push_back(list[0]);
+			overlapping_rbs[std::make_tuple(list[0].rb, list[1].rb)].push_back(list[1]);
+
+/* 			collision_intervals.push_back(std::make_tuple(list[0], list[1])); */
 
 /* 			INTVL &intvl_a = pair.second[0]; */
 /* 			INTVL &intvl_b = pair.second[1]; */
@@ -105,15 +108,32 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 		}
 	}
 
-	return !collision_intervals.empty();
+	return !overlapping_rbs.empty();
 }
 
 bool CollisionSolver::checkWithinTolerance()
 {
-	if (collision_intervals.empty())
+	if (overlapping_rbs.empty())
 		return false;
-	for (auto &pair : collision_intervals) {
-		/* INTVL &one = pair.second[] */
+	// for each dimension (e.g. x, y)
+	for (auto &pair : overlapping_rbs) {
+		// find all intervals for a rigid body
+
+		std::vector<INTVL> &list = pair.second;
+		// we know: 
+		// list[0] = intvl 1 dim x
+		// list[1] = intvl 2 dim x
+		// list[2] = intvl 1 dim x
+		// list[3] = intvl 2 dim x
+
+		// find minimum between x intervals 
+		double toCheckX = std::min(list[0].si - list[1].ei, list[1].si - list[0].ei);
+
+		// find minimum between y intervals 
+		double toCheckY = std::min(list[2].si - list[3].ei, list[3].si - list[2].ei);
+		if (toCheckX <= m_Tolerance && toCheckY <= m_Tolerance) {
+			return true;
+		}
 	}
 	return false;
 }

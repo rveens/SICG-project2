@@ -295,7 +295,7 @@ void Solver::rigidbodySolve()
 
 	// loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
-		// save previous state
+		// save previous(current) state
 		rb->m_PreviousState = rb->getState();
 
 		// do next step
@@ -306,10 +306,12 @@ void Solver::rigidbodySolve()
 	}
 
 	// check collision test
-	colsolver.detectCollision(m_rbodies);
+	if (colsolver.detectCollision(m_rbodies)) {
+		getPointOfCollision(dtrb);
+	}
 }
 
-void Solver::getPointOfCollision(double t0, double t0plusDt)
+void Solver::getPointOfCollision(double timeStep)
 {
 	if (colsolver.detectCollision(m_rbodies)) {
 		// 1 set state back to previous state
@@ -318,26 +320,42 @@ void Solver::getPointOfCollision(double t0, double t0plusDt)
 		// 4 check for :
 		// 	collision again
 		// 	no collision
-		// if not, go back to 1
-		double tc = t0;
 
-		// 1 set state back to previous state
-		for (RigidBody *rb : m_rbodies) {
-			rb->setState(rb->m_PreviousState);
-			// 2 do half a time step
-			tc += (t0plusDt-t0)/2;
-			m_Integrator->integrate(rb, tc);
+		/* //BACKUP
+		double tc = timeStep/2; // start in the middle (half a time step)
+		for (int i = 2; i <= 4; i++) {
+			// 1 set state back to previous state
+			for (RigidBody *rb : m_rbodies) {
+				rb->setState(rb->m_PreviousState);
+				// 2 do half a time step
+				m_Integrator->integrate(rb, tc);
+			}
+			int divisor = std::pow(2, i);
+			if (colsolver.detectCollision(m_rbodies)) {
+				tc -= timeStep/divisor; 
+			} else {
+				tc += timeStep/divisor;
+			}
 		}
-		// 3 check if within tolerance of floor ---> done
-		;
-		// 4 check for :
-		// 	collision again -> tc -= (1/4) * (t0plusDt - t0)
-		// 	no collision	-> tc += (1/4) * (t0plusDt - t0)
-		if (colsolver.detectCollision(m_rbodies)) {
+		*/
 
-		} else {
-
-		}
+		// 1 determine middle step
+		// 2 
+		int i = 2;
+		double tc = timeStep/2;
+		do {
+			int divisor = std::pow(2, i++);
+			if (colsolver.detectCollision(m_rbodies)) {
+				tc -= timeStep/divisor; 
+			} else {
+				tc += timeStep/divisor;
+			}
+			for (RigidBody *rb : m_rbodies) {
+				rb->setState(rb->m_PreviousState);
+				// 2 do half a time step
+				m_Integrator->integrate(rb, tc);
+			}
+		} while(!colsolver.checkWithinTolerance());
 	}
 }
 

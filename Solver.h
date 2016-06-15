@@ -48,7 +48,7 @@ private:
 	void confine_vorticity(int N, float * u, float * v, int * solid);
 
 	// stuff for rigid bodies
-	void getPointOfCollision(double t0, double t0plusDt);
+	void getPointOfCollision(double timeStep);
 };
 
 #endif /* SOLVER_H */

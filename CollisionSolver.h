@@ -28,9 +28,11 @@ public:
 	bool detectCollision(std::vector<RigidBody *> &rbodies);
 	bool checkWithinTolerance();
 
+	std::map<std::tuple<RigidBody *, RigidBody *>, std::vector<INTVL>> overlapping_rbs;
+
 private:
 	std::vector<Collision> m_Collisions;
-	std::vector<std::tuple<INTVL, INTVL>> collision_intervals;
+	const double m_Tolerance = 0.1;
 
-	const double tolerance = 0.01;
+	// list of collisions
 };
