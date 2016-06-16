@@ -33,7 +33,7 @@ public:
 	std::vector<Collision> m_Collisions;
 	bool narrowCheck(RigidBody *rb1, RigidBody *rb2);
 
-	Vector2d findContactPoint(RigidBody *rb1, RigidBody *rb2);
+	void findContactPoint(RigidBody *rb1, RigidBody *rb2);
 	void createCollisionObjects();
 
 private:

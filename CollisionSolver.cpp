@@ -225,7 +225,7 @@ bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector
 	if (cross2D(r, s) == 0 && cross2D((q-p), r) == 0) {
 		if ( (0 <= (q - p).dot(r) && (q - p).dot(r) <= r.dot(r)) || 
 			 (0 <= (p - q).dot(s) && (p - q).dot(s) <= s.dot(s)) )
-			return true;
+			return true; // TODO colinear mag niet?
 
 		return false;
 	}
@@ -247,7 +247,7 @@ bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector
 	return false;
 }
 
-Vector2d CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
+void CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
 {
 	m_Collisions.clear();
 
@@ -273,29 +273,44 @@ Vector2d CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
 			vectorIntersect(p, r, q, s, output);
 			if (!output.isZero()) {
 				intersections.push_back(output);
-				int idx = isVertexOfRb(output, rb1, 0.01);
-				if (idx != -1) {
-					printf("intersection is vertex %d of %d\n", idx, rb1);
+				int idx1 = isVertexOfRb(output, rb1, 0.01);
+				if (idx1 != -1) {
+					printf("intersection is vertex %d of %d\n", idx1, rb1);
+					Collision col;
+					col.a = rb1;
+					col.b = rb2;
+					col.n = rb2_edgeNormals[j];
+					col.p = output;
+					Vector2d aEdge = std::get<1>(rb1_edges[i]);
+					aEdge.normalize();
+					col.ea = aEdge;
+					Vector2d bEdge = std::get<1>(rb2_edges[j]);
+					bEdge.normalize();
+					col.eb = bEdge;
+					col.vf = true;
+					m_Collisions.push_back(col);
 					/* exit(0); */
+					return;
 				}
-				idx = isVertexOfRb(output, rb2, 0.01);
-				if (idx != -1) {
-					printf("intersection is vertex %d of %d\n", idx, rb2);
+				int idx2 = isVertexOfRb(output, rb2, 0.01);
+				if (idx2 != -1) {
+					printf("intersection is vertex %d of %d\n", idx2, rb2);
+					Collision col;
+					col.a = rb2;
+					col.b = rb1;
+					col.n = rb2_edgeNormals[j];
+					col.p = output;
+					Vector2d aEdge = std::get<1>(rb2_edges[j]);
+					aEdge.normalize();
+					col.ea = aEdge;
+					Vector2d bEdge = std::get<1>(rb1_edges[i]);
+					bEdge.normalize();
+					col.eb = bEdge;
+					col.vf = true;
+					m_Collisions.push_back(col);
 					/* exit(0); */
+					return;
 				}
-
-				Collision col;
-				col.a = rb1;
-				col.b = rb2;
-				col.n = rb1_edgeNormals[i];
-				col.p = output;
-				Vector2d aEdge = std::get<1>(rb1_edges[i]);
-				aEdge.normalize();
-				col.ea = aEdge;
-				Vector2d bEdge = std::get<1>(rb2_edges[j]);
-				bEdge.normalize();
-				col.eb = bEdge;
-				col.vf = false;
 			}
 		}
 	}
