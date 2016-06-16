@@ -34,6 +34,7 @@ public:
 	bool narrowCheck(RigidBody *rb1, RigidBody *rb2);
 
 	Vector2d findContactPoint(RigidBody *rb1, RigidBody *rb2);
+	void createCollisionObjects();
 
 private:
 	const double m_Tolerance = 0.5;
@@ -45,4 +46,6 @@ private:
 
 	bool vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint);
 	double cross2D(Vector2d a, Vector2d b);
+
+	int isVertexOfRb(Vector2d intersection, RigidBody *rb, double epislon);
 };
