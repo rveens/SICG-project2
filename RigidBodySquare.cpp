@@ -94,10 +94,10 @@ std::vector<double> RigidBodySquare::computeAABB()
 
 	std::vector<double> coords;
 
-	coords[0] = std::min_element(xcoords.cbegin(), xcoords.cend())[0];
-	coords[1] = std::min_element(ycoords.cbegin(), ycoords.cend())[0];
-	coords[2] = std::max_element(xcoords.cbegin(), xcoords.cend())[0];
-	coords[3] = std::max_element(ycoords.cbegin(), ycoords.cend())[0];
+	coords.push_back( std::min_element(xcoords.cbegin(), xcoords.cend())[0] );
+	coords.push_back(std::min_element(ycoords.cbegin(), ycoords.cend())[0] );
+	coords.push_back(std::max_element(xcoords.cbegin(), xcoords.cend())[0] );
+	coords.push_back(std::max_element(ycoords.cbegin(), ycoords.cend())[0] );
 
 	return coords;
 }
