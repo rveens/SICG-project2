@@ -104,10 +104,10 @@ std::vector<double> RigidBodySquare::computeAABB()
 
 std::vector<Vector2d> RigidBodySquare::getVertices()
 {
-	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
-	Vector2d br = Vector2d(+m_Size[0]/2, -m_Size[1]/2);
-	Vector2d tr = Vector2d(+m_Size[0]/2, +m_Size[1]/2);
-	Vector2d tl = Vector2d(-m_Size[0]/2, +m_Size[1]/2);
+	Vector2d bl(-m_Size[0]/2, -m_Size[1]/2);
+	Vector2d br(+m_Size[0]/2, -m_Size[1]/2);
+	Vector2d tr(+m_Size[0]/2, +m_Size[1]/2);
+	Vector2d tl(-m_Size[0]/2, +m_Size[1]/2);
 
 	Vector2d bl_rot = m_Rotation * bl;
 	Vector2d br_rot = m_Rotation * br;
