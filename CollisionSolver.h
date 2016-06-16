@@ -33,6 +33,8 @@ public:
 	std::vector<Collision> m_Collisions;
 	bool narrowCheck(RigidBody *rb1, RigidBody *rb2);
 
+	Vector2d findContactPoint(RigidBody *rb1, RigidBody *rb2);
+
 private:
 	const double m_Tolerance = 0.5;
 
@@ -40,6 +42,7 @@ private:
 
 	double testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab_normal);
 
-	/* double cross2D(Vector2d a, Vector2d b); */
-	/* bool vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint); */
+
+	bool vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint);
+	double cross2D(Vector2d a, Vector2d b);
 };

@@ -105,6 +105,7 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 	return !overlapping_rbs.empty();
 }
 
+// FIXME
 bool CollisionSolver::checkWithinTolerance()
 {
 	if (overlapping_rbs.empty())
@@ -136,32 +137,33 @@ bool CollisionSolver::checkWithinTolerance()
 void CollisionSolver::getPointOfCollision(Integrator *integrator, std::vector<RigidBody *> &rbodies, double timeStep)
 {
 	if (detectCollision(rbodies)) {
-
-		// 1 determine middle step
-		// 2 
-		int i = 2;
-		double tc = timeStep/2;
-		do {
-			int divisor = std::pow(2, i++);
-			if (detectCollision(rbodies)) {
-				tc -= timeStep/divisor; 
-			} else {
-				tc += timeStep/divisor;
-			}
-			for (RigidBody *rb : rbodies) {
-				rb->setState(rb->m_PreviousState);
-				// 2 do half a time step
-				integrator->integrate(rb, tc);
-			}
-		} while(!checkWithinTolerance());
-		for (auto &intervals : overlapping_rbs) {
-			printf("collision at:\n");
-			printf("(%f, %f)\n", intervals.second[0].si, intervals.second[2].si);
-
-			Collision c1;
-			c1.a = std::get<0>(intervals.first);
-			c1.b = std::get<1>(intervals.first);
+		for (auto pair : overlapping_rbs) {
+			RigidBody *rb1 = std::get<0>(pair.first);
+			RigidBody *rb2 = std::get<1>(pair.first);
+			int i = 2;
+			double tc = timeStep/2;
+			do {
+				int divisor = std::pow(2, i++);
+				if (narrowCheck(rb1, rb2)) {
+					tc -= timeStep/divisor; 
+				} else {
+					tc += timeStep/divisor;
+				}
+				for (RigidBody *rb : rbodies) {
+					rb->setState(rb->m_PreviousState);
+					// 2 do half a time step
+					integrator->integrate(rb, tc);
+				}
+			} while(!checkWithinTolerance());
 		}
+		/* for (auto &intervals : overlapping_rbs) { */
+		/* 	printf("collision at:\n"); */
+		/* 	printf("(%f, %f)\n", intervals.second[0].si, intervals.second[2].si); */
+
+		/* 	Collision c1; */
+		/* 	c1.a = std::get<0>(intervals.first); */
+		/* 	c1.b = std::get<1>(intervals.first); */
+		/* } */
 	}
 }
 
@@ -182,7 +184,7 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 		Vector2d b = std::get<0>(tuple) + std::get<1>(tuple);
 		Vector2d edge_normal = rb1_normals[i];
 
-		printf("edge %d\n", i);
+		/* printf("edge %d\n", i); */
 		/* std::cout << "a: "<< std::endl; */
 		/* std::cout << a << std::endl; */
 		/* std::cout << "b: "<< std::endl; */
@@ -204,16 +206,15 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 		// check all vertices of rb2
 		for (Vector2d v : rb2_vertices) {
 			double dot = testEdge(v, a, b, edge_normal);
-			printf("dot: %f\n", dot);
+			/* printf("dot: %f\n", dot); */
 			if (dot < 0)
 				ok = false;
 		}
 		if (ok)
-			return true;
+			return false;
 	}
-	/* exit(0); */
 
-	return false;
+	return true;
 }
 
 double CollisionSolver::testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab_normal)
@@ -222,31 +223,63 @@ double CollisionSolver::testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab
 }
 
 
-/* double CollisionSolver::cross2D(Vector2d v, Vector2d w) */
-/* { */
-/* 	return v[0]*w[1] -v[1]*w[0]; */
-/* } */
+double CollisionSolver::cross2D(Vector2d v, Vector2d w)
+{
+	return v[0]*w[1] -v[1]*w[0];
+}
 
-/* bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint) */
-/* { */
-/* 	double t = cross2D((q-p), s/cross2D(r, s)); */
-/* 	double u = cross2D((q-p), r/cross2D(r, s)); */
+bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint)
+{
+	// case 1 colinear
+	if (cross2D(r, s) == 0 && cross2D((q-p), r) == 0) {
+		if ( (0 <= (q - p).dot(r) && (q - p).dot(r) <= r.dot(r)) || 
+			 (0 <= (p - q).dot(s) && (p - q).dot(s) <= s.dot(s)) )
+			return true;
 
-/* 	// case 1 colinear */
-/* 	if (cross2D(r, s) == 0 && cross2D((q-p), r) == 0) { */
+		return false;
+	}
+	// case 2 parallel and no intersection
+	if (cross2D(r, s) == 0 && cross2D((q-p), r) != 0) {
+		// parallel
+		return false;
+	}
+	double t = cross2D((q-p), s/cross2D(r, s));
+	double u = cross2D((q-p), r/cross2D(r, s));
 
-/* 	} */
-/* 	// case 2 parallel and no intersection */
-/* 	if (cross2D(r, s) == 0 && cross2D((q-p), r) != 0) { */
-/* 		// parallel */
-/* 		return false; */
-/* 	} */
-/* 	// case 3 intersection */
-/* 	if (cross2D(r, s) != 0 && (t >= 0 && t <= 1) && (u >= 0 && u <= 1)) { */
-/* 		// intersection at p + tr OR q + us */
-/* 		intersectionPoint = p + t*r; */
-/* 		return true; */
-/* 	} */
-/* 	// case 4 Not parallel, no intersection */
-/* 	return false; */
-/* } */
+	// case 3 intersection
+	if (cross2D(r, s) != 0 && (t >= 0 && t <= 1) && (u >= 0 && u <= 1)) {
+		// intersection at p + tr OR q + us
+		intersectionPoint = p + t*r;
+		return true;
+	}
+	// case 4 Not parallel, no intersection
+	return false;
+}
+
+Vector2d CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
+{
+	auto rb1_edges = rb1->getEdges();
+	auto rb2_edges = rb2->getEdges();
+
+	std::vector<Vector2d> intersections;
+
+	// for each edge of r1, check intersection with every edge of rb2
+	for (auto tuplerb1 : rb1_edges) {
+		for (auto tuplerb2 : rb2_edges) {
+			Vector2d p = std::get<0>(tuplerb1);
+			Vector2d r = std::get<0>(tuplerb1) + std::get<1>(tuplerb1);
+
+			Vector2d q = std::get<0>(tuplerb2);
+			Vector2d s = std::get<0>(tuplerb2) + std::get<1>(tuplerb2);
+
+			Vector2d output = Vector2d::Zero();
+			vectorIntersect(p, r, q, s, output);
+			if (!output.isZero())
+				intersections.push_back(output);
+		}
+	}
+	std::cout << "intersections: "<< std::endl;
+	for (auto v : intersections) {
+		std::cout << v[0] << ", " << v[1] << std::endl;
+	}
+}

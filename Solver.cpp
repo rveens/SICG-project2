@@ -310,7 +310,11 @@ void Solver::rigidbodySolve()
 			RigidBody *rb1 = std::get<0>(pair.first);
 			RigidBody *rb2 = std::get<1>(pair.first);
 			printf("rb1: %d, rb2: %d\n", rb1, rb2);
-			printf("narrowCheck: %d\n", colsolver.narrowCheck(rb1, rb2));
+			bool narrowCol = colsolver.narrowCheck(rb1, rb2);
+			printf("narrowCheck: %d\n", narrowCol);
+			if (narrowCol) {
+				colsolver.findContactPoint(rb1, rb2);
+			}
 		}
 		
 		/* colsolver.getPointOfCollision(m_Integrator, m_rbodies, dtrb); */
