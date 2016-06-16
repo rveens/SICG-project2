@@ -193,15 +193,6 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 		/* std::cout << "rb1_normal: "<< std::endl; */
 		/* std::cout << edge_normal << std::endl; */
 
-		/* std::cout << "---------"<< std::endl; */
-		/* std::cout << "rb1_vertices:" << std::endl; */
-		/* for (auto k : rb1_vertices) { */
-		/* 	std::cout << k << std::endl; */
-		/* } */
-		/* std::cout << "rb2_vertices:" << std::endl; */
-		/* for (auto k : rb2_vertices) { */
-		/* 	std::cout << k << std::endl; */
-		/* } */
 
 		// check all vertices of rb2
 		for (Vector2d v : rb2_vertices) {
@@ -261,14 +252,20 @@ bool CollisionSolver::vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vec
 
 Vector2d CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
 {
+	m_Collisions.clear();
+
 	auto rb1_edges = rb1->getEdges();
 	auto rb2_edges = rb2->getEdges();
+	auto rb1_edgeNormals = rb1->getEdgeNormals();
+	auto rb2_edgeNormals = rb2->getEdgeNormals();
 
 	std::vector<Vector2d> intersections;
 
 	// for each edge of r1, check intersection with every edge of rb2
-	for (auto tuplerb1 : rb1_edges) {
-		for (auto tuplerb2 : rb2_edges) {
+	for (int i = 0; i < rb1_edges.size(); i ++) {
+		auto tuplerb1 = rb1_edges[i];
+		for (int j = 0; j < rb2_edges.size(); j ++) {
+			auto tuplerb2 = rb2_edges[j];
 			Vector2d p = std::get<0>(tuplerb1);
 			Vector2d r = std::get<0>(tuplerb1) + std::get<1>(tuplerb1);
 
@@ -277,12 +274,67 @@ Vector2d CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
 
 			Vector2d output = Vector2d::Zero();
 			vectorIntersect(p, r, q, s, output);
-			if (!output.isZero())
+			if (!output.isZero()) {
 				intersections.push_back(output);
+				int idx = isVertexOfRb(output, rb1, 0.01);
+				if (idx != -1) {
+					printf("intersection is vertex %d of %d\n", idx, rb1);
+					/* exit(0); */
+				}
+				idx = isVertexOfRb(output, rb2, 0.01);
+				if (idx != -1) {
+					printf("intersection is vertex %d of %d\n", idx, rb2);
+					/* exit(0); */
+				}
+
+				Collision col;
+				col.a = rb1;
+				col.b = rb2;
+				col.n = rb1_edgeNormals[i];
+				col.p = output;
+				Vector2d aEdge = std::get<1>(rb1_edges[i]);
+				aEdge.normalize();
+				col.ea = aEdge;
+				Vector2d bEdge = std::get<1>(rb2_edges[j]);
+				bEdge.normalize();
+				col.eb = bEdge;
+				col.vf = false;
+			}
 		}
 	}
 	std::cout << "intersections: "<< std::endl;
 	for (auto v : intersections) {
 		std::cout << v[0] << ", " << v[1] << std::endl;
+		/* std::cout << "---------"<< std::endl; */
+		/* std::cout << "rb1_vertices:" << std::endl; */
+		/* for (auto k : rb1->getVertices()) { */
+		/* 	std::cout << k << std::endl; */
+		/* } */
+		/* std::cout << "rb2_vertices:" << std::endl; */
+		/* for (auto k : rb2->getVertices()) { */
+		/* 	std::cout << k << std::endl; */
+		/* } */
+		/* exit(0); */
 	}
+
+	// return sth to prevent compile error
+	return intersections[0];
+}
+
+
+int CollisionSolver::isVertexOfRb(Vector2d &intersection, RigidBody *rb, double epsilon = 0.0001)
+{
+	auto rbVertices = rb->getVertices();
+
+	for (int i = 0; i < rbVertices.size(); ++i) {
+		Vector2d v = rbVertices[i];
+
+		if (v[0] + epsilon >= intersection[0] && v[0] - epsilon <= intersection[0]) {
+			if (v[1] + epsilon >= intersection[1] && v[1] - epsilon <= intersection[1]) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
 }

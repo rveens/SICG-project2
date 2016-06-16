@@ -481,7 +481,7 @@ int main ( int argc, char ** argv )
 
 	// rb two
 	Matrix2d rot2 = Matrix2d::Identity();
-	Vector2d init_position2(0.5, 0.8);
+	Vector2d init_position2(0.799, 0.799);
 	Vector2d rb_size2(0.2, 0.2);
 	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
 	rb2->m_Drawbb = true;
