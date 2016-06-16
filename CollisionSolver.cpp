@@ -217,21 +217,22 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 	return true;
 }
 
-double CollisionSolver::testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab_normal)
+double CollisionSolver::testEdge(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal)
 {
 	return (v - a).dot(ab_normal);
 }
 
 
-double CollisionSolver::cross2D(Vector2d v, Vector2d w)
+double CollisionSolver::cross2D(Vector2d &v, Vector2d &w)
 {
 	return v[0]*w[1] -v[1]*w[0];
 }
 
-bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint)
+bool CollisionSolver::vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vector2d &s, Vector2d &intersectionPoint)
 {
+	Vector2d qminp = q - p;
 	// case 1 colinear
-	if (cross2D(r, s) == 0 && cross2D((q-p), r) == 0) {
+	if (cross2D(r, s) == 0 && cross2D(qminp, r) == 0) {
 		if ( (0 <= (q - p).dot(r) && (q - p).dot(r) <= r.dot(r)) || 
 			 (0 <= (p - q).dot(s) && (p - q).dot(s) <= s.dot(s)) )
 			return true;
@@ -239,12 +240,14 @@ bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector
 		return false;
 	}
 	// case 2 parallel and no intersection
-	if (cross2D(r, s) == 0 && cross2D((q-p), r) != 0) {
+	if (cross2D(r, s) == 0 && cross2D(qminp, r) != 0) {
 		// parallel
 		return false;
 	}
-	double t = cross2D((q-p), s/cross2D(r, s));
-	double u = cross2D((q-p), r/cross2D(r, s));
+	Vector2d t_second = s / cross2D(r, s);
+	double t = cross2D(qminp, t_second);
+	Vector2d u_second = r / cross2D(r, s);
+	double u = cross2D(qminp, u_second);
 
 	// case 3 intersection
 	if (cross2D(r, s) != 0 && (t >= 0 && t <= 1) && (u >= 0 && u <= 1)) {

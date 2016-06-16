@@ -58,7 +58,7 @@ void RigidBodySquare::draw()
 
 	// draw AABB
 	if (m_Drawbb) {
-		std::array<double, 4> coords = computeAABB();
+		std::vector<double> coords = computeAABB();
 		glColor3f(1.f, 0.f, 0.f);
 		glBegin(GL_LINE_STRIP);
 		glVertex2f(coords[0], coords[1]);
@@ -70,7 +70,7 @@ void RigidBodySquare::draw()
 	}
 }
 
-std::array<double, 4> RigidBodySquare::computeAABB()
+std::vector<double> RigidBodySquare::computeAABB()
 {
 	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
 	Vector2d br = Vector2d(+m_Size[0]/2, -m_Size[1]/2);
@@ -92,7 +92,7 @@ std::array<double, 4> RigidBodySquare::computeAABB()
 
 	std::max_element(ycoords.cbegin(), ycoords.cend());
 
-	std::array<double, 4> coords;
+	std::vector<double> coords;
 
 	coords[0] = std::min_element(xcoords.cbegin(), xcoords.cend())[0];
 	coords[1] = std::min_element(ycoords.cbegin(), ycoords.cend())[0];

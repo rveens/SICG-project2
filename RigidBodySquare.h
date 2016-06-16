@@ -17,7 +17,7 @@ public:
 	virtual ~RigidBodySquare(void);
 
 	virtual void draw();
-	virtual std::array<double, 4> computeAABB();
+	virtual std::vector<double> computeAABB();
 	virtual std::vector<Vector2d> getVertices();
 	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges();
 	virtual std::vector<Vector2d> getEdgeNormals();

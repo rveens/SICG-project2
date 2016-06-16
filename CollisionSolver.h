@@ -40,9 +40,9 @@ private:
 
 	bool checkWithinTolerance();
 
-	double testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab_normal);
+	double testEdge(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal);
 
 
-	bool vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint);
-	double cross2D(Vector2d a, Vector2d b);
+	bool vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vector2d &s, Vector2d &intersectionPoint);
+	double cross2D(Vector2d &a, Vector2d &b);
 };
