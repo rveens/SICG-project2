@@ -22,6 +22,9 @@ public:
 	VectorXd derivEval();
 	VectorXd derivEval(VectorXd input);
 	virtual std::array<double, 4> computeAABB() = 0;
+	virtual std::vector<Vector2d> getVertices() = 0;
+	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges() = 0;
+	virtual std::vector<Vector2d> getEdgeNormals() = 0;
 
 	/* public variables: */
 

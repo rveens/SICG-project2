@@ -31,7 +31,6 @@ RigidBodySquare::~RigidBodySquare(void)
 
 void RigidBodySquare::draw()
 {
-
 	/* printf("1: (%f, %f)\n", m_Position[0], m_Position[1]); */
 	/* printf("2: (%f, %f)\n", m_Position[0]+m_Size[0], m_Position[1]); */
 	/* printf("3: (%f, %f)\n", m_Position[0]+m_Size[0], m_Position[1]+m_Size[1]); */
@@ -101,4 +100,73 @@ std::array<double, 4> RigidBodySquare::computeAABB()
 	coords[3] = std::max_element(ycoords.cbegin(), ycoords.cend())[0];
 
 	return coords;
+}
+
+std::vector<Vector2d> RigidBodySquare::getVertices()
+{
+	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
+	Vector2d br = Vector2d(+m_Size[0]/2, -m_Size[1]/2);
+	Vector2d tr = Vector2d(+m_Size[0]/2, +m_Size[1]/2);
+	Vector2d tl = Vector2d(-m_Size[0]/2, +m_Size[1]/2);
+
+	Vector2d bl_rot = m_Rotation * bl;
+	Vector2d br_rot = m_Rotation * br;
+	Vector2d tr_rot = m_Rotation * tr;
+	Vector2d tl_rot = m_Rotation * tl;
+	bl_rot += m_Position;
+	br_rot += m_Position;
+	tr_rot += m_Position;
+	tl_rot += m_Position;
+
+	return std::vector<Vector2d>({bl_rot, br_rot, tr_rot, tl_rot});
+}
+
+std::vector<std::tuple<Vector2d, Vector2d>> RigidBodySquare::getEdges()
+{
+	auto vertices = getVertices();
+	Vector2d edgeblbr = vertices[1] - vertices[0];
+	Vector2d edgebrtr = vertices[2] - vertices[1];
+	Vector2d edgetrtl = vertices[3] - vertices[2];
+	Vector2d edgetlbl = vertices[0] - vertices[3];
+	
+	std::vector<std::tuple<Vector2d, Vector2d>> edges;
+	edges.push_back(std::make_tuple(vertices[0], edgeblbr));
+	edges.push_back(std::make_tuple(vertices[1], edgebrtr));
+	edges.push_back(std::make_tuple(vertices[2], edgetrtl));
+	edges.push_back(std::make_tuple(vertices[3], edgetlbl));
+
+	return edges;
+}
+
+std::vector<Vector2d> RigidBodySquare::getEdgeNormals()
+{
+	auto vert = getVertices();
+
+	std::vector<Vector2d> edgeNormals;
+
+	double dxblbr = vert[1][0] - vert[0][0];
+	double dyblbr = vert[1][1] - vert[0][1];
+	Vector2d eNorm0(dyblbr, -dxblbr);
+	eNorm0.normalize();
+	edgeNormals.push_back(eNorm0);
+	
+	double dxbrtr = vert[2][0] - vert[1][0];
+	double dybrtr = vert[2][1] - vert[1][1];
+	Vector2d eNorm1(dybrtr, -dxbrtr);
+	eNorm1.normalize();
+	edgeNormals.push_back(eNorm1);
+
+	double dxtrtl = vert[3][0] - vert[2][0];
+	double dytrtl = vert[3][1] - vert[2][1];
+	Vector2d eNorm2(dytrtl, -dxtrtl); 
+	eNorm2.normalize();
+	edgeNormals.push_back(eNorm2);
+
+	double dxtlbl = vert[0][0] - vert[3][0];
+	double dytlbl = vert[0][1] - vert[3][1];
+	Vector2d eNorm3(dytlbl, -dxtlbl);
+	eNorm3.normalize();
+	edgeNormals.push_back(eNorm3);
+
+	return edgeNormals;
 }

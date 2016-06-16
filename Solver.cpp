@@ -304,62 +304,16 @@ void Solver::rigidbodySolve()
 		/* printf("m_Position: (%f, %f)\n", rb->m_Position[0], rb->m_Position[1]); */
 		/* printf("m_Force: (%f, %f)\n", rb->m_Force[0], rb->m_Force[1]); */
 	}
-
 	// check collision test
 	if (colsolver.detectCollision(m_rbodies)) {
-		getPointOfCollision(dtrb);
-	}
-}
-
-void Solver::getPointOfCollision(double timeStep)
-{
-	if (colsolver.detectCollision(m_rbodies)) {
-		// 1 set state back to previous state
-		// 2 do half a time step
-		// 3 check if within tolerance of floor ---> done
-		// 4 check for :
-		// 	collision again
-		// 	no collision
-
-		/* //BACKUP
-		double tc = timeStep/2; // start in the middle (half a time step)
-		for (int i = 2; i <= 4; i++) {
-			// 1 set state back to previous state
-			for (RigidBody *rb : m_rbodies) {
-				rb->setState(rb->m_PreviousState);
-				// 2 do half a time step
-				m_Integrator->integrate(rb, tc);
-			}
-			int divisor = std::pow(2, i);
-			if (colsolver.detectCollision(m_rbodies)) {
-				tc -= timeStep/divisor; 
-			} else {
-				tc += timeStep/divisor;
-			}
+		for (auto pair : colsolver.overlapping_rbs) {
+			RigidBody *rb1 = std::get<0>(pair.first);
+			RigidBody *rb2 = std::get<1>(pair.first);
+			printf("rb1: %d, rb2: %d\n", rb1, rb2);
+			printf("narrowCheck: %d\n", colsolver.narrowCheck(rb1, rb2));
 		}
-		*/
-
-		// 1 determine middle step
-		// 2 
-		int i = 2;
-		double tc = timeStep/2;
-		do {
-			int divisor = std::pow(2, i++);
-			if (colsolver.detectCollision(m_rbodies)) {
-				tc -= timeStep/divisor; 
-			} else {
-				tc += timeStep/divisor;
-			}
-			for (RigidBody *rb : m_rbodies) {
-				rb->setState(rb->m_PreviousState);
-				// 2 do half a time step
-				m_Integrator->integrate(rb, tc);
-			}
-		} while(!colsolver.checkWithinTolerance());
-		for (auto  &intervals : colsolver.overlapping_rbs) {
-			printf("collision at:\n");
-			printf("(%f, %f)\n", intervals.second[0].si, intervals.second[2].si);
-		}
+		
+		/* colsolver.getPointOfCollision(m_Integrator, m_rbodies, dtrb); */
 	}
 }
 

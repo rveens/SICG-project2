@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Collision.h"
+#include "Integrator.h"
 
 #include <vector>
 #include <map>
@@ -26,13 +27,19 @@ public:
 	virtual ~CollisionSolver();
 
 	bool detectCollision(std::vector<RigidBody *> &rbodies);
-	bool checkWithinTolerance();
+	void getPointOfCollision(Integrator *integrator, std::vector<RigidBody *> &rbodies, double timeStep);
 
 	std::map<std::tuple<RigidBody *, RigidBody *>, std::vector<INTVL>> overlapping_rbs;
 	std::vector<Collision> m_Collisions;
+	bool narrowCheck(RigidBody *rb1, RigidBody *rb2);
 
 private:
 	const double m_Tolerance = 0.5;
 
-	// list of collisions
+	bool checkWithinTolerance();
+
+	double testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab_normal);
+
+	/* double cross2D(Vector2d a, Vector2d b); */
+	/* bool vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint); */
 };
