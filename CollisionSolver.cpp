@@ -208,34 +208,37 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 	return true;
 }
 
-double CollisionSolver::testEdge(Vector2d v, Vector2d a, Vector2d b, Vector2d ab_normal)
+double CollisionSolver::testEdge(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal)
 {
 	return (v - a).dot(ab_normal);
 }
 
 
-double CollisionSolver::cross2D(Vector2d v, Vector2d w)
+double CollisionSolver::cross2D(Vector2d &v, Vector2d &w)
 {
 	return v[0]*w[1] -v[1]*w[0];
 }
 
-bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector2d s, Vector2d &intersectionPoint)
+bool CollisionSolver::vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vector2d &s, Vector2d &intersectionPoint)
 {
+	Vector2d qminp = q - p;
 	// case 1 colinear
-	if (cross2D(r, s) == 0 && cross2D((q-p), r) == 0) {
+	if (cross2D(r, s) == 0 && cross2D(qminp, r) == 0) {
 		if ( (0 <= (q - p).dot(r) && (q - p).dot(r) <= r.dot(r)) || 
 			 (0 <= (p - q).dot(s) && (p - q).dot(s) <= s.dot(s)) )
-			return true; // TODO colinear mag niet?
+			return true;
 
 		return false;
 	}
 	// case 2 parallel and no intersection
-	if (cross2D(r, s) == 0 && cross2D((q-p), r) != 0) {
+	if (cross2D(r, s) == 0 && cross2D(qminp, r) != 0) {
 		// parallel
 		return false;
 	}
-	double t = cross2D((q-p), s/cross2D(r, s));
-	double u = cross2D((q-p), r/cross2D(r, s));
+	Vector2d t_second = s / cross2D(r, s);
+	double t = cross2D(qminp, t_second);
+	Vector2d u_second = r / cross2D(r, s);
+	double u = cross2D(qminp, u_second);
 
 	// case 3 intersection
 	if (cross2D(r, s) != 0 && (t >= 0 && t <= 1) && (u >= 0 && u <= 1)) {
@@ -247,7 +250,7 @@ bool CollisionSolver::vectorIntersect(Vector2d p, Vector2d r, Vector2d q, Vector
 	return false;
 }
 
-void CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
+std::vector<Vector2d> CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 {
 	m_Collisions.clear();
 
@@ -273,44 +276,29 @@ void CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
 			vectorIntersect(p, r, q, s, output);
 			if (!output.isZero()) {
 				intersections.push_back(output);
-				int idx1 = isVertexOfRb(output, rb1, 0.01);
-				if (idx1 != -1) {
-					printf("intersection is vertex %d of %d\n", idx1, rb1);
-					Collision col;
-					col.a = rb1;
-					col.b = rb2;
-					col.n = rb2_edgeNormals[j];
-					col.p = output;
-					Vector2d aEdge = std::get<1>(rb1_edges[i]);
-					aEdge.normalize();
-					col.ea = aEdge;
-					Vector2d bEdge = std::get<1>(rb2_edges[j]);
-					bEdge.normalize();
-					col.eb = bEdge;
-					col.vf = true;
-					m_Collisions.push_back(col);
+				int idx = isVertexOfRb(output, rb1, 0.01);
+				if (idx != -1) {
+					printf("intersection is vertex %d of %d\n", idx, rb1);
 					/* exit(0); */
-					return;
 				}
-				int idx2 = isVertexOfRb(output, rb2, 0.01);
-				if (idx2 != -1) {
-					printf("intersection is vertex %d of %d\n", idx2, rb2);
-					Collision col;
-					col.a = rb2;
-					col.b = rb1;
-					col.n = rb2_edgeNormals[j];
-					col.p = output;
-					Vector2d aEdge = std::get<1>(rb2_edges[j]);
-					aEdge.normalize();
-					col.ea = aEdge;
-					Vector2d bEdge = std::get<1>(rb1_edges[i]);
-					bEdge.normalize();
-					col.eb = bEdge;
-					col.vf = true;
-					m_Collisions.push_back(col);
+				idx = isVertexOfRb(output, rb2, 0.01);
+				if (idx != -1) {
+					printf("intersection is vertex %d of %d\n", idx, rb2);
 					/* exit(0); */
-					return;
 				}
+
+				Collision col;
+				col.a = rb1;
+				col.b = rb2;
+				col.n = rb1_edgeNormals[i];
+				col.p = output;
+				Vector2d aEdge = std::get<1>(rb1_edges[i]);
+				aEdge.normalize();
+				col.ea = aEdge;
+				Vector2d bEdge = std::get<1>(rb2_edges[j]);
+				bEdge.normalize();
+				col.eb = bEdge;
+				col.vf = false;
 			}
 		}
 	}
@@ -328,18 +316,20 @@ void CollisionSolver::findContactPoint(RigidBody *rb1, RigidBody *rb2)
 		/* } */
 		/* exit(0); */
 	}
+
+	return intersections;
 }
 
 
-int CollisionSolver::isVertexOfRb(Vector2d intersection, RigidBody *rb, double epislon = 0.0001)
+int CollisionSolver::isVertexOfRb(Vector2d &intersection, RigidBody *rb, double epsilon = 0.0001)
 {
 	auto rbVertices = rb->getVertices();
 
 	for (int i = 0; i < rbVertices.size(); ++i) {
 		Vector2d v = rbVertices[i];
 
-		if (v[0] + epislon >= intersection[0] && v[0] - epislon <= intersection[0]) {
-			if (v[1] + epislon >= intersection[1] && v[1] - epislon <= intersection[1]) {
+		if (v[0] + epsilon >= intersection[0] && v[0] - epsilon <= intersection[0]) {
+			if (v[1] + epsilon >= intersection[1] && v[1] - epsilon <= intersection[1]) {
 				return i;
 			}
 		}

@@ -313,7 +313,7 @@ void Solver::rigidbodySolve()
 			bool narrowCol = colsolver.narrowCheck(rb1, rb2);
 			printf("narrowCheck: %d\n", narrowCol);
 			if (narrowCol) {
-				colsolver.findContactPoint(rb1, rb2);
+				colsolver.findContactPoints(rb1, rb2);
 			}
 		}
 		
