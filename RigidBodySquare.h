@@ -22,6 +22,8 @@ public:
 	virtual std::vector<Vector2d> getVertices();
 	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges();
 	virtual std::vector<Vector2d> getEdgeNormals();
+	virtual void voxelize(int N);
+
 
 private:
 	Vector2d m_Size;

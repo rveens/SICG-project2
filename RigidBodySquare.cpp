@@ -143,6 +143,17 @@ std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
 	return cellCoords;
 }
 
+void RigidBodySquare::voxelize(int N)
+{
+	std::vector<int> cellCoords = computeAABBcellAligned(N);
+
+	// 1) loop over each grid cell
+		// 2) determine the 4 coordinates of the grid cell
+		// 3) transform the grid cell coordinates to the body space of the square
+		// 4) finally determine if the grid cell is inside or outside the square.
+		// 5) save the grid cell coordinates that this square occupies in a member variable.
+}
+
 
 std::vector<Vector2d> RigidBodySquare::getVertices()
 {

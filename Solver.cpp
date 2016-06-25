@@ -286,7 +286,7 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 
 
 /* public functions: */
-void Solver::rigidbodySolve()
+void Solver::rigidbodySolve(int N)
 {
 	// loop through rbodies and compute forces
 	for (Force *f : m_forces) {
@@ -304,6 +304,12 @@ void Solver::rigidbodySolve()
 		/* printf("m_Position: (%f, %f)\n", rb->m_Position[0], rb->m_Position[1]); */
 		/* printf("m_Force: (%f, %f)\n", rb->m_Force[0], rb->m_Force[1]); */
 	}
+	
+	// voxelize
+	for (RigidBody *rb : m_rbodies) {
+		rb->computeAABBcellAligned(N);
+	}
+
 	// check collision test
 	if (colsolver.detectCollisionBroad(m_rbodies)) {
 		for (auto pair : colsolver.overlapping_rbs) {

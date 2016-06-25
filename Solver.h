@@ -18,7 +18,7 @@ public:
 	void dens_step(int N, float * x, float * x0, float * u, float * v, int * solid);
 	void vel_step(int N, float * u, float * v, float * u0, float * v0, int * solid);
 
-	void rigidbodySolve();
+	void rigidbodySolve(int N);
 	void drawRigidBodies();
 	void addRigidBody(RigidBody *rb);
 	void addForce(Force *f);
