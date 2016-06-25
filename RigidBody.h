@@ -22,6 +22,7 @@ public:
 	VectorXd derivEval();
 	VectorXd derivEval(VectorXd input);
 	virtual std::vector<double> computeAABB() = 0;
+	virtual std::vector<int> computeAABBcellAligned(int N) = 0;
 	virtual std::vector<Vector2d> getVertices() = 0;
 	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges() = 0;
 	virtual std::vector<Vector2d> getEdgeNormals() = 0;
@@ -30,6 +31,7 @@ public:
 
 	/* drawing variables: */
 	bool m_Drawbb = false;
+	bool m_DrawbbCells = false;
 
 	/* constant quantities */
 	const Vector2d m_ConstructPos;

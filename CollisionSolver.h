@@ -26,25 +26,26 @@ public:
 	CollisionSolver();
 	virtual ~CollisionSolver();
 
-	bool detectCollision(std::vector<RigidBody *> &rbodies);
-	void getPointOfCollision(Integrator *integrator, std::vector<RigidBody *> &rbodies, double timeStep);
-
-	std::map<std::tuple<RigidBody *, RigidBody *>, std::vector<INTVL>> overlapping_rbs;
-	std::vector<Collision> m_Collisions;
-	bool narrowCheck(RigidBody *rb1, RigidBody *rb2);
+	/* functions */
+	bool detectCollisionBroad(std::vector<RigidBody *> &rbodies);
+	bool detectCollisionNarrow(RigidBody *rb1, RigidBody *rb2);
 
 	std::vector<Vector2d> findContactPoints(RigidBody *rb1, RigidBody *rb2);
-	void createCollisionObjects();
+
+	/* public variables */
+	std::map<std::tuple<RigidBody *, RigidBody *>, std::vector<INTVL>> overlapping_rbs;
+	std::vector<Collision> m_Collisions; // todo
 
 private:
-	const double m_Tolerance = 0.5;
+	
+	/* helper functions */
 
-	bool checkWithinTolerance();
-
-	double testEdge(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal);
-
-
+	// check if two vectors (edges) intersect.
 	bool vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vector2d &s, Vector2d &intersectionPoint);
+	// used for detectCollisionNarrow
+	double SATtest(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal);
+	// 2D cross product
 	double cross2D(Vector2d &a, Vector2d &b);
+	// check if a vertex belongs to a rb within a certain epsilon
 	int isVertexOfRb(Vector2d &intersection, RigidBody *rb, double epsilon);
 };

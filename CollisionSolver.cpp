@@ -14,7 +14,7 @@ CollisionSolver::~CollisionSolver()
 
 }
 
-bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
+bool CollisionSolver::detectCollisionBroad(std::vector<RigidBody *> &rbodies)
 {
 	// dimension, list overlaping intervals
 	std::vector<std::vector<INTVL>> intervals_overlapping;
@@ -105,69 +105,7 @@ bool CollisionSolver::detectCollision(std::vector<RigidBody *> &rbodies)
 	return !overlapping_rbs.empty();
 }
 
-// FIXME
-bool CollisionSolver::checkWithinTolerance()
-{
-	if (overlapping_rbs.empty())
-		return false;
-	// for each dimension (e.g. x, y)
-	for (auto &pair : overlapping_rbs) {
-		// find all intervals for a rigid body
-
-		std::vector<INTVL> &list = pair.second;
-		// we know: 
-		// list[0] = intvl 1 dim x
-		// list[1] = intvl 2 dim x
-		// list[2] = intvl 1 dim x
-		// list[3] = intvl 2 dim x
-
-		// find minimum between x intervals 
-		double toCheckX = std::min(list[0].si - list[1].ei, list[1].si - list[0].ei);
-
-		// find minimum between y intervals 
-		double toCheckY = std::min(list[2].si - list[3].ei, list[3].si - list[2].ei);
-		if (toCheckX <= m_Tolerance && toCheckY <= m_Tolerance) {
-			return true;
-		}
-	}
-	return false;
-}
-
-
-void CollisionSolver::getPointOfCollision(Integrator *integrator, std::vector<RigidBody *> &rbodies, double timeStep)
-{
-	if (detectCollision(rbodies)) {
-		for (auto pair : overlapping_rbs) {
-			RigidBody *rb1 = std::get<0>(pair.first);
-			RigidBody *rb2 = std::get<1>(pair.first);
-			int i = 2;
-			double tc = timeStep/2;
-			do {
-				int divisor = std::pow(2, i++);
-				if (narrowCheck(rb1, rb2)) {
-					tc -= timeStep/divisor; 
-				} else {
-					tc += timeStep/divisor;
-				}
-				for (RigidBody *rb : rbodies) {
-					rb->setState(rb->m_PreviousState);
-					// 2 do half a time step
-					integrator->integrate(rb, tc);
-				}
-			} while(!checkWithinTolerance());
-		}
-		/* for (auto &intervals : overlapping_rbs) { */
-		/* 	printf("collision at:\n"); */
-		/* 	printf("(%f, %f)\n", intervals.second[0].si, intervals.second[2].si); */
-
-		/* 	Collision c1; */
-		/* 	c1.a = std::get<0>(intervals.first); */
-		/* 	c1.b = std::get<1>(intervals.first); */
-		/* } */
-	}
-}
-
-bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
+bool CollisionSolver::detectCollisionNarrow(RigidBody *rb1, RigidBody *rb2)
 {
 	auto rb1_edges = rb1->getEdges();
 	auto rb1_normals = rb1->getEdgeNormals();
@@ -196,7 +134,7 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 
 		// check all vertices of rb2
 		for (Vector2d v : rb2_vertices) {
-			double dot = testEdge(v, a, b, edge_normal);
+			double dot = SATtest(v, a, b, edge_normal);
 			/* printf("dot: %f\n", dot); */
 			if (dot < 0)
 				ok = false;
@@ -208,7 +146,7 @@ bool CollisionSolver::narrowCheck(RigidBody *rb1, RigidBody *rb2)
 	return true;
 }
 
-double CollisionSolver::testEdge(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal)
+double CollisionSolver::SATtest(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal)
 {
 	return (v - a).dot(ab_normal);
 }
@@ -316,6 +254,7 @@ std::vector<Vector2d> CollisionSolver::findContactPoints(RigidBody *rb1, RigidBo
 		/* } */
 		/* exit(0); */
 	}
+
 
 	return intersections;
 }

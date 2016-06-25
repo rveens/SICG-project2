@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#define IX(i,j) ((i)+(N+2)*(j))
+
 RigidBodySquare::RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size, int mass,
 		Matrix2d & rotation) : RigidBody(ConstructPos, mass, rotation),
 					m_Size(size)
@@ -68,6 +70,20 @@ void RigidBodySquare::draw()
 		glVertex2f(coords[0], coords[1]);
 		glEnd();
 	}
+
+	// draw AABB cell aligned
+	if (m_DrawbbCells) {
+		std::vector<int> coordsAligned = computeAABBcellAligned(64);
+		// convert back to doubles for drawing (divide by 64)
+		glColor3f(0.f, 1.f, 0.f);
+		glBegin(GL_LINE_STRIP);
+		glVertex2f(((double) coordsAligned[0])/ 64.0, ((double)coordsAligned[1]) / 64.0);
+		glVertex2f(((double)coordsAligned[2]) / 64.0, ((double)coordsAligned[1]) / 64.0);
+		glVertex2f(((double)coordsAligned[2]) / 64.0, ((double)coordsAligned[3]) / 64.0);
+		glVertex2f(((double)coordsAligned[0]) / 64.0, ((double)coordsAligned[3]) / 64.0);
+		glVertex2f(((double)coordsAligned[0]) / 64.0, ((double)coordsAligned[1]) / 64.0);
+		glEnd();
+	}
 }
 
 std::vector<double> RigidBodySquare::computeAABB()
@@ -101,6 +117,32 @@ std::vector<double> RigidBodySquare::computeAABB()
 
 	return coords;
 }
+
+std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
+{
+	std::vector<double> coords;		// contains positions in 2D space
+	std::vector<int> cellCoords;	// contains fluid-grid indexes
+
+	// first compute the bounding box coordinates just like in the computeAABB
+	// function.
+	coords = computeAABB();
+	double x1 = coords[0];
+	double y1 = coords[1];
+	double x2 = coords[2];
+	double y2 = coords[3];
+
+	// then adjust them to closest position of the grid indexes
+	//
+	// idea: we have N grid cells, and coordinates ranging from 0.0-1.0.
+	//	so: multiply by 64 and convert to integer.
+	cellCoords.push_back((int) (x1 * N));
+	cellCoords.push_back((int) (y1 * N));
+	cellCoords.push_back((int) (x2 * N));
+	cellCoords.push_back((int) (y2 * N));
+
+	return cellCoords;
+}
+
 
 std::vector<Vector2d> RigidBodySquare::getVertices()
 {

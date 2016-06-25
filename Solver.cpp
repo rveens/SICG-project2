@@ -305,19 +305,17 @@ void Solver::rigidbodySolve()
 		/* printf("m_Force: (%f, %f)\n", rb->m_Force[0], rb->m_Force[1]); */
 	}
 	// check collision test
-	if (colsolver.detectCollision(m_rbodies)) {
+	if (colsolver.detectCollisionBroad(m_rbodies)) {
 		for (auto pair : colsolver.overlapping_rbs) {
 			RigidBody *rb1 = std::get<0>(pair.first);
 			RigidBody *rb2 = std::get<1>(pair.first);
 			printf("rb1: %d, rb2: %d\n", rb1, rb2);
-			bool narrowCol = colsolver.narrowCheck(rb1, rb2);
+			bool narrowCol = colsolver.detectCollisionNarrow(rb1, rb2);
 			printf("narrowCheck: %d\n", narrowCol);
 			if (narrowCol) {
 				colsolver.findContactPoints(rb1, rb2);
 			}
 		}
-		
-		/* colsolver.getPointOfCollision(m_Integrator, m_rbodies, dtrb); */
 	}
 }
 

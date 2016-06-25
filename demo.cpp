@@ -283,6 +283,9 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 	i = (int)((       mx /(float)win_x)*N+1);
 	j = (int)(((win_y-my)/(float)win_y)*N+1);
 
+	printf("i: %d\n", i);
+	printf("j: %d\n", j);
+
 	if ( solid[IX(i,j)] != 0 ) return;
 
 	if ( mouse_down[0] ) {
@@ -476,6 +479,7 @@ int main ( int argc, char ** argv )
 	Vector2d rb_size(0.2, 0.2);
 	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
 	rb->m_Drawbb = true;
+	rb->m_DrawbbCells = true;
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
 
@@ -485,6 +489,7 @@ int main ( int argc, char ** argv )
 	Vector2d rb_size2(0.2, 0.2);
 	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
 	rb2->m_Drawbb = true;
+	rb2->m_DrawbbCells = true;
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
 	/* end init stuff */
