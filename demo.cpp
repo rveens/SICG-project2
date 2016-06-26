@@ -283,9 +283,6 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 	i = (int)((       mx /(float)win_x)*N+1);
 	j = (int)(((win_y-my)/(float)win_y)*N+1);
 
-	printf("i: %d\n", i);
-	printf("j: %d\n", j);
-
 	if ( solid[IX(i,j)] != 0 ) return;
 
 	if ( mouse_down[0] ) {
@@ -386,7 +383,7 @@ static void display_func ( void )
 	else {
 		draw_density();
 	}
-	solver->drawRigidBodies();
+	solver->drawRigidBodies(N);
 
 	post_display ();
 }
@@ -468,7 +465,7 @@ int main ( int argc, char ** argv )
 	}
 
 	/* init stuff */
-	solver = new Solver(dt, 0.001, diff, visc);
+	solver = new Solver(dt, 0.01, diff, visc);
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	/* rot(0, 0) = 0.7071; */

@@ -22,11 +22,6 @@ void RigidBody::reset()
 
 }
 
-void RigidBody::draw()
-{
-
-}
-
 void RigidBody::setState(VectorXd state)
 {
 	int i = 0;

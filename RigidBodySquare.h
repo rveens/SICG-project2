@@ -16,7 +16,7 @@ public:
 			Matrix2d & rotation);
 	virtual ~RigidBodySquare(void);
 
-	virtual void draw();
+	virtual void draw(int N);
 	virtual std::vector<double> computeAABB();
 	virtual std::vector<int> computeAABBcellAligned(int N);
 	virtual std::vector<Vector2d> getVertices();
@@ -27,4 +27,6 @@ public:
 
 private:
 	Vector2d m_Size;
+
+	bool checkIfPointInSquare(Vector2d &point);
 };

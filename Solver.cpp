@@ -307,7 +307,7 @@ void Solver::rigidbodySolve(int N)
 	
 	// voxelize
 	for (RigidBody *rb : m_rbodies) {
-		rb->computeAABBcellAligned(N);
+		rb->voxelize(N);
 	}
 
 	// check collision test
@@ -325,10 +325,10 @@ void Solver::rigidbodySolve(int N)
 	}
 }
 
-void Solver::drawRigidBodies()
+void Solver::drawRigidBodies(int N)
 {
 	for (RigidBody *rb : m_rbodies)
-		rb->draw();
+		rb->draw(N);
 }
 
 void Solver::addRigidBody(RigidBody *rb)

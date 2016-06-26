@@ -14,7 +14,7 @@ public:
 	virtual ~RigidBody(void);
 
 	/* public functions: */
-	virtual void draw() = 0;
+	virtual void draw(int N) = 0;
 
 	void reset();
 	void setState(VectorXd state);
@@ -29,6 +29,7 @@ public:
 	virtual void voxelize(int N) = 0;
 
 	/* public variables: */
+	std::vector<Vector2i> gridIndicesOccupied; // grid cells indices also correspond to bottom left corner of the cell in world space.
 
 	/* drawing variables: */
 	bool m_Drawbb = false;

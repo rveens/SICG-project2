@@ -31,7 +31,7 @@ RigidBodySquare::~RigidBodySquare(void)
 
 }
 
-void RigidBodySquare::draw()
+void RigidBodySquare::draw(int N)
 {
 	/* printf("1: (%f, %f)\n", m_Position[0], m_Position[1]); */
 	/* printf("2: (%f, %f)\n", m_Position[0]+m_Size[0], m_Position[1]); */
@@ -84,6 +84,27 @@ void RigidBodySquare::draw()
 		glVertex2f(((double)coordsAligned[0]) / 64.0, ((double)coordsAligned[1]) / 64.0);
 		glEnd();
 	}
+
+	// draw occupied grid cells
+	if (m_DrawbbCells) {
+		for (Vector2i cellIndex : gridIndicesOccupied) {
+			// compute the world space coordinate
+			Vector2d bl = Vector2d(((double)cellIndex[0]) / N, ((double)cellIndex[1]) / N );
+			Vector2d br = bl + Vector2d(1.0 / N, 0.0);
+			Vector2d tl = bl + Vector2d(0.0, 1.0 / N);
+			Vector2d tr = bl + Vector2d(1.0 / N, 1.0 / N);
+
+			// draw the cells
+			glColor3f(0.f, 0.f, 1.f);
+			glBegin(GL_LINE_STRIP);
+			glVertex2f(bl[0], bl[1]);
+			glVertex2f(br[0], br[1]);
+			glVertex2f(tr[0], tr[1]);
+			glVertex2f(tl[0], tl[1]);
+			glVertex2f(bl[0], bl[1]);
+			glEnd();
+		}
+	}
 }
 
 std::vector<double> RigidBodySquare::computeAABB()
@@ -135,23 +156,69 @@ std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
 	//
 	// idea: we have N grid cells, and coordinates ranging from 0.0-1.0.
 	//	so: multiply by 64 and convert to integer.
-	cellCoords.push_back((int) (x1 * N));
-	cellCoords.push_back((int) (y1 * N));
-	cellCoords.push_back((int) (x2 * N));
-	cellCoords.push_back((int) (y2 * N));
+	cellCoords.push_back(std::floor(x1 * N));
+	cellCoords.push_back(std::floor(y1 * N));
+	cellCoords.push_back(std::ceil(x2 * N));
+	cellCoords.push_back(std::ceil(y2 * N));
 
 	return cellCoords;
 }
 
 void RigidBodySquare::voxelize(int N)
 {
+	gridIndicesOccupied.clear(); // remove old data of occupied grid cells.
+
 	std::vector<int> cellCoords = computeAABBcellAligned(N);
+	// NOTE:
+	// cellCoords[0] = bottom left x value of bounding box
+	// cellCoords[1] = bottom left y value of bounding box
+	// cellCoords[2] = top right x value of bounding box
+	// cellCoords[3] = top right y value of bounding box
 
 	// 1) loop over each grid cell
 		// 2) determine the 4 coordinates of the grid cell
 		// 3) transform the grid cell coordinates to the body space of the square
 		// 4) finally determine if the grid cell is inside or outside the square.
 		// 5) save the grid cell coordinates that this square occupies in a member variable.
+	
+	// additionally: create macro for cellcoords <-> worldspace coordinates.
+
+
+	int x_size = cellCoords[2] - cellCoords[0];
+	int y_size = cellCoords[3] - cellCoords[1];
+	for (double i = 0.0; i < x_size; i++) {
+		for (double j = 0.0; j < y_size; j++) {
+			Vector2d bl = Vector2d(((double)cellCoords[0])/N + i/N, ((double)cellCoords[1])/N + j/N);
+			Vector2d br = bl + Vector2d(1.0/N, 0.0);
+			Vector2d tl = bl + Vector2d(0.0, 1.0/N);
+			Vector2d tr = bl + Vector2d(1.0/N, 1.0/N);
+
+
+			if (checkIfPointInSquare(bl) || checkIfPointInSquare(br) || checkIfPointInSquare(tl) || checkIfPointInSquare(tr)) {
+				// save grid cell index (bounding box bottomleft + i and j offsets)
+				gridIndicesOccupied.push_back(Vector2i(cellCoords[0] + i, cellCoords[1] + j));
+			}
+		}
+	}
+}
+
+bool RigidBodySquare::checkIfPointInSquare(Vector2d &point)
+{
+	Vector2d pCopy = point;
+	// I assume the given point is in world coordinates.
+	// we need to transform it to the object space of the square.
+
+	// first translate to a point relative to the origin of the square (subtract square position)
+	pCopy -= m_Position;
+
+	// secondly, we rotate by the inverse (transpose) of the rotation of the square.
+	pCopy = m_Rotation.transpose() * pCopy;
+
+	// now we can check if the point is inside our outside the (unrotated) square.
+	if (pCopy[0] < m_Size[0] / 2 && pCopy[0] > -m_Size[0] / 2)
+		if (pCopy[1] < m_Size[1] / 2 && pCopy[1] > -m_Size[1] / 2)
+			return true;
+	return false;
 }
 
 
