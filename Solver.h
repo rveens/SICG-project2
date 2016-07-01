@@ -23,6 +23,7 @@ public:
 	void addRigidBody(RigidBody *rb);
 	void addForce(Force *f);
 	void setIntegrator(Integrator *i);
+	RigidBody *getRigidBodyOnMousePosition(double x, double y);
 
 private:
 	Integrator *m_Integrator;

@@ -350,6 +350,22 @@ static void motion_func ( int x, int y )
 {
 	mx = x;
 	my = y;
+
+
+	if (mouse_down[1]) {
+		int i = (int)((mx / (float)win_x)*N + 1);
+		int j = (int)(((win_y - my) / (float)win_y)*N + 1);
+		// 0) get mouse postion in world coordinates
+		double x = (double)i / (double)N;
+		double y = (double)j / (double)N;
+
+		// 1) search rigid body on mouse position
+		RigidBody *rb = solver->getRigidBodyOnMousePosition(x, y);
+		if (rb != nullptr) {
+			// 2) set the new position of the rigid body
+			rb->m_Position = Vector2d(x, y);
+		}
+	}
 }
 
 static void reshape_func ( int width, int height )
@@ -465,7 +481,7 @@ int main ( int argc, char ** argv )
 	}
 
 	/* init stuff */
-	solver = new Solver(dt, 0.01, diff, visc);
+	solver = new Solver(dt, 0.001, diff, visc);
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	/* rot(0, 0) = 0.7071; */

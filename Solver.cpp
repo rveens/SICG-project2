@@ -315,9 +315,8 @@ void Solver::rigidbodySolve(int N)
 		for (auto pair : colsolver.overlapping_rbs) {
 			RigidBody *rb1 = std::get<0>(pair.first);
 			RigidBody *rb2 = std::get<1>(pair.first);
-			printf("rb1: %d, rb2: %d\n", rb1, rb2);
 			bool narrowCol = colsolver.detectCollisionNarrow(rb1, rb2);
-			printf("narrowCheck: %d\n", narrowCol);
+			//printf("narrowCheck: %d\n", narrowCol);
 			if (narrowCol) {
 				colsolver.findContactPoints(rb1, rb2);
 			}
@@ -349,6 +348,21 @@ void Solver::setIntegrator(Integrator *i)
 	delete m_Integrator;
 	m_Integrator = i;
 	std::cout << "Integrator switched to: " << i->getString() << std::endl;
+}
+
+RigidBody *Solver::getRigidBodyOnMousePosition(double x, double y)
+{
+	// loop over the rigid bodies (m_rbodies) and 
+	for (RigidBody *rb : m_rbodies) {
+		// check if the given coordinates are in the bounding box of RigidBody 'rb' 
+		std::vector<double> bb = rb->computeAABB();
+		if (x > bb[0] && x < bb[2] &&
+			y > bb[1] && y < bb[3]) {
+			return rb;
+		}
+	}
+
+	return nullptr;
 }
 
 void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int * solid )
