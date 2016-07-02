@@ -1,16 +1,18 @@
+#pragma once
+
 #include "Force.h"
-#include "RigidBody.h"
+#include "SolverInterface.h"
 
 
 class GravityForce : public Force
 {
 public:
-	GravityForce(RigidBody *rb);
+	GravityForce(SolverInterface *obj);
 	virtual ~GravityForce();
 
 	void calculateForce();
 	void draw();
 private:
 	const double m_g = 9.81;
-	RigidBody *const m_rb;
+	SolverInterface *const m_obj;
 };

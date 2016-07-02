@@ -10,14 +10,14 @@ MidpointStep::~MidpointStep()
 
 }
 
-void MidpointStep::integrate(RigidBody *rb, double timeStep)
+void MidpointStep::integrate(SolverInterface *obj, double timeStep)
 {
-	VectorXd k1 = timeStep * rb->derivEval();
-	VectorXd k2 = timeStep * rb->derivEval(rb->getState() + k1/2.0);
+	VectorXd k1 = timeStep * obj->derivEval();
+	VectorXd k2 = timeStep * obj->derivEval(obj->getState() + k1/2.0);
 
-	VectorXd k5 = rb->getState() + k2;
+	VectorXd k5 = obj->getState() + k2;
 
-	rb->setState(k5);
+	obj->setState(k5);
 }
 
 std::string MidpointStep::getString()

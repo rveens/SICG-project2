@@ -6,6 +6,6 @@ public:
 	EulerStep();
 	virtual ~EulerStep();
 
-	void integrate(RigidBody *rb, double timeStep);
+	void integrate(SolverInterface *rb, double timeStep);
 	std::string getString();
 };

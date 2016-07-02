@@ -10,7 +10,7 @@ public:
 	MidpointStep();
 	virtual ~MidpointStep();
 
-	void integrate(RigidBody *rb, double timeStep);
+	void integrate(SolverInterface *rb, double timeStep);
 	std::string getString();
 private:
 	/* data */

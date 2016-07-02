@@ -13,12 +13,12 @@ EulerStep::~EulerStep()
 
 }
 
-void EulerStep::integrate(RigidBody *rb, double timeStep)
+void EulerStep::integrate(SolverInterface *obj, double timeStep)
 {
-	VectorXd F = rb->derivEval();
-	VectorXd result = rb->getState() + timeStep*F;
+	VectorXd F = obj->derivEval();
+	VectorXd result = obj->getState() + timeStep*F;
 
-	rb->setState(result);
+	obj->setState(result);
 }
 
 std::string EulerStep::getString()

@@ -290,10 +290,13 @@ void Solver::rigidbodySolve(int N)
 {
 	// set forces to zero
 	for (RigidBody *rb : m_rbodies) {
-		rb->m_Force = { 0.0, 0.0 };
+		rb->m_Force = Vector2d(0.0, 0.0);
+	}
+	for (Particle *p : m_particles) {
+		p->m_Force = Vector2d(0.0, 0.0);
 	}
 
-	// loop through rbodies and compute forces
+	// loop through objects and compute forces
 	for (Force *f : m_forces) {
 		f->calculateForce();
 	}
@@ -301,16 +304,15 @@ void Solver::rigidbodySolve(int N)
 	// loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
 		// save previous(current) state
-		rb->m_PreviousState = rb->getState();
-
+		rb->m_PreviousState = rb->getState();	// FIXME not used
 		// do next step
 		m_Integrator->integrate(rb, dtrb);
-		/* printf("m_Velocity: (%f, %f)\n", rb->m_Velocity[0], rb->m_Velocity[1]); */
-		/* printf("m_Position: (%f, %f)\n", rb->m_Position[0], rb->m_Position[1]); */
-		/* printf("m_Force: (%f, %f)\n", rb->m_Force[0], rb->m_Force[1]); */
+	}
+	for (Particle *p : m_particles) {
+		m_Integrator->integrate(p, dtrb);
 	}
 	
-	// voxelize
+	// voxelize rbodies
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
 	}

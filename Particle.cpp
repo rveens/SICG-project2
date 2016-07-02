@@ -29,12 +29,7 @@ void Particle::draw()
 	glEnd();
 }
 
-unsigned int Particle::getDim()
-{
-	return 4;
-}
-
-void Particle::setState(const Vector4d &state)
+void Particle::setState(const VectorXd &state)
 {
 	this->m_Position[0] = state[0];
 	this->m_Position[1] = state[1];
@@ -43,9 +38,9 @@ void Particle::setState(const Vector4d &state)
 	this->m_Velocity[1] = state[3];
 }
 
-Vector4d Particle::getState()
+VectorXd Particle::getState()
 {
-	Vector4d vector;
+	VectorXd vector;
 	vector[0] = m_Position[0];
 	vector[1] = m_Position[1];
 	vector[2] = m_Velocity[0];
@@ -54,18 +49,32 @@ Vector4d Particle::getState()
 	return vector;
 }
 
-Vector4d Particle::derivEval(double timeStep)
+VectorXd Particle::derivEval()
 {
 	Vector2d f_by_m = m_Force/(double)m_Mass;
-	Vector2d new_Velocity = m_Velocity + timeStep*f_by_m;
 
-	/* return Vec4(new_Velocity[0], new_Velocity[1], f_by_m[0], f_by_m[1]); */
-    return Vector4d(m_Velocity[0], m_Velocity[1], f_by_m[0], f_by_m[1]);
+	VectorXd der = VectorXd::Zero(4);
+	int i = 0;
+
+	der(i++) = m_Velocity[0];
+	der(i++) = m_Velocity[1];
+	der(i++) = f_by_m[0];
+	der(i++) = f_by_m[1];
+
+    return der;
 }
 	
-Vector4d Particle::derivEval(const Vector4d &input)
+VectorXd Particle::derivEval(const VectorXd &input)
 {
-	return Vector4d(input[2], input[3], m_Force[0]/m_Mass, m_Force[1]/m_Mass);
+	VectorXd der = VectorXd::Zero(4);
+	int i = 0;
+
+	der(i++) = input[2];
+	der(i++) = input[3];
+	der(i++) = m_Force[0] / m_Mass;
+	der(i++) = m_Force[1] / m_Mass;
+
+	return der;
 }
 
 Particle *Particle::checkSelected(double x_given, double y_given)

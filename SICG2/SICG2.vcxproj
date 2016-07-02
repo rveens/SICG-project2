@@ -144,6 +144,7 @@
     <ClInclude Include="..\RigidBodySquare.h" />
     <ClInclude Include="..\RungeKuttaStep.h" />
     <ClInclude Include="..\Solver.h" />
+    <ClInclude Include="..\SolverInterface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

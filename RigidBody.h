@@ -1,13 +1,14 @@
 #pragma once
 
 #include <vector>
-//#include <array>
 
 #include "Eigen/Dense"
 
+#include "SolverInterface.h"
+
 using namespace Eigen;
 
-class RigidBody
+class RigidBody : public SolverInterface
 {
 public:
 	RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & rotation);

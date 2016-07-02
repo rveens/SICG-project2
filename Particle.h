@@ -2,9 +2,11 @@
 
 #include "Eigen/Dense"
 
+#include "SolverInterface.h"
+
 using namespace Eigen;
 
-class Particle
+class Particle : public SolverInterface
 {
 public:
 	enum SELECTION {
@@ -20,11 +22,10 @@ public:
 
 	void reset();
 	void draw();
-	unsigned int getDim();		// nieuw
-	void setState(const Vector4d &state);	// nieuw
-	Vector4d getState();		// nieuw
-	Vector4d derivEval(double timeStep);// nieuw
-	Vector4d derivEval(const Vector4d &input); 	// nieuw
+	void setState(const VectorXd &state);	// nieuw
+	VectorXd getState();		// nieuw
+	VectorXd derivEval();// nieuw
+	VectorXd derivEval(const VectorXd &input); 	// nieuw
 	Particle *checkSelected(double x_given, double y_given);
 
 	Vector2d m_ConstructPos; 	// initial position?
