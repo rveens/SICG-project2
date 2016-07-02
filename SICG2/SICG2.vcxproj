@@ -130,6 +130,7 @@
     <ClCompile Include="..\RigidBodySquare.cpp" />
     <ClCompile Include="..\RungeKuttaStep.cpp" />
     <ClCompile Include="..\Solver.cpp" />
+    <ClCompile Include="..\SpringForce.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CollisionSolver.h" />
@@ -145,6 +146,7 @@
     <ClInclude Include="..\RungeKuttaStep.h" />
     <ClInclude Include="..\Solver.h" />
     <ClInclude Include="..\SolverInterface.h" />
+    <ClInclude Include="..\SpringForce.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
