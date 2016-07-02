@@ -35,5 +35,5 @@ public:
 	int m_Mass;
 	bool m_Static = false;
 private:
-	const double h = 0.01;
+	const double h = 0.001;
 };

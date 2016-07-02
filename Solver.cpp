@@ -340,6 +340,7 @@ void Solver::rigidbodySolve(int N, int *solid)
 		// translate particle position to grid-cell coordinates (0.0-1.0 range to 0-64)
 		Vector2i pgridCoords(p->m_Position[0] * N, p->m_Position[1] * N);
 		// interpolate velocity on 4 positions
+
 	}
 
 	// 3. loop through rbodies and user integrator
@@ -354,10 +355,12 @@ void Solver::rigidbodySolve(int N, int *solid)
 	}
 	
 	// 4. voxelize rbodies
-	int i, j;
-	FOR_EACH_CELL
-		solid[IX(i, j)] = 0;
-	END_FOR
+	int i, j; 
+	for (i = 1; i <= N; i++) {
+		for (j = 1; j <= N; j++) {
+			solid[IX(i, j)] = 0;
+		}
+	}
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
 		for (Vector2i &index : rb->gridIndicesOccupied) {
