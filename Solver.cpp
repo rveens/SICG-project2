@@ -194,14 +194,32 @@ void Solver::set_bnd(int N, int b, float * x, int * solid)
 void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c, int * solid )
 {
 	int i, j, k;
+	float x_left, x_right, x_up, x_down;
 
 	for ( k=0 ; k<20 ; k++ ) {
 		FOR_EACH_CELL
-			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
+			x_left  = (solid[IX(i-1,j)]!=0) ? ((b==1) ? -x[IX(i,j)] : x[IX(i,j)]) : x[IX(i-1,j)];
+			x_right = (solid[IX(i+1,j)]!=0) ? ((b==1) ? -x[IX(i,j)] : x[IX(i,j)]) : x[IX(i+1,j)];
+			x_down  = (solid[IX(i,j-1)]!=0) ? ((b==2) ? -x[IX(i,j)] : x[IX(i,j)]) : x[IX(i,j-1)];
+			x_up    = (solid[IX(i,j+1)]!=0) ? ((b==2) ? -x[IX(i,j)] : x[IX(i,j)]) : x[IX(i,j+1)];
+			x[IX(i,j)] = (x0[IX(i,j)] + a*(x_left + x_right + x_down + x_up))/c;
 		END_FOR
-		set_bnd ( N, b, x, solid );
+		//set_bnd ( N, b, x, solid );
 	}
 }
+
+//void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c, int * solid )
+//{
+//	int i, j, k;
+//	float x_left, x_right, x_up, x_down;
+//
+//	for ( k=0 ; k<20 ; k++ ) {
+//		FOR_EACH_CELL
+//			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
+//		END_FOR
+//		set_bnd ( N, b, x, solid );
+//	}
+//}
 
 void Solver::diffuse ( int N, int b, float * x, float * x0, int * solid)
 {
@@ -209,6 +227,10 @@ void Solver::diffuse ( int N, int b, float * x, float * x0, int * solid)
 	lin_solve ( N, b, x, x0, a, 1+4*a, solid );
 }
 
+/*
+u,v: velocity field (hor/vert) that causes advection
+d0: field to be advected | d: newly advected field
+*/
 void Solver::advect ( int N, int b, float * d, float * d0, float * u, float * v, int * solid)
 {
 	int i, j, i0, j0, i1, j1;
@@ -223,37 +245,46 @@ void Solver::advect ( int N, int b, float * d, float * d0, float * u, float * v,
 		d[IX(i,j)] = s0*(t0*d0[IX(i0,j0)]+t1*d0[IX(i0,j1)])+
 					 s1*(t0*d0[IX(i1,j0)]+t1*d0[IX(i1,j1)]);
 	END_FOR
-	set_bnd ( N, b, d, solid );
+	//set_bnd ( N, b, d, solid );
 }
 
 void Solver::project ( int N, float * u, float * v, float * p, float * div, int * solid )
 {
 	int i, j;
+	float u_left, u_right, v_up, v_down, p_left, p_right, p_up, p_down;
 
 	FOR_EACH_CELL
-		div[IX(i,j)] = -0.5f*(u[IX(i+1,j)]-u[IX(i-1,j)]+v[IX(i,j+1)]-v[IX(i,j-1)])/N;
+		u_right = (solid[IX(i+1,j)]!=0) ? -u[IX(i,j)] : u[IX(i+1,j)];
+		u_left  = (solid[IX(i-1,j)]!=0) ? -u[IX(i,j)] : u[IX(i-1,j)];
+		v_up    = (solid[IX(i,j+1)]!=0) ? -v[IX(i,j)] : v[IX(i,j+1)];
+		v_down  = (solid[IX(i,j-1)]!=0) ? -v[IX(i,j)] : v[IX(i,j-1)];
+		div[IX(i,j)] = -0.5f*(u_right - u_left + v_up - v_down)/N;
 		p[IX(i,j)] = 0;
 	END_FOR	
-	set_bnd ( N, 0, div, solid ); set_bnd ( N, 0, p, solid );
+	//set_bnd ( N, 0, div, solid ); set_bnd ( N, 0, p, solid );
 
 	lin_solve ( N, 0, p, div, 1, 4, solid );
 
 	FOR_EACH_CELL
-		u[IX(i,j)] -= 0.5f*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
-		v[IX(i,j)] -= 0.5f*N*(p[IX(i,j+1)]-p[IX(i,j-1)]);
+		p_right = (solid[IX(i+1,j)]!=0) ? 0 : p[IX(i+1,j)];
+		p_left  = (solid[IX(i-1,j)]!=0) ? 0 : p[IX(i-1,j)];
+		p_up    = (solid[IX(i,j+1)]!=0) ? 0 : p[IX(i,j+1)];
+		p_down  = (solid[IX(i,j-1)]!=0) ? 0 : p[IX(i,j-1)];
+		u[IX(i,j)] -= 0.5f*N*(p_right-p_left);
+		v[IX(i,j)] -= 0.5f*N*(p_up-p_down);
 	END_FOR
-	set_bnd ( N, 1, u, solid ); set_bnd ( N, 2, v, solid );
+	//set_bnd ( N, 1, u, solid ); set_bnd ( N, 2, v, solid );
 }
 
 void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 {
 	// TODO: bring this out as a parameter!
-	float eps = 1.0f;
+	float eps = 5.0f;
 	
 	// initialise variables
 	float h = 1.0f / N;
 	int i, j, size = (N + 2)*(N + 2);
-	float dv_dx, du_dy, dvort_dx, dvort_dy, Nx, Ny;
+	float dv_dx, du_dy, dvort_dx, dvort_dy, Nx, Ny, vort_left, vort_right, vort_up, vort_down;
 
 	// allocate memory for vorticity field
 	float * vorticity;
@@ -268,13 +299,17 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 		vorticity[IX(i, j)] = dv_dx - du_dy;
 	END_FOR
 	// set boundaries to be equal to neighbouring cells
-	set_bnd(N, 0, vorticity, solid);
+	//set_bnd(N, 0, vorticity, solid);
 
 	// compute and add vorticity confinement velocity per cell, via force
 	float epsilontest = 0.00001f;
 	FOR_EACH_CELL
-		dvort_dx = (std::fabs(vorticity[IX(i - 1, j)]) - std::fabs(vorticity[IX(i + 1, j)])) / (2*h);
-		dvort_dy = (std::fabs(vorticity[IX(i, j - 1)]) - std::fabs(vorticity[IX(i, j + 1)])) / (2*h);
+		vort_left  = (solid[IX(i-1,j)]!=0) ? vorticity[IX(i,j)] : vorticity[IX(i-1,j)];
+		vort_right = (solid[IX(i+1,j)]!=0) ? vorticity[IX(i,j)] : vorticity[IX(i+1,j)];
+		vort_down  = (solid[IX(i,j-1)]!=0) ? vorticity[IX(i,j)] : vorticity[IX(i,j-1)];
+		vort_up    = (solid[IX(i,j+1)]!=0) ? vorticity[IX(i,j)] : vorticity[IX(i,j+1)];
+		dvort_dx = (std::fabs(vort_left) - std::fabs(vort_right)) / (2*h);
+		dvort_dy = (std::fabs(vort_down) - std::fabs(vort_up)) / (2*h);
 		//Nx = (dvort_dx == 0 && dvort_dy == 0) ? 0 : dvort_dx / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy); // this is unstable
 		//Ny = (dvort_dx == 0 && dvort_dy == 0) ? 0 : dvort_dy / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy); // this is unstable
 		Nx = (dvort_dx*dvort_dx < epsilontest && dvort_dy*dvort_dy < epsilontest) ? 0 : dvort_dx / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy);
