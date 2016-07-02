@@ -321,7 +321,7 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 
 
 /* public functions: */
-void Solver::rigidbodySolve(int N)
+void Solver::rigidbodySolve(int N, int *solid)
 {
 	// set forces to zero
 	for (RigidBody *rb : m_rbodies) {
@@ -348,8 +348,15 @@ void Solver::rigidbodySolve(int N)
 	}
 	
 	// voxelize rbodies
+	int i, j;
+	FOR_EACH_CELL
+		solid[IX(i, j)] = 0;
+	END_FOR
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
+		for (Vector2i &index : rb->gridIndicesOccupied) {
+			solid[IX(index[0], index[1])] = 1;
+		}
 	}
 
 	// check collision test
