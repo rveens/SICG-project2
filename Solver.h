@@ -20,7 +20,7 @@ public:
 	void vel_step(int N, float * u, float * v, float * u0, float * v0, int * solid);
 
 	void rigidbodySolve(int N, int *solid);
-	void drawRigidBodies(int N);
+	void drawObjects(int N);
 	void addRigidBody(RigidBody *rb);
 	void addParticle(Particle *p);
 	void addForce(Force *f);

@@ -399,7 +399,7 @@ static void display_func ( void )
 	else {
 		draw_density();
 	}
-	solver->drawRigidBodies(N);
+	solver->drawObjects(N);
 
 	post_display ();
 }
@@ -484,10 +484,10 @@ int main ( int argc, char ** argv )
 	solver = new Solver(dt, 0.001, diff, visc);
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
-	/* rot(0, 0) = 0.7071; */
-	/* rot(0, 1) = -0.7071; */
-	/* rot(1, 0) = 0.7071; */
-	/* rot(1, 1) = 0.7071; */
+	rot(0, 0) = 0.7071;
+	rot(0, 1) = -0.7071;
+	rot(1, 0) = 0.7071;
+	rot(1, 1) = 0.7071;
 	Vector2d init_position(0.6, 0.6);
 	Vector2d rb_size(0.2, 0.2);
 	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
@@ -505,6 +505,12 @@ int main ( int argc, char ** argv )
 	rb2->m_DrawbbCells = true;
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
+
+	// particle 1
+	Particle *p = new Particle(Vector2d(0.1, 0.8), 1);
+	solver->addParticle(p);
+	solver->addForce(new GravityForce(p));
+
 	/* end init stuff */
 
 	printf ( "\n\nHow to use this demo:\n\n" );

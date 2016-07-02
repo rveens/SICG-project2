@@ -22,7 +22,7 @@ void RigidBody::reset()
 
 }
 
-void RigidBody::setState(VectorXd state)
+void RigidBody::setState(const VectorXd &state)
 {
 	int i = 0;
 
@@ -91,7 +91,7 @@ VectorXd RigidBody::derivEval()
 	return der;
 }
 
-VectorXd RigidBody::derivEval(VectorXd input)
+VectorXd RigidBody::derivEval(const VectorXd &input)
 {
 	VectorXd der(10);
 	int i = 0;

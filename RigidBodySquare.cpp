@@ -155,7 +155,7 @@ std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
 	// then adjust them to closest position of the grid indexes
 	//
 	// idea: we have N grid cells, and coordinates ranging from 0.0-1.0.
-	//	so: multiply by 64 and convert to integer.
+	//	so: multiply by N and convert to integer.
 	cellCoords.push_back(std::floor(x1 * N));
 	cellCoords.push_back(std::floor(y1 * N));
 	cellCoords.push_back(std::ceil(x2 * N));

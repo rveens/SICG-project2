@@ -1,5 +1,6 @@
 #include "GravityForce.h"
 #include "RigidBody.h"
+#include "Particle.h"
 
 #include "./Eigen/Dense"
 
@@ -15,13 +16,15 @@ GravityForce::~GravityForce()
 
 void GravityForce::calculateForce()
 {
-	/* m_rb->m_Force[1] += - m_rb->m_Mass * m_g; */
-
 	// test:
 	RigidBody *rb = dynamic_cast<RigidBody*> (m_obj);
 	if (rb != nullptr) {
 		rb->m_Torque[0] = 0.4;
 		rb->m_Torque[1] = 0.4;
+	}
+	Particle *p = dynamic_cast<Particle*> (m_obj);
+	if (p != nullptr) {
+		p->m_Force[1] += -p->m_Mass * m_g;
 	}
 }
 

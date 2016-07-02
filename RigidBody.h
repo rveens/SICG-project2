@@ -18,10 +18,10 @@ public:
 	virtual void draw(int N) = 0;
 
 	void reset();
-	void setState(VectorXd state);
+	void setState(const VectorXd &state);
 	VectorXd getState();
 	VectorXd derivEval();
-	VectorXd derivEval(VectorXd input);
+	VectorXd derivEval(const VectorXd &input);
 	virtual std::vector<double> computeAABB() = 0;
 	virtual std::vector<int> computeAABBcellAligned(int N) = 0;
 	virtual std::vector<Vector2d> getVertices() = 0;

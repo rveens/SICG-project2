@@ -31,20 +31,20 @@ void Particle::draw()
 
 void Particle::setState(const VectorXd &state)
 {
-	this->m_Position[0] = state[0];
-	this->m_Position[1] = state[1];
+	this->m_Position[0] = state(0);
+	this->m_Position[1] = state(1);
 
-	this->m_Velocity[0] = state[2];
-	this->m_Velocity[1] = state[3];
+	this->m_Velocity[0] = state(2);
+	this->m_Velocity[1] = state(3);
 }
 
 VectorXd Particle::getState()
 {
-	VectorXd vector;
-	vector[0] = m_Position[0];
-	vector[1] = m_Position[1];
-	vector[2] = m_Velocity[0];
-	vector[3] = m_Velocity[1];
+	VectorXd vector = VectorXd::Zero(4);
+	vector(0) = m_Position[0];
+	vector(1) = m_Position[1];
+	vector(2) = m_Velocity[0];
+	vector(3) = m_Velocity[1];
 
 	return vector;
 }
@@ -66,7 +66,8 @@ VectorXd Particle::derivEval()
 	
 VectorXd Particle::derivEval(const VectorXd &input)
 {
-	VectorXd der = VectorXd::Zero(4);
+	VectorXd der(4);
+	der.setZero();
 	int i = 0;
 
 	der(i++) = input[2];
