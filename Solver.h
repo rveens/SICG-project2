@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "RigidBody.h"
+#include "Particle.h"
 #include "Integrator.h"
 #include "Force.h"
 #include "CollisionSolver.h"
@@ -21,6 +22,7 @@ public:
 	void rigidbodySolve(int N);
 	void drawRigidBodies(int N);
 	void addRigidBody(RigidBody *rb);
+	void addParticle(Particle *p);
 	void addForce(Force *f);
 	void setIntegrator(Integrator *i);
 	RigidBody *getRigidBodyOnMousePosition(double x, double y);
@@ -35,6 +37,7 @@ private:
 	float diff;
 	float visc;
 	std::vector<RigidBody *> m_rbodies;
+	std::vector<Particle *> m_particles;
 	std::vector<Force *> m_forces;
 
 	/* private functions: */ 

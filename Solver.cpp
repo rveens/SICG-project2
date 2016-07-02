@@ -288,6 +288,11 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 /* public functions: */
 void Solver::rigidbodySolve(int N)
 {
+	// set forces to zero
+	for (RigidBody *rb : m_rbodies) {
+		rb->m_Force = { 0.0, 0.0 };
+	}
+
 	// loop through rbodies and compute forces
 	for (Force *f : m_forces) {
 		f->calculateForce();
@@ -333,6 +338,11 @@ void Solver::drawRigidBodies(int N)
 void Solver::addRigidBody(RigidBody *rb)
 {
 	m_rbodies.push_back(rb);
+}
+
+void Solver::addParticle(Particle *p)
+{
+	m_particles.push_back(p);
 }
 
 void Solver::addForce(Force *f)
