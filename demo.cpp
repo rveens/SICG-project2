@@ -37,6 +37,7 @@ static Solver *solver;
 static int N;
 static float force, source;
 static int dvel;
+static bool mouse_drag = false; // whether mouse was dragged previous timestep
 
 static float * u, * v, * u_prev, * v_prev;
 static float * dens, * dens_prev;
@@ -278,17 +279,22 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 		u[i] = v[i] = d[i] = 0.0f;
 	}
 
-	if ( !mouse_down[0] && !mouse_down[2] ) return;
+	if (!mouse_down[0] && !mouse_down[2]) {
+		mouse_drag = false;
+		return;
+	}
 
 	i = (int)((       mx /(float)win_x)*N+1);
 	j = (int)(((win_y-my)/(float)win_y)*N+1);
 
 	if ( solid[IX(i,j)] != 0 ) return;
 
-	if ( mouse_down[0] ) {
-		u[IX(i,j)] = force * (mx-omx);
-		v[IX(i,j)] = force * (omy-my);
+	if ( mouse_down[0] && mouse_drag ) {
+		u[IX(i, j)] = force * (mx - omx);
+		v[IX(i, j)] = force * (omy - my);
 	}
+
+	mouse_drag = true;
 
 	if ( mouse_down[2] ) {
 		d[IX(i,j)] = source;
@@ -382,7 +388,7 @@ static void idle_func ( void )
 	get_from_UI ( dens_prev, u_prev, v_prev, solid );
 	solver->vel_step ( N, u, v, u_prev, v_prev, solid );
 	solver->dens_step ( N, dens, dens_prev, u, v, solid );
-	solver->rigidbodySolve(N, solid);
+	solver->rigidbodySolve(N, u, v, solid);
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -449,9 +455,10 @@ int main ( int argc, char ** argv )
 	float dt;
 	float diff;
 	float visc;
+	float vort;
 
-	if ( argc != 1 && argc != 6 ) {
-		fprintf ( stderr, "usage : %s N dt diff visc force source\n", argv[0] );
+	if ( argc != 1 && argc != 7 ) {
+		fprintf ( stderr, "usage : %s N dt diff visc force source vort\n", argv[0] );
 		fprintf ( stderr, "where:\n" );\
 		fprintf ( stderr, "\t N      : grid resolution\n" );
 		fprintf ( stderr, "\t dt     : time step\n" );
@@ -459,6 +466,7 @@ int main ( int argc, char ** argv )
 		fprintf ( stderr, "\t visc   : viscosity of the fluid\n" );
 		fprintf ( stderr, "\t force  : scales the mouse movement that generate a force\n" );
 		fprintf ( stderr, "\t source : amount of density that will be deposited\n" );
+		fprintf ( stderr, "\t vort   : strength of vorticity confinement\n" );
 		exit ( 1 );
 	}
 
@@ -467,10 +475,11 @@ int main ( int argc, char ** argv )
 		dt = 0.1f;
 		diff = 0.00001f; // was 0
 		visc = 0.001f; // was 0
-		force = 2.0f; // was 5
+		force = 1.0f; // was 5
 		source = 100.0f;
-		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
-			N, dt, diff, visc, force, source );
+		vort = 5.0f; // influence of vorticity confinement
+		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g vort=%g\n",
+			N, dt, diff, visc, force, source, vort );
 	} else {
 		N = atoi(argv[1]);
 		dt = atof(argv[2]);
@@ -478,16 +487,18 @@ int main ( int argc, char ** argv )
 		visc = atof(argv[4]);
 		force = atof(argv[5]);
 		source = atof(argv[6]);
+		vort = atof(argv[7]);
 	}
 
 	/* init stuff */
-	solver = new Solver(dt, 0.001, diff, visc);
+	solver = new Solver(dt, 0.001, diff, visc, vort);
+	/*
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
-	/* rot(0, 0) = 0.7071; */
-	/* rot(0, 1) = -0.7071; */
-	/* rot(1, 0) = 0.7071; */
-	/* rot(1, 1) = 0.7071; */
+	// rot(0, 0) = 0.7071;
+	// rot(0, 1) = -0.7071;
+	// rot(1, 0) = 0.7071;
+	// rot(1, 1) = 0.7071;
 	Vector2d init_position(0.6, 0.6);
 	Vector2d rb_size(0.2, 0.2);
 	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
@@ -505,6 +516,10 @@ int main ( int argc, char ** argv )
 	rb2->m_DrawbbCells = true;
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
+	*/
+
+
+
 	/* end init stuff */
 
 	printf ( "\n\nHow to use this demo:\n\n" );

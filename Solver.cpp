@@ -10,9 +10,9 @@
 #define END_FOR }}}
 
 
-Solver::Solver(float _dtfluid, float _dtrb, float _diff, float _visc) :
+Solver::Solver(float _dtfluid, float _dtrb, float _diff, float _visc, float _vort) :
 	m_Integrator(new RungeKuttaStep()), dt(_dtfluid), dtrb(_dtrb),
-	diff(_diff), visc(_visc)
+	diff(_diff), visc(_visc), vort(_vort)
 {
 
 }
@@ -28,166 +28,6 @@ void Solver::add_source ( int N, float * x, float * s)
 {
 	int i, size=(N+2)*(N+2);
 	for ( i=0 ; i<size ; i++ ) x[i] += dt*s[i];
-}
-
-/* old version */
-//void Solver::set_bnd ( int N, int b, float * x )
-//{
-//	int i;
-//
-//	for ( i=1 ; i<=N ; i++ ) {
-//		x[IX(0  ,i)] = b==1 ? -x[IX(1,i)] : x[IX(1,i)];
-//		x[IX(N+1,i)] = b==1 ? -x[IX(N,i)] : x[IX(N,i)];
-//		x[IX(i,0  )] = b==2 ? -x[IX(i,1)] : x[IX(i,1)];
-//		x[IX(i,N+1)] = b==2 ? -x[IX(i,N)] : x[IX(i,N)];
-//	}
-//	x[IX(0  ,0  )] = 0.5f*(x[IX(1,0  )]+x[IX(0  ,1)]);
-//	x[IX(0  ,N+1)] = 0.5f*(x[IX(1,N+1)]+x[IX(0  ,N)]);
-//	x[IX(N+1,0  )] = 0.5f*(x[IX(N,0  )]+x[IX(N+1,1)]);
-//	x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
-//}
-
-/* test version with thick outside boundary and inner cube */
-//void Solver::set_bnd ( int N, int b, float * x )
-//{
-//	int i;
-//	int s=5; // boundary size/thickness - 1
-//
-//
-//	for (i = s + 1; i <= N - s; i++) {
-//		x[IX(s        , i        )] = b == 1 ? -x[IX(s + 1, i)] : x[IX(s + 1, i)];
-//		x[IX(N + 1 - s, i        )] = b == 1 ? -x[IX(N - s, i)] : x[IX(N - s, i)];
-//		x[IX(i        , s        )] = b == 2 ? -x[IX(i, s + 1)] : x[IX(i, s + 1)];
-//		x[IX(i        , N + 1 - s)] = b == 2 ? -x[IX(i, N - s)] : x[IX(i, N - s)];
-//	}
-//	x[IX(s        , s        )] = 0.5f*(x[IX(s + 1, s)] + x[IX(s, s + 1)]);
-//	x[IX(s        , N + 1 - s)] = 0.5f*(x[IX(s + 1, N + 1 - s)] + x[IX(s, N - s)]);
-//	x[IX(N + 1 - s, s        )] = 0.5f*(x[IX(N - s, s)] + x[IX(N + 1 - s, s + 1)]);
-//	x[IX(N + 1 - s, N + 1 - s)] = 0.5f*(x[IX(N - s, N + 1 - s)] + x[IX(N + 1 - s, N - s)]);
-//
-//	
-//	s = 20; // inner cube
-//	for (i = s + 1; i <= N - s; i++) {
-//		x[IX(s        , i        )] = b == 1 ? -x[IX(s - 1, i)] : x[IX(s - 1, i)];
-//		x[IX(N + 1 - s, i        )] = b == 1 ? -x[IX(N+2-s, i)] : x[IX(N+2-s, i)];
-//		x[IX(i        , s        )] = b == 2 ? -x[IX(i, s - 1)] : x[IX(i, s - 1)];
-//		x[IX(i        , N + 1 - s)] = b == 2 ? -x[IX(i, N+2-s)] : x[IX(i, N+2-s)];
-//	}
-//	x[IX(s        , s        )] = 0.5f*(x[IX(s + 1, s)] + x[IX(s, s + 1)]);
-//	x[IX(s        , N + 1 - s)] = 0.5f*(x[IX(s + 1, N + 1 - s)] + x[IX(s, N - s)]);
-//	x[IX(N + 1 - s, s        )] = 0.5f*(x[IX(N - s, s)] + x[IX(N + 1 - s, s + 1)]);
-//	x[IX(N + 1 - s, N + 1 - s)] = 0.5f*(x[IX(N - s, N + 1 - s)] + x[IX(N + 1 - s, N - s)]);
-//}
-
-/* solver for viscuous fluids, with no-slip boundary condition */
-//void Solver::set_bnd(int N, int b, float * x, int * solid)
-//{
-//	int i, j, size = (N + 2)*(N + 2);
-//	if (b == 2) b = 1;
-//
-//	for (i = 0; i <= N + 1; i++) {
-//		for (j = 0; j <= N + 1; j++){
-//			switch (solid[IX(i, j)]) {
-//			case 0: // no solid:
-//				// no change
-//				break;
-//			case 1: // left top:
-//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]) : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]);
-//				break;
-//			case 2: // top:
-//				x[IX(i, j)] = b == 1 ? -x[IX(i, j + 1)] : x[IX(i, j + 1)];
-//				break;
-//			case 3: // right top:
-//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]) : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]);
-//				break;
-//			case 4: // left:
-//				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : x[IX(i - 1, j)];
-//				break;
-//			case 5: // solid - no border:
-//				x[IX(i, j)] = 0;
-//				break;
-//			case 6: // right:
-//				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : x[IX(i + 1, j)];
-//				break;
-//			case 7: // left bottom:
-//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]) : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]);
-//				break;
-//			case 8: // bottom:
-//				x[IX(i, j)] = b == 1 ? -x[IX(i, j - 1)] : x[IX(i, j - 1)];
-//				break;
-//			case 9: // right bottom:
-//				x[IX(i, j)] = b == 1 ? -0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]) : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]);
-//				break;
-//			case 10: // inner corner left top:
-//				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]);
-//				break;
-//			case 11: // inner corner right top:
-//				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]);
-//				break;
-//			case 12: // inner corner left bottom:
-//				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]);
-//				break;
-//			case 13: // inner corner right bottom:
-//				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]);
-//				break;
-//			}
-//		}
-//	}
-//}
-
-/* solver for normal (non-viscuous) fluids */
-void Solver::set_bnd(int N, int b, float * x, int * solid)
-{
-	int i, j, size = (N + 2)*(N + 2);
-
-	for (i = 0; i <= N + 1; i++) {
-		for (j = 0; j <= N + 1; j++){
-			switch (solid[IX(i, j)]) {
-			case 0: // no solid:
-				// no change
-				break;
-			case 1: // left top:
-				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : (b == 2 ? -x[IX(i, j + 1)] : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]));
-				break;
-			case 2: // top:
-				x[IX(i, j)] = b == 2 ? -x[IX(i, j + 1)] : x[IX(i, j + 1)];
-				break;
-			case 3: // right top:
-				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : (b == 2 ? -x[IX(i, j + 1)] : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]));
-				break;
-			case 4: // left:
-				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : x[IX(i - 1, j)];
-				break;
-			case 5: // solid - no border:
-				x[IX(i, j)] = 0;
-				break;
-			case 6: // right:
-				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : x[IX(i + 1, j)];
-				break;
-			case 7: // left bottom:
-				x[IX(i, j)] = b == 1 ? -x[IX(i - 1, j)] : (b == 2 ? -x[IX(i, j - 1)] : 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]));
-				break;
-			case 8: // bottom:
-				x[IX(i, j)] = b == 2 ? -x[IX(i, j - 1)] : x[IX(i, j - 1)];
-				break;
-			case 9: // right bottom:
-				x[IX(i, j)] = b == 1 ? -x[IX(i + 1, j)] : (b == 2 ? -x[IX(i, j - 1)] : 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]));
-				break;
-			case 10: // inner corner left top:
-				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j + 1)]);
-				break;
-			case 11: // inner corner right top:
-				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j + 1)]);
-				break;
-			case 12: // inner corner left bottom:
-				x[IX(i, j)] = 0.5f*(x[IX(i - 1, j)] + x[IX(i, j - 1)]);
-				break;
-			case 13: // inner corner right bottom:
-				x[IX(i, j)] = 0.5f*(x[IX(i + 1, j)] + x[IX(i, j - 1)]);
-				break;
-			}
-		}
-	}
 }
 
 
@@ -207,19 +47,6 @@ void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c, 
 		//set_bnd ( N, b, x, solid );
 	}
 }
-
-//void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c, int * solid )
-//{
-//	int i, j, k;
-//	float x_left, x_right, x_up, x_down;
-//
-//	for ( k=0 ; k<20 ; k++ ) {
-//		FOR_EACH_CELL
-//			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
-//		END_FOR
-//		set_bnd ( N, b, x, solid );
-//	}
-//}
 
 void Solver::diffuse ( int N, int b, float * x, float * x0, int * solid)
 {
@@ -278,9 +105,6 @@ void Solver::project ( int N, float * u, float * v, float * p, float * div, int 
 
 void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 {
-	// TODO: bring this out as a parameter!
-	float eps = 5.0f;
-	
 	// initialise variables
 	float h = 1.0f / N;
 	int i, j, size = (N + 2)*(N + 2);
@@ -314,21 +138,41 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 		//Ny = (dvort_dx == 0 && dvort_dy == 0) ? 0 : dvort_dy / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy); // this is unstable
 		Nx = (dvort_dx*dvort_dx < epsilontest && dvort_dy*dvort_dy < epsilontest) ? 0 : dvort_dx / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy);
 		Ny = (dvort_dx*dvort_dx < epsilontest && dvort_dy*dvort_dy < epsilontest) ? 0 : dvort_dy / std::sqrt(dvort_dx*dvort_dx + dvort_dy*dvort_dy);
-		u[IX(i, j)] += eps*h*Ny*vorticity[IX(i, j)]*dt; // v_conf = f_conf * dt
-		v[IX(i, j)] -= eps*h*Nx*vorticity[IX(i, j)]*dt; // f_conf = eps*h*(N x vorticity)
+		u[IX(i, j)] += vort*h*Ny*vorticity[IX(i, j)]*dt; // v_conf = f_conf * dt
+		v[IX(i, j)] -= vort*h*Nx*vorticity[IX(i, j)]*dt; // f_conf = eps*h*(N x vorticity)
 	END_FOR
 }
 
 
 /* public functions: */
-void Solver::rigidbodySolve(int N, int *solid)
+void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 {
 	// set forces to zero
 	for (RigidBody *rb : m_rbodies) {
 		rb->m_Force = Vector2d(0.0, 0.0);
 	}
 	for (Particle *p : m_particles) {
-		p->m_Force = Vector2d(0.0, 0.0);
+		p->m_Force = Vector2d(0.0, 0.0); // dit hoeft in principe niet meer, na fluid forces
+	}
+
+	// apply fluid forces to particles from velocity field
+	for (Particle *p : m_particles) {
+		double x, y, s0, s1, t0, t1;
+		int i0, i1, j0, j1;
+		x = p->m_Position[0];
+		y = p->m_Position[1];
+		i0 = (int) x;
+		j0 = (int) y;
+		if (i0<0) i0 = 0; if (i0>N) i0 = N;
+		if (j0<0) j0 = 0; if (j0>N) j0 = N;
+		i1 = i0 + 1;
+		j1 = j0 + 1;
+		s1 = x - i0; s0 = 1 - s1;
+		t1 = y - j0; t0 = 1 - t1;
+		p->m_Force[0] = p->m_Mass * (s0*(t0*u[IX(i0, j0)] + t1*u[IX(i0, j1)]) +
+			s1*(t0*u[IX(i1, j0)] + t1*u[IX(i1, j1)])) / dt;
+		p->m_Force[1] = p->m_Mass * (s0*(t0*v[IX(i0, j0)] + t1*v[IX(i0, j1)]) +
+			s1*(t0*v[IX(i1, j0)] + t1*v[IX(i1, j1)])) / dt;
 	}
 
 	// loop through objects and compute forces
@@ -436,5 +280,4 @@ void Solver::vel_step ( int N, float * u, float * v, float * u0, float * v0, int
 	SWAP ( u0, u ); SWAP ( v0, v );
 	advect ( N, 1, u, u0, u0, v0, solid ); advect ( N, 2, v, v0, u0, v0, solid );
 	project ( N, u, v, u0, v0, solid );
-	
 }
