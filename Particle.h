@@ -22,10 +22,10 @@ public:
 
 	void reset();
 	void draw();
-	void setState(const VectorXd &state);	// nieuw
-	VectorXd getState();		// nieuw
-	VectorXd derivEval();// nieuw
-	VectorXd derivEval(const VectorXd &input); 	// nieuw
+	virtual void setState(const VectorXd &state);	// nieuw
+	virtual VectorXd getState();		// nieuw
+	virtual VectorXd derivEval();// nieuw
+	virtual VectorXd derivEval(const VectorXd &input); 	// nieuw
 	Particle *checkSelected(double x_given, double y_given);
 
 	Vector2d m_ConstructPos; 	// initial position?
@@ -35,6 +35,5 @@ public:
 	int m_Mass;
 	bool m_Static = false;
 private:
-	const double h = 0.03;
-	const double s = 0.03;
+	const double h = 0.001;
 };

@@ -147,7 +147,7 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 /* public functions: */
 void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 {
-	// set forces to zero
+	// 1. set forces to zero
 	for (RigidBody *rb : m_rbodies) {
 		rb->m_Force = Vector2d(0.0, 0.0);
 	}
@@ -175,12 +175,19 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 			s1*(t0*v[IX(i1, j0)] + t1*v[IX(i1, j1)])) / dt;
 	}
 
-	// loop through objects and compute forces
+	// 2. loop through objects and compute forces
 	for (Force *f : m_forces) {
 		f->calculateForce();
 	}
+	// 2.1 apply impulse to particles from the velocity field
+	for (Particle *p : m_particles) {
+		// translate particle position to grid-cell coordinates (0.0-1.0 range to 0-64)
+		Vector2i pgridCoords(p->m_Position[0] * N, p->m_Position[1] * N);
+		// interpolate velocity on 4 positions
 
-	// loop through rbodies and user integrator
+	}
+
+	// 3. loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
 		// save previous(current) state
 		rb->m_PreviousState = rb->getState();	// FIXME not used
@@ -191,11 +198,13 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 		m_Integrator->integrate(p, dtrb);
 	}
 	
-	// voxelize rbodies
-	int i, j;
-	FOR_EACH_CELL
-		solid[IX(i, j)] = 0;
-	END_FOR
+	// 4. voxelize rbodies
+	int i, j; 
+	for (i = 1; i <= N; i++) {
+		for (j = 1; j <= N; j++) {
+			solid[IX(i, j)] = 0;
+		}
+	}
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
 		for (Vector2i &index : rb->gridIndicesOccupied) {
@@ -217,10 +226,12 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 	}
 }
 
-void Solver::drawRigidBodies(int N)
+void Solver::drawObjects(int N)
 {
 	for (RigidBody *rb : m_rbodies)
 		rb->draw(N);
+	for (Particle *p : m_particles)
+		p->draw();
 }
 
 void Solver::addRigidBody(RigidBody *rb)
