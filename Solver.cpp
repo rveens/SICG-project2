@@ -228,8 +228,18 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 
 void Solver::drawObjects(int N)
 {
-	for (RigidBody *rb : m_rbodies)
+	for (RigidBody *rb : m_rbodies) {
 		rb->draw(N);
+		if (m_Drawbb)
+			rb->drawbb();
+		if (m_DrawbbCells)
+			rb->drawbbCells(N);
+		if (m_DrawbbCellsOccupied)
+			rb->drawbbCellsOccupied(N);
+		if (m_DrawPushFluidCells)
+			rb->drawPushFluidCells(N);
+	}
+		
 	for (Particle *p : m_particles)
 		p->draw();
 }

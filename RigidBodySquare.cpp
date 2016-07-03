@@ -57,53 +57,74 @@ void RigidBodySquare::draw(int N)
 	glVertex2f(m_Position[0] + tr_rot[0], m_Position[1] + tr_rot[1]);
 	glVertex2f(m_Position[0] + tl_rot[0], m_Position[1] + tl_rot[1]);
 	glEnd();
+}
 
-	// draw AABB
-	if (m_Drawbb) {
-		std::vector<double> coords = computeAABB();
+void RigidBodySquare::drawbb()
+{
+	std::vector<double> coords = computeAABB();
+	glColor3f(1.f, 0.f, 0.f);
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(coords[0], coords[1]);
+	glVertex2f(coords[2], coords[1]);
+	glVertex2f(coords[2], coords[3]);
+	glVertex2f(coords[0], coords[3]);
+	glVertex2f(coords[0], coords[1]);
+	glEnd();
+}
+
+void RigidBodySquare::drawbbCells(int N)
+{
+	std::vector<int> coordsAligned = computeAABBcellAligned(64);
+	// convert back to doubles for drawing (divide by 64)
+	glColor3f(0.f, 1.f, 0.f);
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(((double)coordsAligned[0]) / N, ((double)coordsAligned[1]) / N);
+	glVertex2f(((double)coordsAligned[2]) / N, ((double)coordsAligned[1]) / N);
+	glVertex2f(((double)coordsAligned[2]) / N, ((double)coordsAligned[3]) / N);
+	glVertex2f(((double)coordsAligned[0]) / N, ((double)coordsAligned[3]) / N);
+	glVertex2f(((double)coordsAligned[0]) / N, ((double)coordsAligned[1]) / N);
+	glEnd();
+}
+
+void RigidBodySquare::drawbbCellsOccupied(int N)
+{
+	for (Vector2i cellIndex : gridIndicesOccupied) {
+		// compute the world space coordinate
+		Vector2d bl = Vector2d(((double)cellIndex[0]) / N, ((double)cellIndex[1]) / N);
+		Vector2d br = bl + Vector2d(1.0 / N, 0.0);
+		Vector2d tl = bl + Vector2d(0.0, 1.0 / N);
+		Vector2d tr = bl + Vector2d(1.0 / N, 1.0 / N);
+
+		// draw the cells
+		glColor3f(0.f, 0.f, 1.f);
+		glBegin(GL_LINE_STRIP);
+		glVertex2f(bl[0], bl[1]);
+		glVertex2f(br[0], br[1]);
+		glVertex2f(tr[0], tr[1]);
+		glVertex2f(tl[0], tl[1]);
+		glVertex2f(bl[0], bl[1]);
+		glEnd();
+	}
+}
+
+void RigidBodySquare::drawPushFluidCells(int N)
+{
+	for (Vector2i cellIndex : gridIndicesPushFluid) {
+		// compute the world space coordinate
+		Vector2d bl = Vector2d(((double)cellIndex[0]) / N, ((double)cellIndex[1]) / N);
+		Vector2d br = bl + Vector2d(1.0 / N, 0.0);
+		Vector2d tl = bl + Vector2d(0.0, 1.0 / N);
+		Vector2d tr = bl + Vector2d(1.0 / N, 1.0 / N);
+
+		// draw the cells
 		glColor3f(1.f, 0.f, 0.f);
 		glBegin(GL_LINE_STRIP);
-		glVertex2f(coords[0], coords[1]);
-		glVertex2f(coords[2], coords[1]);
-		glVertex2f(coords[2], coords[3]);
-		glVertex2f(coords[0], coords[3]);
-		glVertex2f(coords[0], coords[1]);
+		glVertex2f(bl[0], bl[1]);
+		glVertex2f(br[0], br[1]);
+		glVertex2f(tr[0], tr[1]);
+		glVertex2f(tl[0], tl[1]);
+		glVertex2f(bl[0], bl[1]);
 		glEnd();
-	}
-
-	// draw AABB cell aligned
-	if (m_DrawbbCells) {
-		std::vector<int> coordsAligned = computeAABBcellAligned(64);
-		// convert back to doubles for drawing (divide by 64)
-		glColor3f(0.f, 1.f, 0.f);
-		glBegin(GL_LINE_STRIP);
-		glVertex2f(((double) coordsAligned[0])/ 64.0, ((double)coordsAligned[1]) / 64.0);
-		glVertex2f(((double)coordsAligned[2]) / 64.0, ((double)coordsAligned[1]) / 64.0);
-		glVertex2f(((double)coordsAligned[2]) / 64.0, ((double)coordsAligned[3]) / 64.0);
-		glVertex2f(((double)coordsAligned[0]) / 64.0, ((double)coordsAligned[3]) / 64.0);
-		glVertex2f(((double)coordsAligned[0]) / 64.0, ((double)coordsAligned[1]) / 64.0);
-		glEnd();
-	}
-
-	// draw occupied grid cells
-	if (m_DrawbbCells) {
-		for (Vector2i cellIndex : gridIndicesOccupied) {
-			// compute the world space coordinate
-			Vector2d bl = Vector2d(((double)cellIndex[0]) / N, ((double)cellIndex[1]) / N );
-			Vector2d br = bl + Vector2d(1.0 / N, 0.0);
-			Vector2d tl = bl + Vector2d(0.0, 1.0 / N);
-			Vector2d tr = bl + Vector2d(1.0 / N, 1.0 / N);
-
-			// draw the cells
-			glColor3f(0.f, 0.f, 1.f);
-			glBegin(GL_LINE_STRIP);
-			glVertex2f(bl[0], bl[1]);
-			glVertex2f(br[0], br[1]);
-			glVertex2f(tr[0], tr[1]);
-			glVertex2f(tl[0], tl[1]);
-			glVertex2f(bl[0], bl[1]);
-			glEnd();
-		}
 	}
 }
 
@@ -166,6 +187,7 @@ std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
 
 void RigidBodySquare::voxelize(int N)
 {
+	gridIndicesOccupiedPreviously = gridIndicesOccupied;
 	gridIndicesOccupied.clear(); // remove old data of occupied grid cells.
 
 	std::vector<int> cellCoords = computeAABBcellAligned(N);
@@ -193,11 +215,29 @@ void RigidBodySquare::voxelize(int N)
 			Vector2d tl = bl + Vector2d(0.0, 1.0/N);
 			Vector2d tr = bl + Vector2d(1.0/N, 1.0/N);
 
-
+			// 3) and 4) are done in checkIfPointInSquare.
 			if (checkIfPointInSquare(bl) || checkIfPointInSquare(br) || checkIfPointInSquare(tl) || checkIfPointInSquare(tr)) {
 				// save grid cell index (bounding box bottomleft + i and j offsets)
 				gridIndicesOccupied.push_back(Vector2i(cellCoords[0] + i, cellCoords[1] + j));
 			}
+		}
+	}
+
+
+	// calculate the new cells that are occupied during moving of the rigid body
+	gridIndicesPushFluid.clear();
+	// for each grid cell
+	for (Vector2i &newCell : gridIndicesOccupied) {
+		bool overlap = false;
+		// check if there is no overlap with grid cells of previous voxelization
+		for (Vector2i &oldCell : gridIndicesOccupiedPreviously) {
+			if (oldCell == newCell) {
+				overlap = true;
+			}
+		}
+		// if no overlap, add to gridIndicesPushFluid array.
+		if (!overlap) {
+			gridIndicesPushFluid.push_back(newCell);
 		}
 	}
 }

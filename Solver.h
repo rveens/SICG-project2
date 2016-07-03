@@ -27,6 +27,12 @@ public:
 	void setIntegrator(Integrator *i);
 	RigidBody *getRigidBodyOnMousePosition(double x, double y);
 
+	/* drawing variables: */
+	bool m_Drawbb = false;
+	bool m_DrawbbCells = false;
+	bool m_DrawbbCellsOccupied = false;
+	bool m_DrawPushFluidCells = false;
+
 private:
 	Integrator *m_Integrator;
 	CollisionSolver colsolver;

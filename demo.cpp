@@ -26,6 +26,7 @@
 #include "RungeKuttaStep.h"
 
 #include "Eigen/Dense"
+#include "AntTweakBar.h"
 
 /* macros */
 
@@ -342,6 +343,8 @@ static void key_func ( unsigned char key, int x, int y )
 			solver->setIntegrator(new RungeKuttaStep());
 			break;
 	}
+
+	TwEventKeyboardGLUT(key, x, y);
 }
 
 static void mouse_func ( int button, int state, int x, int y )
@@ -350,6 +353,8 @@ static void mouse_func ( int button, int state, int x, int y )
 	omx = my = y;
 
 	mouse_down[button] = state == GLUT_DOWN;
+
+	TwEventMouseButtonGLUT(button, state, x, y);
 }
 
 static void motion_func ( int x, int y )
@@ -372,6 +377,8 @@ static void motion_func ( int x, int y )
 			rb->m_Position = Vector2d(x, y);
 		}
 	}
+
+	TwEventMouseMotionGLUT(x, y);
 }
 
 static void reshape_func ( int width, int height )
@@ -381,6 +388,8 @@ static void reshape_func ( int width, int height )
 
 	win_x = width;
 	win_y = height;
+
+	TwWindowSize(width, height);
 }
 
 static void idle_func ( void )
@@ -406,6 +415,8 @@ static void display_func ( void )
 		draw_density();
 	}
 	solver->drawObjects(N);
+
+	TwDraw();
 
 	post_display ();
 }
@@ -439,6 +450,55 @@ static void open_glut_window ( void )
 	glutReshapeFunc ( reshape_func );
 	glutIdleFunc ( idle_func );
 	glutDisplayFunc ( display_func );
+}
+
+
+void setupAntTweakBar()
+{
+	TwInit(TW_OPENGL, NULL);
+
+	// - Directly redirect GLUT mouse "passive" motion events to AntTweakBar (same as MouseMotion)
+	glutPassiveMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT);
+	// - Directly redirect GLUT special key events to AntTweakBar
+	glutSpecialFunc((GLUTspecialfun)TwEventSpecialGLUT);
+	// - Send 'glutGetModifers' function pointer to AntTweakBar;
+	//   required because the GLUT key event functions do not report key modifiers states.
+	TwGLUTModifiersFunc(glutGetModifiers);
+
+	// Create a tweak bar
+	TwBar *bar = TwNewBar("TweakBar");
+	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLUT and OpenGL.' "); // Message added to the help bar.
+	TwDefine(" TweakBar size='200 200' color='96 216 224' "); // change default tweak bar size and color
+
+	TwAddVarRW(bar, "Boundingbox", TW_TYPE_BOOLCPP, &solver->m_Drawbb, " group='Draw'");
+	TwAddVarRW(bar, "Boundingbox cell-aligned", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
+	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
+	TwAddVarRW(bar, "Pushed cells", TW_TYPE_BOOLCPP, &solver->m_DrawPushFluidCells, " group='Draw'");
+
+	// rb one
+	Matrix2d rot = Matrix2d::Identity();
+	rot(0, 0) = 0.7071;
+	rot(0, 1) = -0.7071;
+	rot(1, 0) = 0.7071;
+	rot(1, 1) = 0.7071;
+	Vector2d init_position(0.6, 0.6);
+	Vector2d rb_size(0.2, 0.2);
+	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
+	solver->addRigidBody(rb);
+	solver->addForce(new GravityForce(rb));
+
+	// rb two
+	Matrix2d rot2 = Matrix2d::Identity();
+	Vector2d init_position2(0.799, 0.799);
+	Vector2d rb_size2(0.2, 0.2);
+	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
+	solver->addRigidBody(rb2);
+	solver->addForce(new GravityForce(rb2));
+
+	// particle 1
+	Particle *p = new Particle(Vector2d(0.1, 0.8), 1);
+	solver->addParticle(p);
+	solver->addForce(new GravityForce(p));
 }
 
 
@@ -492,6 +552,7 @@ int main ( int argc, char ** argv )
 
 	/* init stuff */
 	solver = new Solver(dt, 0.001, diff, visc, vort);
+	setupAntTweakBar();
 	/*
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
@@ -524,6 +585,7 @@ int main ( int argc, char ** argv )
 	solver->addForce(new GravityForce(p));
 
 	/* end init stuff */
+	
 
 	printf ( "\n\nHow to use this demo:\n\n" );
 	printf ( "\t Add densities with the right mouse button\n" );
@@ -540,8 +602,8 @@ int main ( int argc, char ** argv )
 	set_solid_boundary(5);
 	set_solid_square_center(25);
 
-	win_x = 512;
-	win_y = 512;
+	win_x = 1024;
+	win_y = 1024;
 	open_glut_window ();
 
 	glutMainLoop ();

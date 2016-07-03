@@ -24,6 +24,11 @@ public:
 	virtual std::vector<Vector2d> getEdgeNormals();
 	virtual void voxelize(int N);
 
+	// drawing functions
+	virtual void drawbb();
+	virtual void drawbbCells(int N);
+	virtual void drawbbCellsOccupied(int N);
+	virtual void drawPushFluidCells(int N);
 
 private:
 	Vector2d m_Size;

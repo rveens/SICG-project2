@@ -29,12 +29,17 @@ public:
 	virtual std::vector<Vector2d> getEdgeNormals() = 0;
 	virtual void voxelize(int N) = 0;
 
+	// drawing functions
+	virtual void drawbb() { };
+	virtual void drawbbCells(int N) { };
+	virtual void drawbbCellsOccupied(int N) { };
+	virtual void drawPushFluidCells(int N) { };
+
+
 	/* public variables: */
 	std::vector<Vector2i> gridIndicesOccupied; // grid cells indices also correspond to bottom left corner of the cell in world space.
-
-	/* drawing variables: */
-	bool m_Drawbb = false;
-	bool m_DrawbbCells = false;
+	std::vector<Vector2i> gridIndicesOccupiedPreviously; // grid cells indices also correspond to bottom left corner of the cell in world space.
+	std::vector<Vector2i> gridIndicesPushFluid;
 
 	/* constant quantities */
 	const Vector2d m_ConstructPos;
