@@ -77,7 +77,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../freeglut\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;../freeglut\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EIGEN_DONT_VECTORIZE;EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
