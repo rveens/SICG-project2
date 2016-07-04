@@ -24,6 +24,7 @@
 #include "EulerStep.h"
 #include "MidpointStep.h"
 #include "RungeKuttaStep.h"
+#include "SpringForce.h"
 
 #include "Eigen/Dense"
 #include "AntTweakBar.h"
@@ -475,6 +476,7 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
 	TwAddVarRW(bar, "Pushed cells", TW_TYPE_BOOLCPP, &solver->m_DrawPushFluidCells, " group='Draw'");
 
+	/*
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	rot(0, 0) = 0.7071;
@@ -499,8 +501,98 @@ void setupAntTweakBar()
 	Particle *p = new Particle(Vector2d(0.1, 0.8), 1);
 	solver->addParticle(p);
 	solver->addForce(new GravityForce(p));
+	*/
 }
 
+
+/*
+----------------------------------------------------------------------
+particles
+----------------------------------------------------------------------
+*/
+
+static void create_rectangular_cloth(int w, int h, double gridSize, double startx, double starty, double pMass)
+{
+	if (w < 2 || h < 2) {
+		printf("Only Rectangular cloth of 2x2 or higher supported.");
+		exit(0);
+	}
+
+	Particle *** p_storage;
+
+	// Allocate memory
+	p_storage = new Particle**[h+1];
+	for (int i = 0; i < h+1; ++i)
+		p_storage[i] = new Particle*[w+1];
+	
+	//Particle *p_storage[h + 1][w + 1];	// 2x2 'grid' results in a 3x3 particle system
+
+										// create particles
+	for (int j = 0; j <= h; j++) {
+		for (int i = 0; i <= w; i++) {
+			p_storage[j][i] = new Particle(Vector2d(startx + i*gridSize, starty - j*gridSize), pMass);
+			solver->addParticle(p_storage[j][i]);
+		}
+	}
+
+	double ks_struct = 50.0, kd_struct = 5.0;
+	// create structural springs
+	for (int j = 0; j <= h; j++) {
+		for (int i = 0; i <= w; i++) {
+			if (i < w)
+				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j][i + 1], gridSize, ks_struct, kd_struct));
+			if (j < h)
+				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j + 1][i], gridSize, ks_struct, kd_struct));
+		}
+	}
+
+	double ks_shear = 50.0, kd_shear = 5.0;
+	// create shear springs
+	for (int j = 0; j < h; j++) {
+		for (int i = 0; i < w; i++) {
+			solver->addForce(new SpringForce(p_storage[j][i], p_storage[j + 1][i + 1], gridSize*sqrt(2), ks_shear, kd_shear));
+			solver->addForce(new SpringForce(p_storage[j][i + 1], p_storage[j + 1][i], gridSize*sqrt(2), ks_shear, kd_shear));
+		}
+	}
+
+	double ks_flexion = 50.0, kd_flexion = 5.0;
+	// create flexion springs
+	for (int j = 0; j <= h; j++) {
+		for (int i = 0; i <= w; i++) {
+			if (i < w - 1)
+				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j][i + 2], gridSize * 2, ks_flexion, kd_flexion));
+			if (j < h - 1)
+				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j + 2][i], gridSize * 2, ks_flexion, kd_flexion));
+		}
+	}
+
+
+	// add gravity
+	for (int j = 0; j <= h; j++) {
+		for (int i = 0; i <= w; i++) {
+			solver->addForce(new GravityForce(p_storage[j][i]));
+		}
+	}
+
+	// top row fixed-point constraint
+	for (int i = 0; i <= w; i++) {
+		const double dist = 0.1;
+		Vector2d center = p_storage[0][i]->m_Position;
+		Vector2d offset(dist, p_storage[0][i]->m_Position[1]);
+
+		/* solver->addConstraint(new CircularWireConstraint(p_storage[0][i], Vec2(center[0], center[1] + dist), dist)); */
+		p_storage[0][i]->m_Static = true;
+	}
+
+	/*
+	// add wind 
+	for (int j = 0; j <= h; j++) {
+		for (int i = 0; i <= w; i++) {
+			solver->addForce(new WindForce(p_storage[j][i], Vector2d(2.0, 0)));
+		}
+	}
+	*/
+}
 
 /*
   ----------------------------------------------------------------------
@@ -553,36 +645,9 @@ int main ( int argc, char ** argv )
 	/* init stuff */
 	solver = new Solver(dt, 0.001, diff, visc, vort);
 	setupAntTweakBar();
-	/*
-	// rb one
-	Matrix2d rot = Matrix2d::Identity();
-	rot(0, 0) = 0.7071;
-	rot(0, 1) = -0.7071;
-	rot(1, 0) = 0.7071;
-	rot(1, 1) = 0.7071;
-	Vector2d init_position(0.6, 0.6);
-	Vector2d rb_size(0.2, 0.2);
-	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
-	rb->m_Drawbb = true;
-	rb->m_DrawbbCells = true;
-	solver->addRigidBody(rb);
-	solver->addForce(new GravityForce(rb));
 
-	// rb two
-	Matrix2d rot2 = Matrix2d::Identity();
-	Vector2d init_position2(0.799, 0.799);
-	Vector2d rb_size2(0.2, 0.2);
-	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
-	rb2->m_Drawbb = true;
-	rb2->m_DrawbbCells = true;
-	solver->addRigidBody(rb2);
-	solver->addForce(new GravityForce(rb2));
-	*/
-
-	// particle 1
-	Particle *p = new Particle(Vector2d(0.1, 0.8), 1);
-	solver->addParticle(p);
-	solver->addForce(new GravityForce(p));
+	// cloth 1
+	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
 
 	/* end init stuff */
 	
@@ -602,8 +667,8 @@ int main ( int argc, char ** argv )
 	set_solid_boundary(5);
 	set_solid_square_center(25);
 
-	win_x = 1024;
-	win_y = 1024;
+	win_x = 720;
+	win_y = 720;
 	open_glut_window ();
 
 	glutMainLoop ();

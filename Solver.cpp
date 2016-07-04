@@ -155,12 +155,12 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 		p->m_Force = Vector2d(0.0, 0.0); // dit hoeft in principe niet meer, na fluid forces
 	}
 
-	// apply fluid forces to particles from velocity field
+	// 1.1 apply fluid forces to particles from velocity field
 	for (Particle *p : m_particles) {
 		double x, y, s0, s1, t0, t1;
 		int i0, i1, j0, j1;
-		x = p->m_Position[0];
-		y = p->m_Position[1];
+		x = (p->m_Position[0])*(N+2);
+		y = (p->m_Position[1])*(N+2);
 		i0 = (int) x;
 		j0 = (int) y;
 		if (i0<0) i0 = 0; if (i0>N) i0 = N;
@@ -169,10 +169,10 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 		j1 = j0 + 1;
 		s1 = x - i0; s0 = 1 - s1;
 		t1 = y - j0; t0 = 1 - t1;
-		p->m_Force[0] = p->m_Mass * (s0*(t0*u[IX(i0, j0)] + t1*u[IX(i0, j1)]) +
-			s1*(t0*u[IX(i1, j0)] + t1*u[IX(i1, j1)])) / dt;
-		p->m_Force[1] = p->m_Mass * (s0*(t0*v[IX(i0, j0)] + t1*v[IX(i0, j1)]) +
-			s1*(t0*v[IX(i1, j0)] + t1*v[IX(i1, j1)])) / dt;
+		p->m_Force[0] = (s0*(t0*u[IX(i0, j0)] + t1*u[IX(i0, j1)]) +
+			s1*(t0*u[IX(i1, j0)] + t1*u[IX(i1, j1)])) / (dt * p->m_Mass);
+		p->m_Force[1] = (s0*(t0*v[IX(i0, j0)] + t1*v[IX(i0, j1)]) +
+			s1*(t0*v[IX(i1, j0)] + t1*v[IX(i1, j1)])) / (dt * p->m_Mass);
 	}
 
 	// 2. loop through objects and compute forces
@@ -197,14 +197,20 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 	for (Particle *p : m_particles) {
 		m_Integrator->integrate(p, dtrb);
 	}
+
+	// 3.1 set static particles
+	for (Particle *p : m_particles) {
+		if (p->m_Static)
+			p->reset();
+	}
 	
 	// 4. voxelize rbodies
 	int i, j; 
-	for (i = 1; i <= N; i++) {
+	/*for (i = 1; i <= N; i++) {
 		for (j = 1; j <= N; j++) {
 			solid[IX(i, j)] = 0;
 		}
-	}
+	}*/
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
 		for (Vector2i &index : rb->gridIndicesOccupied) {
@@ -213,7 +219,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 	}
 
 	// check collision test
-	if (colsolver.detectCollisionBroad(m_rbodies)) {
+	/*if (colsolver.detectCollisionBroad(m_rbodies)) {
 		for (auto pair : colsolver.overlapping_rbs) {
 			RigidBody *rb1 = std::get<0>(pair.first);
 			RigidBody *rb2 = std::get<1>(pair.first);
@@ -223,7 +229,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 				colsolver.findContactPoints(rb1, rb2);
 			}
 		}
-	}
+	}*/
 }
 
 void Solver::drawObjects(int N)
@@ -242,6 +248,9 @@ void Solver::drawObjects(int N)
 		
 	for (Particle *p : m_particles)
 		p->draw();
+
+	for (Force *f : m_forces)
+		f->draw();
 }
 
 void Solver::addRigidBody(RigidBody *rb)

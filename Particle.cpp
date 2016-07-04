@@ -2,7 +2,7 @@
 
 #include <GL/glut.h>
 
-Particle::Particle(const Vector2d & ConstructPos, int mass) :
+Particle::Particle(const Vector2d & ConstructPos, double mass) :
 	m_ConstructPos(ConstructPos), m_Position(ConstructPos), m_Velocity(Vector2d(0.0, 0.0)),
 			m_Force(Vector2d(0.0, 0.0)), m_Mass(mass)
 {
@@ -51,7 +51,7 @@ VectorXd Particle::getState()
 
 VectorXd Particle::derivEval()
 {
-	Vector2d f_by_m = m_Force/(double)m_Mass;
+	Vector2d f_by_m = m_Force/m_Mass;
 
 	VectorXd der = VectorXd::Zero(4);
 	int i = 0;

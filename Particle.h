@@ -17,7 +17,7 @@ public:
 
 public:
 
-	Particle(const Vector2d & ConstructPos, int mass);
+	Particle(const Vector2d & ConstructPos, double mass);
 	virtual ~Particle(void);
 
 	void reset();
@@ -32,8 +32,8 @@ public:
 	Vector2d m_Position;
 	Vector2d m_Velocity;
 	Vector2d m_Force;
-	int m_Mass;
+	double m_Mass;
 	bool m_Static = false;
 private:
-	const double h = 0.001;
+	const double h = 0.01; // TODO: make dependent of grid size
 };
