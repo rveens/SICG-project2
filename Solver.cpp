@@ -215,7 +215,9 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 		rb->voxelize(N);
 		// 4.1 turn on rigid body solids
 		for (Vector2i &index : rb->gridIndicesOccupied) {
-			solid[IX(index[0], index[1])] = 1;
+			if (solid[IX(index[0], index[1])] != 2) {
+				solid[IX(index[0], index[1])] = 1;
+			}
 		}
 	}
 
