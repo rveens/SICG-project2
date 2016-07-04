@@ -28,6 +28,7 @@
 
 #include "Eigen/Dense"
 #include "AntTweakBar.h"
+#include <cmath>
 
 /* macros */
 
@@ -111,21 +112,9 @@ static int allocate_data ( void )
 ----------------------------------------------------------------------
 set the locations of solid cells with borders
 
-+++++++++++++++++++++       ++    |    ++          +++++++
-+++++++++++++++++++++       ++ 4  |  6 ++          +++++++    <---- border
-++     |     |     ++     ++++    |    ++++
-++  1  |  2  |  3  ++     ++++----+----++++
-++     |     |     ++        |    |    |            0  = normal cell, "air", where smoke/fluid can reach
-++-----+-----+-----++      2 | 10 | 11 | 2
-++     |     |     ++        |    |    |
-++  4  |  5  |  6  ++     ---+----+----+---
-++     |     |     ++        |    |    |
-++-----+-----+-----++      8 | 12 | 13 | 8
-++     |     |     ++        |    |    |
-++  7  |  8  |  9  ++     ++++----+----++++
-++     |     |     ++     ++++    |    ++++
-+++++++++++++++++++++       ++ 4  |  6 ++
-+++++++++++++++++++++       ++    |    ++
+0 = liquid, non-solid cell that is free to be occupied by liquid
+1 = rigid body, non-solid cell currently occupied by a rigid body
+2 = solid, liquid can never reach here, nor rigid bodies
 
 ----------------------------------------------------------------------
 */
@@ -134,59 +123,26 @@ set the locations of solid cells with borders
 static void set_solid_boundary(int t)
 {
 	int i, j;
-	
-	// set left/right/top/bottom boundary
-	for ( i=t+1 ; i<=N-t ; i++ ) {
-		solid[IX(t,i)] = 6; // left boundary: border to the right
-		solid[IX(N+1-t,i)] = 4; // right boundary: border to the left
-		solid[IX(i,t)] = 2; // bottom boundary: border above
-		solid[IX(i,N+1-t)] = 8; // top boundary: border below
-	}
-	// corners: solid - no border
-	solid[IX(t, t)] = 11; // left bottom boundary corner
-	solid[IX(t, N + 1 - t)] = 13; // left top boundary corner
-	solid[IX(N + 1 - t, t)] = 10; // right bottom boundary corner
-	solid[IX(N + 1 - t, N + 1 - t)] = 12; // right top boundary corner
 
 	// set solids without border around boundary (only if t>0)
-	for ( i=0; i<t; i++ ){
+	for ( i=0; i<=t; i++ ){
 		for ( j=i ; j<=N+1-i ; j++ ){
-			solid[IX(i, j)] = 5;
-			solid[IX(N+1-i, j)] = 5;
-			solid[IX(j, i)] = 5;
-			solid[IX(j, N+1-i)] = 5;
+			solid[IX(i, j)] = 2;
+			solid[IX(N+1-i, j)] = 2;
+			solid[IX(j, i)] = 2;
+			solid[IX(j, N+1-i)] = 2;
 		}
 	}
 }
 
-/* set centered inside square boundary of solids, distance t+1 away from outer boundary */
-// WARNING creates unexpected velocity vortex, do not use
-static void set_solid_square_center(int t)
+/* set centered inside square boundary of solids, with width w */
+static void set_solid_square_center(int w)
 {
-	if (t > N/2 - 1) return; // distance from boundary must be less than half the total boundary length
-	
 	int i, j;
-
-	// set left/right/top/bottom boundary
-	for (i = t + 1; i <= N - t; i++) {
-		solid[IX(t, i)] = 4; // left border
-		solid[IX(N + 1 - t, i)] = 6; // right border
-		solid[IX(i, t)] = 8; // bottom border
-		solid[IX(i, N + 1 - t)] = 2; // top border
-	}
-	// corners: solid - no border
-	solid[IX(t, t)] = 5;// 7; // left bottom
-	solid[IX(t, N + 1 - t)] = 5;// 1; // left top
-	solid[IX(N + 1 - t, t)] = 5;// 9; // right bottom
-	solid[IX(N + 1 - t, N + 1 - t)] = 5;// 3; // right top
-
-	// set solids without border inside square
-	for (i = t; i<=N/2; i++){
-		for (j = i; j <= N + 1 - i; j++){
-			solid[IX(i, j)] = 5;
-			solid[IX(N + 1 - i, j)] = 5;
-			solid[IX(j, i)] = 5;
-			solid[IX(j, N + 1 - i)] = 5;
+	float t = ((N - w) / 2.0f);
+	for (i = std::floorf(t) + 1; i <= N - std::ceilf(t); i++) {
+		for (j = std::floorf(t) + 1; j <= N - std::ceilf(t); j++) {
+			solid[IX(i, j)] = 2;
 		}
 	}
 }
@@ -454,6 +410,12 @@ static void open_glut_window ( void )
 }
 
 
+/*
+----------------------------------------------------------------------
+Ant Tweak Bar + demo setup
+----------------------------------------------------------------------
+*/
+
 void setupAntTweakBar()
 {
 	TwInit(TW_OPENGL, NULL);
@@ -476,7 +438,7 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
 	TwAddVarRW(bar, "Pushed cells", TW_TYPE_BOOLCPP, &solver->m_DrawPushFluidCells, " group='Draw'");
 
-	/*
+	
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	rot(0, 0) = 0.7071;
@@ -496,12 +458,6 @@ void setupAntTweakBar()
 	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
-
-	// particle 1
-	Particle *p = new Particle(Vector2d(0.1, 0.8), 1);
-	solver->addParticle(p);
-	solver->addForce(new GravityForce(p));
-	*/
 }
 
 
@@ -647,7 +603,7 @@ int main ( int argc, char ** argv )
 	setupAntTweakBar();
 
 	// cloth 1
-	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+	//create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
 
 	/* end init stuff */
 	
@@ -665,7 +621,7 @@ int main ( int argc, char ** argv )
 	clear_data ();
 	clear_solid_data();
 	set_solid_boundary(5);
-	set_solid_square_center(25);
+	set_solid_square_center(6);
 
 	win_x = 720;
 	win_y = 720;
