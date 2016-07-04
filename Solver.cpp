@@ -179,12 +179,18 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 	for (Force *f : m_forces) {
 		f->calculateForce();
 	}
-	// 2.1 apply impulse to particles from the velocity field
-	for (Particle *p : m_particles) {
-		// translate particle position to grid-cell coordinates (0.0-1.0 range to 0-64)
-		Vector2i pgridCoords(p->m_Position[0] * N, p->m_Position[1] * N);
-		// interpolate velocity on 4 positions
 
+	// 2.1 turn of rigid body solids
+	for (RigidBody *rb : m_rbodies) {
+		std::vector<int> cellCoords = rb->computeAABBcellAligned(N);
+		int x_size = cellCoords[2] - cellCoords[0];
+		int y_size = cellCoords[3] - cellCoords[1];
+		for (int i = 0; i < x_size; i++) {
+			for (int j = 0; j < y_size; j++) {
+				if (solid[IX(cellCoords[0] + i, cellCoords[1] + j)] != 2)
+					solid[IX(cellCoords[0] + i, cellCoords[1] + j)] = 0;
+			}
+		}
 	}
 
 	// 3. loop through rbodies and user integrator
@@ -205,14 +211,9 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 	}
 	
 	// 4. voxelize rbodies
-	int i, j; 
-	/*for (i = 1; i <= N; i++) {
-		for (j = 1; j <= N; j++) {
-			solid[IX(i, j)] = 0;
-		}
-	}*/
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
+		// 4.1 turn on rigid body solids
 		for (Vector2i &index : rb->gridIndicesOccupied) {
 			solid[IX(index[0], index[1])] = 1;
 		}

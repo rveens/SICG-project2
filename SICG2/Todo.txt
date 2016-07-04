@@ -1,0 +1,14 @@
+TODO
+x vloeistof gaat niet door RB heen
+- vloeistof oefent kracht uit op RB
+- vloeistof word weg gedrukt door beweging van RB
+x particles toevoegen
+x vloeistof oefent kracht uit op particles
+
+- voxelize alleen binnen de vierkant
+- bewegen rigid body (muis-interactie) gebruikt forces ipv positie
+- wall object maken dat collisions uitoefend op particles, is ook een fluid wall.
+- functie maken voor grid cell index <--> world coordinates.
+- grote van particles afhankelijk maken van de grid size
+
+- een tijdstap varibele maken ipv 2 verschillende	(integrator explodeerd te snel)

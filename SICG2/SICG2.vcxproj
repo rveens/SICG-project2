@@ -151,6 +151,9 @@
     <ClInclude Include="..\SolverInterface.h" />
     <ClInclude Include="..\SpringForce.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Todo.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

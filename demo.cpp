@@ -476,7 +476,6 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
 	TwAddVarRW(bar, "Pushed cells", TW_TYPE_BOOLCPP, &solver->m_DrawPushFluidCells, " group='Draw'");
 
-	/*
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	rot(0, 0) = 0.7071;
@@ -496,12 +495,7 @@ void setupAntTweakBar()
 	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
-
-	// particle 1
-	Particle *p = new Particle(Vector2d(0.1, 0.8), 1);
-	solver->addParticle(p);
-	solver->addForce(new GravityForce(p));
-	*/
+	
 }
 
 
@@ -647,7 +641,7 @@ int main ( int argc, char ** argv )
 	setupAntTweakBar();
 
 	// cloth 1
-	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+	//create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
 
 	/* end init stuff */
 	

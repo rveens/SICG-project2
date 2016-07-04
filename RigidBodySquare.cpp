@@ -225,7 +225,7 @@ void RigidBodySquare::voxelize(int N)
 
 
 	// calculate the new cells that are occupied during moving of the rigid body
-	gridIndicesPushFluid.clear();
+	/*gridIndicesPushFluid.clear();
 	// for each grid cell
 	for (Vector2i &newCell : gridIndicesOccupied) {
 		bool overlap = false;
@@ -239,7 +239,7 @@ void RigidBodySquare::voxelize(int N)
 		if (!overlap) {
 			gridIndicesPushFluid.push_back(newCell);
 		}
-	}
+	}*/
 }
 
 bool RigidBodySquare::checkIfPointInSquare(Vector2d &point)
