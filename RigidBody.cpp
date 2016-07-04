@@ -8,7 +8,7 @@ RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & rotatio
 	m_Position(ConstructPos), m_Rotation(rotation), m_LinearMomentum(Vector2d(0, 0)),
 	m_AngularMomentum(Vector2d(0, 0)),
 	m_Iinv(Matrix2d::Zero()), m_Velocity(Vector2d(0, 0)), m_Omega(Vector2d(0, 0)), 
-	m_Force(Vector2d(0, 0)), m_Torque(Vector2d(0, 0))
+	m_Force(Vector2d(0, 0)), m_Torque(0.0)
 {
 }
 
@@ -85,8 +85,8 @@ VectorXd RigidBody::derivEval()
 	der(i++) = m_Force[0];
 	der(i++) = m_Force[1];
 
-	der(i++) = m_Torque[0];
-	der(i++) = m_Torque[1];
+	der(i++) = m_Torque;
+	der(i++) = m_Torque;
 	
 	return der;
 }
@@ -120,7 +120,7 @@ VectorXd RigidBody::derivEval(const VectorXd &input)
 	der[i++] = input[7];
 
 	der[i++] = input[8];
-	der[i++] = input[9];
+	der[i++] = input[8];
 
 	return der;
 }

@@ -58,7 +58,7 @@ public:
 
 	/* computed quantities */
 	Vector2d m_Force;
-	Vector2d m_Torque;
+	double m_Torque;
 
 	/* previous state for collision detection */
 	VectorXd m_PreviousState;
