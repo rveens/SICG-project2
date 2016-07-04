@@ -23,12 +23,15 @@ public:
 	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges();
 	virtual std::vector<Vector2d> getEdgeNormals();
 	virtual void voxelize(int N);
+	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid);
+
 
 	// drawing functions
 	virtual void drawbb();
 	virtual void drawbbCells(int N);
 	virtual void drawbbCellsOccupied(int N);
 	virtual void drawPushFluidCells(int N);
+	virtual void drawBoundaryCells(int N, int *solid);
 
 private:
 	Vector2d m_Size;

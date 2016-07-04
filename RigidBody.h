@@ -28,12 +28,14 @@ public:
 	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges() = 0;
 	virtual std::vector<Vector2d> getEdgeNormals() = 0;
 	virtual void voxelize(int N) = 0;
+	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid) = 0;
 
 	// drawing functions
 	virtual void drawbb() { };
 	virtual void drawbbCells(int N) { };
 	virtual void drawbbCellsOccupied(int N) { };
 	virtual void drawPushFluidCells(int N) { };
+	virtual void drawBoundaryCells(int N, int *) { };
 
 
 	/* public variables: */

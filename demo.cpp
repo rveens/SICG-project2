@@ -370,7 +370,7 @@ static void display_func ( void )
 	else {
 		draw_density();
 	}
-	solver->drawObjects(N);
+	solver->drawObjects(N, solid);
 
 	TwDraw();
 
@@ -436,6 +436,8 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Boundingbox cell-aligned", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
 	TwAddVarRW(bar, "Pushed cells", TW_TYPE_BOOLCPP, &solver->m_DrawPushFluidCells, " group='Draw'");
+	TwAddVarRW(bar, "Boundary cells", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
+
 
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();

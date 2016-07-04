@@ -128,6 +128,27 @@ void RigidBodySquare::drawPushFluidCells(int N)
 	}
 }
 
+void RigidBodySquare::drawBoundaryCells(int N, int *solid)
+{
+	for (Vector2i cellIndex : getBoundaryCells(N, solid)) {
+		// compute the world space coordinate
+		Vector2d bl = Vector2d(((double)cellIndex[0]) / N, ((double)cellIndex[1]) / N);
+		Vector2d br = bl + Vector2d(1.0 / N, 0.0);
+		Vector2d tl = bl + Vector2d(0.0, 1.0 / N);
+		Vector2d tr = bl + Vector2d(1.0 / N, 1.0 / N);
+
+		// draw the cells
+		glColor3f(1.f, 0.f, 1.f);
+		glBegin(GL_LINE_STRIP);
+		glVertex2f(bl[0], bl[1]);
+		glVertex2f(br[0], br[1]);
+		glVertex2f(tr[0], tr[1]);
+		glVertex2f(tl[0], tl[1]);
+		glVertex2f(bl[0], bl[1]);
+		glEnd();
+	}
+}
+
 std::vector<double> RigidBodySquare::computeAABB()
 {
 	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
@@ -208,8 +229,8 @@ void RigidBodySquare::voxelize(int N)
 
 	int x_size = cellCoords[2] - cellCoords[0];
 	int y_size = cellCoords[3] - cellCoords[1];
-	for (double i = 0.0; i < x_size; i++) {
-		for (double j = 0.0; j < y_size; j++) {
+	for (double j = 0.0; j < y_size; j++) {
+		for (double i = 0.0; i < x_size; i++) {
 			Vector2d bl = Vector2d(((double)cellCoords[0])/N + i/N, ((double)cellCoords[1])/N + j/N);
 			Vector2d br = bl + Vector2d(1.0/N, 0.0);
 			Vector2d tl = bl + Vector2d(0.0, 1.0/N);
@@ -240,6 +261,25 @@ void RigidBodySquare::voxelize(int N)
 			gridIndicesPushFluid.push_back(newCell);
 		}
 	}*/
+}
+
+std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
+{
+	std::vector<Vector2i> bCells;
+	// bCells should contain all the cells in gridIndicesOccupied that are
+	// next to at least one cell with solid==0.
+
+	for (Vector2i &cell : gridIndicesOccupied) {
+		if (solid[IX(cell[0] - 1, cell[1])] == 0 || 
+			solid[IX(cell[0], cell[1] - 1)] == 0 || 
+			solid[IX(cell[0] + 1, cell[1])] == 0 || 
+			solid[IX(cell[0], cell[1] + 1)] == 0) {
+			
+			bCells.push_back(cell);
+		}
+	}
+
+	return bCells;
 }
 
 bool RigidBodySquare::checkIfPointInSquare(Vector2d &point)

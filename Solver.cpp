@@ -235,7 +235,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 	}*/
 }
 
-void Solver::drawObjects(int N)
+void Solver::drawObjects(int N, int *solid)
 {
 	for (RigidBody *rb : m_rbodies) {
 		rb->draw(N);
@@ -247,6 +247,8 @@ void Solver::drawObjects(int N)
 			rb->drawbbCellsOccupied(N);
 		if (m_DrawPushFluidCells)
 			rb->drawPushFluidCells(N);
+		if (m_DrawBoundaries)
+			rb->drawBoundaryCells(N, solid);
 	}
 		
 	for (Particle *p : m_particles)
