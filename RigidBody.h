@@ -42,6 +42,7 @@ public:
 	std::vector<Vector2i> gridIndicesOccupied; // grid cells indices also correspond to bottom left corner of the cell in world space.
 	std::vector<Vector2i> gridIndicesOccupiedPreviously; // grid cells indices also correspond to bottom left corner of the cell in world space.
 	std::vector<Vector2i> gridIndicesPushFluid;
+	std::vector<Vector2i> gridIndicesCloseToBoundary;
 
 	/* constant quantities */
 	const Vector2d m_ConstructPos;

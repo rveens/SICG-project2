@@ -266,6 +266,7 @@ void RigidBodySquare::voxelize(int N)
 std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
 {
 	std::vector<Vector2i> bCells;
+	gridIndicesCloseToBoundary.clear();
 	// bCells should contain all the cells in gridIndicesOccupied that are
 	// next to at least one cell with solid==0.
 
@@ -275,6 +276,15 @@ std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
 			solid[IX(cell[0] + 1, cell[1])] == 0 || 
 			solid[IX(cell[0], cell[1] + 1)] == 0) {
 			
+			if (solid[IX(cell[0] - 1, cell[1])] == 0)
+				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0] - 1, cell[1]));
+			if (solid[IX(cell[0], cell[1] - 1)] == 0)
+				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0], cell[1] - 1));
+			if (solid[IX(cell[0] + 1, cell[1])] == 0)
+				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0] + 1, cell[1]));
+			if (solid[IX(cell[0], cell[1] + 1)] == 0)
+				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0], cell[1] + 1));
+
 			bCells.push_back(cell);
 		}
 	}
