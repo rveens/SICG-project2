@@ -53,10 +53,6 @@ public:
 	Vector2d m_LinearMomentum; 	// P
 	Vector2d m_AngularMomentum;	// L
 
-	/* derived quantities */
-	Matrix2d m_Iinv;
-	Vector2d m_Velocity;
-	Vector2d m_Omega;
 
 	/* computed quantities */
 	Vector2d m_Force;
@@ -68,6 +64,12 @@ private:
 	// helper function, compute a* matrix
 
 	Matrix2d star(Vector2d & a);
+
+
+	/* derived quantities */
+	Matrix2d m_Iinv;
+	Vector2d m_Velocity;
+	Vector2d m_Omega;
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

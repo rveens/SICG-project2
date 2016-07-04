@@ -237,7 +237,7 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 		u[i] = v[i] = d[i] = 0.0f;
 	}
 
-	if (!mouse_down[0] && !mouse_down[2]) {
+	if (!mouse_down[0] && !mouse_down[1] && !mouse_down[2]) {
 		mouse_drag = false;
 		return;
 	}
@@ -245,16 +245,31 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 	i = (int)((       mx /(float)win_x)*N+1);
 	j = (int)(((win_y-my)/(float)win_y)*N+1);
 
-	if ( solid[IX(i,j)] != 0 ) return;
 
-	if ( mouse_down[0] && mouse_drag ) {
+	if ( mouse_down[0] && mouse_drag && solid[IX(i, j)] == 0) {
 		u[IX(i, j)] = force * (mx - omx);
 		v[IX(i, j)] = force * (omy - my);
 	}
 
+	if (mouse_down[1] && mouse_drag) {
+		int i = (int)((mx / (float)win_x)*N + 1);
+		int j = (int)(((win_y - my) / (float)win_y)*N + 1);
+		// 0) get mouse postion in world coordinates
+		double x = (double)i / (double)N;
+		double y = (double)j / (double)N;
+
+		// 1) search rigid body on mouse position
+		RigidBody *rb = solver->getRigidBodyOnMousePosition(x, y);
+		if (rb != nullptr) {
+			// 2) set the new position of the rigid body
+			rb->m_LinearMomentum[0] = force * (mx - omx);
+			rb->m_LinearMomentum[1] = force * (omy - my);
+		}
+	}
+
 	mouse_drag = true;
 
-	if ( mouse_down[2] ) {
+	if ( mouse_down[2] && solid[IX(i, j)] == 0) {
 		d[IX(i,j)] = source;
 	}
 
@@ -318,22 +333,6 @@ static void motion_func ( int x, int y )
 {
 	mx = x;
 	my = y;
-
-
-	if (mouse_down[1]) {
-		int i = (int)((mx / (float)win_x)*N + 1);
-		int j = (int)(((win_y - my) / (float)win_y)*N + 1);
-		// 0) get mouse postion in world coordinates
-		double x = (double)i / (double)N;
-		double y = (double)j / (double)N;
-
-		// 1) search rigid body on mouse position
-		RigidBody *rb = solver->getRigidBodyOnMousePosition(x, y);
-		if (rb != nullptr) {
-			// 2) set the new position of the rigid body
-			rb->m_Position = Vector2d(x, y);
-		}
-	}
 
 	TwEventMouseMotionGLUT(x, y);
 }
