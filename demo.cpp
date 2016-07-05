@@ -585,7 +585,7 @@ int main ( int argc, char ** argv )
 		visc = 0.001f; // was 0
 		force = 1.0f; // was 5
 		source = 100.0f;
-		vort = 5.0f; // influence of vorticity confinement
+		vort = 1.0f; // influence of vorticity confinement
 		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g vort=%g\n",
 			N, dt, diff, visc, force, source, vort );
 	} else {

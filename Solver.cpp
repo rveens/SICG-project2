@@ -147,9 +147,21 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 /* public functions: */
 void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 {
+	double vel_friction = 0.9; // must be <= 1
+	double ang_friction = 0.9;
+	// 0. apply friction to velocities and momentums
+	for (RigidBody *rb : m_rbodies) {
+		rb->m_LinearMomentum *= vel_friction;
+		rb->m_AngularMomentum *= ang_friction;
+	}
+	for (Particle *p : m_particles) {
+		p->m_Velocity *= vel_friction;
+	}
+
 	// 1. set forces to zero
 	for (RigidBody *rb : m_rbodies) {
 		rb->m_Force = Vector2d(0.0, 0.0);
+		rb->m_Torque = 0;
 	}
 	for (Particle *p : m_particles) {
 		p->m_Force = Vector2d(0.0, 0.0); // dit hoeft in principe niet meer, na fluid forces
@@ -175,12 +187,26 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 			s1*(t0*v[IX(i1, j0)] + t1*v[IX(i1, j1)])) / (dt * p->m_Mass);
 	}
 
+	// 1.2 apply fluid forces and torques to rigid bodies from velocity field
+	for (RigidBody *rb : m_rbodies) {
+		double force_x, force_y;
+		rb->getBoundaryCells(N, solid);
+		for (Vector2i cell : rb->gridIndicesCloseToBoundary) {
+			force_x = u[IX(cell[0], cell[1])] / dt;
+			force_y = v[IX(cell[0], cell[1])] / dt;
+			rb->m_Force[0] += force_x;
+			rb->m_Force[1] += force_y;
+			// torque = (r - center) x Force
+			rb->m_Torque += (cell[0] - rb->m_Position[0])*force_y - (cell[1] - rb->m_Position[1])*force_x;
+		}
+	}
+
 	// 2. loop through objects and compute forces
 	for (Force *f : m_forces) {
 		f->calculateForce();
 	}
 
-	// 2.1 turn of rigid body solids
+	// 2.1 turn off rigid body solids
 	for (RigidBody *rb : m_rbodies) {
 		for (Vector2i &index : rb->gridIndicesOccupied) {
 			if (solid[IX(index[0], index[1])] != 2) {
@@ -213,6 +239,9 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 		for (Vector2i &index : rb->gridIndicesOccupied) {
 			if (solid[IX(index[0], index[1])] != 2) {
 				solid[IX(index[0], index[1])] = 1;
+				// set velocity to 0 under rigid body
+				u[IX(index[0], index[1])] = 0;
+				v[IX(index[0], index[1])] = 0;
 			}
 		}
 	}

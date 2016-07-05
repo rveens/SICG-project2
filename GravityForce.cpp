@@ -19,7 +19,7 @@ void GravityForce::calculateForce()
 	// test:
 	RigidBody *rb = dynamic_cast<RigidBody*> (m_obj);
 	if (rb != nullptr) {
-		rb->m_Torque = 0.4;
+		rb->m_Torque += 0.0;
 	}
 	Particle *p = dynamic_cast<Particle*> (m_obj);
 	if (p != nullptr) {
