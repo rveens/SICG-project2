@@ -16,7 +16,7 @@ CollisionSolver::~CollisionSolver()
 
 bool CollisionSolver::detectCollisionBroad(std::vector<RigidBody *> &rbodies)
 {
-	// dimension, list overlaping intervals
+	// dimension, list overlapping intervals
 	std::vector<std::vector<INTVL>> intervals_overlapping;
 
 	overlapping_rbs.clear();
@@ -46,11 +46,11 @@ bool CollisionSolver::detectCollisionBroad(std::vector<RigidBody *> &rbodies)
 		});
 		for (auto &tup : list) {
 			if (std::get<1>(tup) == INTVL_TYPE::Si) {
-				// We known we are looking at an interval-start-thingy.
+				// We know we are looking at an interval-start-thingy.
 				// add it to the active intervals
 				active_intervals.push(std::get<0>(tup));
 			} else if (std::get<1>(tup) == INTVL_TYPE::Ei) {
-				// We known we are looking at an interval-end-thingy.
+				// We know we are looking at an interval-end-thingy.
 				//
 				// Does the top interval-start-thingy on the 
 				// stack fit with the interval-end-thingy ?
