@@ -14,143 +14,92 @@ CollisionSolver::~CollisionSolver()
 
 }
 
-bool CollisionSolver::detectCollisionBroad(std::vector<RigidBody *> &rbodies)
-{
-	// dimension, list overlapping intervals
-	std::vector<std::vector<INTVL>> intervals_overlapping;
-
-	overlapping_rbs.clear();
-
-	// for each dimension
-	for (int i = 0; i < 2; i++) {
-		std::vector<std::tuple<double, INTVL_TYPE>> list;
-		std::map<double, INTVL> intervals;
-
-		for (RigidBody *rb : rbodies) {
-			// store si and ei into a list
-			auto coords = rb->computeAABB();
-			list.push_back(std::make_tuple(coords[i], INTVL_TYPE::Si));
-			list.push_back(std::make_tuple(coords[i+2], INTVL_TYPE::Ei));
-			struct INTVL itv;
-			itv.rb = rb;
-			itv.si = coords[i];
-			itv.ei = coords[i+2];
-			itv.overlap = false;
-			itv.dimension = i;
-			intervals[coords[i]] = itv;
-		}
-
-		std::stack<double> active_intervals;
-		std::sort(list.begin(), list.end(), [](std::tuple<double, INTVL_TYPE> &t1, std::tuple<double, INTVL_TYPE> &t2) {
-				return std::get<0>(t1) < std::get<0>(t2);
-		});
-		for (auto &tup : list) {
-			if (std::get<1>(tup) == INTVL_TYPE::Si) {
-				// We know we are looking at an interval-start-thingy.
-				// add it to the active intervals
-				active_intervals.push(std::get<0>(tup));
-			} else if (std::get<1>(tup) == INTVL_TYPE::Ei) {
-				// We know we are looking at an interval-end-thingy.
-				//
-				// Does the top interval-start-thingy on the 
-				// stack fit with the interval-end-thingy ?
-
-				double expectedEi = intervals[active_intervals.top()].ei;
-				if (expectedEi == std::get<0>(tup)) {
-					// no collision! pop
-					active_intervals.pop();
-				} else {
-					// collision
-					intervals[active_intervals.top()].overlap = true;
-					// find other interval
-					for (auto &pair : intervals) {
-						if (pair.second.ei == std::get<0>(tup))
-							pair.second.overlap = true;
-					}
-				}
-			}
-		}
-		intervals_overlapping.push_back(std::vector<INTVL>());
-		// add overlapping intervals to a list
-		for (auto pair : intervals) {
-			// note: pair.second is a ITVL type
-			if (pair.second.overlap) {
-				intervals_overlapping[i].push_back(pair.second);
-			}
-		}
-	}
-
-	// check if there there is a collision:
-	for (auto &list : intervals_overlapping) {
-		if (list.size() == 2) {
-			list[0].rb_other = list[1].rb;
-			list[1].rb_other = list[0].rb;
-
-			overlapping_rbs[std::make_tuple(list[0].rb, list[1].rb)].push_back(list[0]);
-			overlapping_rbs[std::make_tuple(list[0].rb, list[1].rb)].push_back(list[1]);
-
-/* 			collision_intervals.push_back(std::make_tuple(list[0], list[1])); */
-
-/* 			INTVL &intvl_a = pair.second[0]; */
-/* 			INTVL &intvl_b = pair.second[1]; */
-
-/* 			Collision collision; */
-/* 			collision.a = intvl_a.rb; */
-/* 			collision.b = intvl_b.rb; */
-/* 			/1* colision. *1/ */
-/* 			m_Collisions.push_back(collision); */
-		}
-	}
-
-	return !overlapping_rbs.empty();
-}
-
-bool CollisionSolver::detectCollisionNarrow(RigidBody *rb1, RigidBody *rb2)
+bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
 {
 	auto rb1_edges = rb1->getEdges();
+	auto rb2_edges = rb2->getEdges();
+
 	auto rb1_normals = rb1->getEdgeNormals();
-	auto rb2_vertices = rb2->getVertices();
+	auto rb2_normals = rb2->getEdgeNormals();
 
 	auto rb1_vertices = rb1->getVertices();
+	auto rb2_vertices = rb2->getVertices();
 
-
-	// for each edge of rb1
-	for (int i = 0; i < rb1_edges.size(); i++) {
-		bool ok = true;
-		auto tuple = rb1_edges[i];
+	int i = 0;
+	for (auto tuple : rb1_edges) {
 		Vector2d a = std::get<0>(tuple);
-		Vector2d b = std::get<0>(tuple) + std::get<1>(tuple);
-		Vector2d edge_normal = rb1_normals[i];
+		Vector2d b = std::get<1>(tuple);
+		Vector2d edgeNormal = rb1_normals[i];
 
-		/* printf("edge %d\n", i); */
-		/* std::cout << "a: "<< std::endl; */
-		/* std::cout << a << std::endl; */
-		/* std::cout << "b: "<< std::endl; */
-		/* std::cout << b << std::endl; */
-
-		/* std::cout << "rb1_normal: "<< std::endl; */
-		/* std::cout << edge_normal << std::endl; */
-
-
-		// check all vertices of rb2
-		for (Vector2d v : rb2_vertices) {
-			double dot = SATtest(v, a, b, edge_normal);
-			/* printf("dot: %f\n", dot); */
-			if (dot < 0)
-				ok = false;
-		}
-		if (ok)
+		// did we find a gap? if we find no gap for all of them we have a collision
+		// if we find a gap, then there is no collision
+		if (SATIntervalTest(edgeNormal, a, rb1_vertices, rb2_vertices)) {
 			return false;
+		}
+
+		i++;
+	}
+	i = 0;
+	for (auto tuple : rb2_edges) {
+		Vector2d a = std::get<0>(tuple);
+		Vector2d b = std::get<1>(tuple);
+		Vector2d edgeNormal = rb2_normals[i];
+
+		// did we find a gap? if we find no gap for all of them we have a collision
+		// if we find a gap, then there is no collision
+		if (SATIntervalTest(edgeNormal, a, rb2_vertices, rb1_vertices)) {
+			return false;
+		}
+
+		i++;
 	}
 
 	return true;
 }
 
-double CollisionSolver::SATtest(Vector2d &v, Vector2d &a, Vector2d &b, Vector2d &ab_normal)
+double CollisionSolver::projectOnEdgeNormal(Vector2d &v, Vector2d &a, Vector2d &ab_normal)
 {
 	return (v - a).dot(ab_normal);
 }
 
+bool CollisionSolver::SATIntervalTest(Vector2d &edgeNorm, Vector2d &a, std::vector<Vector2d> rb1_vertices, std::vector<Vector2d> rb2_vertices)
+{
+	// project each vertex on the given edge normal for rb1 and find min and max
+	std::vector<double> rb1_projections;
+	for (Vector2d v : rb1_vertices) {
+		rb1_projections.push_back(projectOnEdgeNormal(v, a, edgeNorm));
+	}
+	// get min and max
+	auto minmax = std::minmax_element(begin(rb1_projections), end(rb1_projections), 
+		[](auto one, auto other) {
+		return one < other;
+	});
+	double rb1_min = *minmax.first;
+	double rb1_max = *minmax.second;
+
+
+	// project each vertex on the given edge normal for rb1 and find min and max
+	std::vector<double> rb2_projections;
+	for (Vector2d v : rb2_vertices) {
+		rb2_projections.push_back(projectOnEdgeNormal(v, a, edgeNorm));
+	}
+	// get min and max
+	auto minmax2 = std::minmax_element(begin(rb2_projections), end(rb2_projections),
+		[](auto one, auto other) {
+		return one < other;
+	});
+	double rb2_min = *minmax2.first;
+	double rb2_max = *minmax2.second;
+
+	// finally, check if our two computed intervals overlap, if so we have a possible collision
+	if ( (rb1_min < rb2_max &&rb2_min < rb1_max) ||		// rb1 overlaps rb2 partially
+		(rb1_min < rb2_min && rb1_max > rb2_max) ||		// rb2 is inside rb1
+		(rb2_min < rb1_min && rb2_max > rb1_max) ) {	// rb1 is inside rb2
+		return false;
+	}
+	else
+		return true;
+}
 
 double CollisionSolver::cross2D(Vector2d &v, Vector2d &w)
 {

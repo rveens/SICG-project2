@@ -171,10 +171,10 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	for (Particle *p : m_particles) {
 		double x, y, s0, s1, t0, t1;
 		int i0, i1, j0, j1;
-		x = (p->m_Position[0])*(N+2);
-		y = (p->m_Position[1])*(N+2);
-		i0 = (int) x;
-		j0 = (int) y;
+		x = (p->m_Position[0])*(N + 2);
+		y = (p->m_Position[1])*(N + 2);
+		i0 = (int)x;
+		j0 = (int)y;
 		if (i0<0) i0 = 0; if (i0>N) i0 = N;
 		if (j0<0) j0 = 0; if (j0>N) j0 = N;
 		i1 = i0 + 1;
@@ -231,7 +231,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 		if (p->m_Static)
 			p->reset();
 	}
-	
+
 	// 4. voxelize rbodies
 	for (RigidBody *rb : m_rbodies) {
 		rb->voxelize(N);
@@ -284,13 +284,26 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 		for (auto pair : colsolver.overlapping_rbs) {
 			RigidBody *rb1 = std::get<0>(pair.first);
 			RigidBody *rb2 = std::get<1>(pair.first);
-			bool narrowCol = colsolver.detectCollisionNarrow(rb1, rb2);
+
+			printf("Collision between %d and %d\n", rb1, rb2);
+
+			//bool narrowCol = colsolver.detectCollisionNarrow(rb1, rb2);
 			//printf("narrowCheck: %d\n", narrowCol);
-			if (narrowCol) {
-				colsolver.findContactPoints(rb1, rb2);
-			}
+			//if (narrowCol) {
+			//	colsolver.findContactPoints(rb1, rb2);
+			//}
 		}
 	}*/
+	for (int i = 0; i < m_rbodies.size() - 1; i++) {
+		for (int j = i + 1; j < m_rbodies.size(); j++) {
+			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
+				printf("Collision between %d and %d\n", m_rbodies[i], m_rbodies[j]);
+			} else {
+				printf("No Collisions\n");
+			}
+		}
+	}
+
 }
 
 void Solver::drawObjects(int N, int *solid)
