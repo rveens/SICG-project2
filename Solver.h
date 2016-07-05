@@ -31,7 +31,6 @@ public:
 	bool m_Drawbb = false;
 	bool m_DrawbbCells = false;
 	bool m_DrawbbCellsOccupied = false;
-	bool m_DrawPushFluidCells = false;
 	bool m_DrawBoundaries = false;
 	bool m_DrawEdgeNormals = false;
 

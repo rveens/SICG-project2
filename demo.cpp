@@ -435,7 +435,6 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Boundingbox", TW_TYPE_BOOLCPP, &solver->m_Drawbb, " group='Draw'");
 	TwAddVarRW(bar, "Boundingbox cell-aligned", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
-	TwAddVarRW(bar, "Pushed cells", TW_TYPE_BOOLCPP, &solver->m_DrawPushFluidCells, " group='Draw'");
 	TwAddVarRW(bar, "Boundary cells", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
 	TwAddVarRW(bar, "Edge normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
 	
