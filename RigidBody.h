@@ -35,6 +35,7 @@ public:
 	virtual void drawbbCells(int N) { };
 	virtual void drawbbCellsOccupied(int N) { };
 	virtual void drawBoundaryCells(int N, int *) { };
+	virtual void drawEdgeNormals() { };
 
 
 	/* public variables: */

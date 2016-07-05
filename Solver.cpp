@@ -305,6 +305,8 @@ void Solver::drawObjects(int N, int *solid)
 			rb->drawbbCellsOccupied(N);
 		if (m_DrawBoundaries)
 			rb->drawBoundaryCells(N, solid);
+		if (m_DrawEdgeNormals)
+			rb->drawEdgeNormals();
 	}
 		
 	for (Particle *p : m_particles)

@@ -31,6 +31,8 @@ public:
 	virtual void drawbbCells(int N);
 	virtual void drawbbCellsOccupied(int N);
 	virtual void drawBoundaryCells(int N, int *solid);
+	virtual void drawEdgeNormals();
+
 
 private:
 	Vector2d m_Size;

@@ -128,6 +128,27 @@ void RigidBodySquare::drawBoundaryCells(int N, int *solid)
 	}
 }
 
+void RigidBodySquare::drawEdgeNormals()
+{
+	std::vector<Vector2d> edgeNormals = getEdgeNormals();
+	std::vector<std::tuple<Vector2d, Vector2d>> edges = getEdges();
+	int i = 0;
+	for (auto tuple : edges) {
+		// calculate point in the middle of the edge
+		Vector2d middle = std::get<0>(tuple) + std::get<1>(tuple)/2;
+		// draw from 'middle' to 'middle' + edgeNormal(i)
+		Vector2d middlePlusNormal = middle + edgeNormals[i]/10.0;
+		glPointSize(10);
+		glColor3f(0.f, 1.f, 0.f);
+		glBegin(GL_LINES);
+		glVertex2f(middle[0], middle[1]);
+		glVertex2f(middlePlusNormal[0], middlePlusNormal[1]);
+		glEnd();
+		i++;
+	}
+}
+
+
 std::vector<double> RigidBodySquare::computeAABB()
 {
 	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
