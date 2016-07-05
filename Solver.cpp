@@ -182,13 +182,9 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 
 	// 2.1 turn of rigid body solids
 	for (RigidBody *rb : m_rbodies) {
-		std::vector<int> cellCoords = rb->computeAABBcellAligned(N);
-		int x_size = cellCoords[2] - cellCoords[0];
-		int y_size = cellCoords[3] - cellCoords[1];
-		for (int i = 0; i < x_size; i++) {
-			for (int j = 0; j < y_size; j++) {
-				if (solid[IX(cellCoords[0] + i, cellCoords[1] + j)] != 2)
-					solid[IX(cellCoords[0] + i, cellCoords[1] + j)] = 0;
+		for (Vector2i &index : rb->gridIndicesOccupied) {
+			if (solid[IX(index[0], index[1])] != 2) {
+				solid[IX(index[0], index[1])] = 0;
 			}
 		}
 	}
