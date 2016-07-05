@@ -51,6 +51,7 @@ void RigidBodySquare::draw(int N)
 	Vector2d tl_rot = m_Rotation * tl;
 
 	glColor3f(1.f, 1.f, 1.f);
+	glLineWidth(1);
 	glBegin(GL_QUADS);
 	glVertex2f(m_Position[0] + bl_rot[0], m_Position[1] + bl_rot[1]);
 	glVertex2f(m_Position[0] + br_rot[0], m_Position[1] + br_rot[1]);
@@ -63,6 +64,7 @@ void RigidBodySquare::drawbb()
 {
 	std::vector<double> coords = computeAABB();
 	glColor3f(1.f, 0.f, 0.f);
+	glLineWidth(1);
 	glBegin(GL_LINE_STRIP);
 	glVertex2f(coords[0], coords[1]);
 	glVertex2f(coords[2], coords[1]);
@@ -77,6 +79,7 @@ void RigidBodySquare::drawbbCells(int N)
 	std::vector<int> coordsAligned = computeAABBcellAligned(64);
 	// convert back to doubles for drawing (divide by 64)
 	glColor3f(0.f, 1.f, 0.f);
+	glLineWidth(1);
 	glBegin(GL_LINE_STRIP);
 	glVertex2f(((double)coordsAligned[0]) / N, ((double)coordsAligned[1]) / N);
 	glVertex2f(((double)coordsAligned[2]) / N, ((double)coordsAligned[1]) / N);
@@ -97,6 +100,7 @@ void RigidBodySquare::drawbbCellsOccupied(int N)
 
 		// draw the cells
 		glColor3f(0.f, 0.f, 1.f);
+		glLineWidth(1);
 		glBegin(GL_LINE_STRIP);
 		glVertex2f(bl[0], bl[1]);
 		glVertex2f(br[0], br[1]);
@@ -118,6 +122,7 @@ void RigidBodySquare::drawBoundaryCells(int N, int *solid)
 
 		// draw the cells
 		glColor3f(1.f, 0.f, 1.f);
+		glLineWidth(1);
 		glBegin(GL_LINE_STRIP);
 		glVertex2f(bl[0], bl[1]);
 		glVertex2f(br[0], br[1]);
@@ -140,6 +145,7 @@ void RigidBodySquare::drawEdgeNormals()
 		Vector2d middlePlusNormal = middle + edgeNormals[i]/10.0;
 		glPointSize(10);
 		glColor3f(0.f, 1.f, 0.f);
+		glLineWidth(1);
 		glBegin(GL_LINES);
 		glVertex2f(middle[0], middle[1]);
 		glVertex2f(middlePlusNormal[0], middlePlusNormal[1]);

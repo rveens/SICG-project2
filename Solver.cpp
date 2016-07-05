@@ -309,7 +309,7 @@ void Solver::drawObjects(int N, int *solid)
 			rb->drawBoundaryCells(N, solid);
 		if (m_DrawEdgeNormals)
 			rb->drawEdgeNormals();
-		if (true) {
+		if (m_DrawContacts) {
 			drawContactPoints();
 		}
 	}

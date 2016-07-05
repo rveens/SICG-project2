@@ -437,7 +437,8 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
 	TwAddVarRW(bar, "Boundary cells", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
 	TwAddVarRW(bar, "Edge normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
-	
+	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
+
 
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();

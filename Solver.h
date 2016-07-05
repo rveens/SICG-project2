@@ -33,6 +33,7 @@ public:
 	bool m_DrawbbCellsOccupied = false;
 	bool m_DrawBoundaries = false;
 	bool m_DrawEdgeNormals = false;
+	bool m_DrawContacts = false;
 
 private:
 	Integrator *m_Integrator;
