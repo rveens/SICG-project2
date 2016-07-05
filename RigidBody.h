@@ -31,6 +31,7 @@ public:
 	virtual std::vector<Vector2d> getEdgeNormals() = 0;
 	virtual void voxelize(int N) = 0;
 	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid) = 0;
+	Vector2d getVelocity();
 
 	// drawing functions
 	virtual void drawbb() { };
