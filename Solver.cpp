@@ -280,30 +280,16 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	}
 
 	// check collision test
-	/*if (colsolver.detectCollisionBroad(m_rbodies)) {
-		for (auto pair : colsolver.overlapping_rbs) {
-			RigidBody *rb1 = std::get<0>(pair.first);
-			RigidBody *rb2 = std::get<1>(pair.first);
-
-			printf("Collision between %d and %d\n", rb1, rb2);
-
-			//bool narrowCol = colsolver.detectCollisionNarrow(rb1, rb2);
-			//printf("narrowCheck: %d\n", narrowCol);
-			//if (narrowCol) {
-			//	colsolver.findContactPoints(rb1, rb2);
-			//}
-		}
-	}*/
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
 			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
 				printf("Collision between %d and %d\n", m_rbodies[i], m_rbodies[j]);
+				colsolver.findContactPoints(m_rbodies[i], m_rbodies[j]);
 			} else {
 				printf("No Collisions\n");
 			}
 		}
 	}
-
 }
 
 void Solver::drawObjects(int N, int *solid)

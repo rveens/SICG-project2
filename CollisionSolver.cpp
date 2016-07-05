@@ -137,87 +137,60 @@ bool CollisionSolver::vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vec
 	return false;
 }
 
-std::vector<Vector2d> CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
+void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 {
-	m_Collisions.clear();
-
 	auto rb1_edges = rb1->getEdges();
 	auto rb2_edges = rb2->getEdges();
-	auto rb1_edgeNormals = rb1->getEdgeNormals();
-	auto rb2_edgeNormals = rb2->getEdgeNormals();
 
-	std::vector<Vector2d> intersections;
+	auto rb1_vertices = rb1->getVertices();
+	auto rb2_vertices = rb2->getVertices();
 
-	// for each edge of r1, check intersection with every edge of rb2
-	for (int i = 0; i < rb1_edges.size(); i ++) {
-		auto tuplerb1 = rb1_edges[i];
-		for (int j = 0; j < rb2_edges.size(); j ++) {
-			auto tuplerb2 = rb2_edges[j];
-			Vector2d p = std::get<0>(tuplerb1);
-			Vector2d r = std::get<0>(tuplerb1) + std::get<1>(tuplerb1);
+	// check for each vertex of rb1, if the vertex is in contact with an edges of rb2.
+	for (Vector2d &vert : rb1_vertices) {
+		for (std::tuple<Vector2d, Vector2d> &edge : rb2_edges) {
+			if (vertexOnEdge(vert, edge))
+				printf("Vertex-edge collision!\n");
+		}
+	}
 
-			Vector2d q = std::get<0>(tuplerb2);
-			Vector2d s = std::get<0>(tuplerb2) + std::get<1>(tuplerb2);
-
-			Vector2d output = Vector2d::Zero();
-			vectorIntersect(p, r, q, s, output);
-			if (!output.isZero()) {
-				intersections.push_back(output);
-				int idx = isVertexOfRb(output, rb1, 0.01);
-				if (idx != -1) {
-					printf("intersection is vertex %d of %d\n", idx, rb1);
-					/* exit(0); */
-				}
-				idx = isVertexOfRb(output, rb2, 0.01);
-				if (idx != -1) {
-					printf("intersection is vertex %d of %d\n", idx, rb2);
-					/* exit(0); */
-				}
-
-				Collision col;
-				col.a = rb1;
-				col.b = rb2;
-				col.n = rb1_edgeNormals[i];
-				col.p = output;
-				Vector2d aEdge = std::get<1>(rb1_edges[i]);
-				aEdge.normalize();
-				col.ea = aEdge;
-				Vector2d bEdge = std::get<1>(rb2_edges[j]);
-				bEdge.normalize();
-				col.eb = bEdge;
-				col.vf = false;
+	// check for each vertex of rb2, if the vertex is in contact with an edge of rb1.
+	for (Vector2d &vert : rb2_vertices) {
+		for (std::tuple<Vector2d, Vector2d> &edge : rb1_edges) {
+			if (vertexOnEdge(vert, edge)) {
+				printf("Vertex-edge collision!\n");
 			}
 		}
 	}
-	std::cout << "intersections: "<< std::endl;
-	for (auto v : intersections) {
-		std::cout << v[0] << ", " << v[1] << std::endl;
-		/* std::cout << "---------"<< std::endl; */
-		/* std::cout << "rb1_vertices:" << std::endl; */
-		/* for (auto k : rb1->getVertices()) { */
-		/* 	std::cout << k << std::endl; */
-		/* } */
-		/* std::cout << "rb2_vertices:" << std::endl; */
-		/* for (auto k : rb2->getVertices()) { */
-		/* 	std::cout << k << std::endl; */
-		/* } */
-		/* exit(0); */
-	}
-
-
-	return intersections;
 }
 
+bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d> &edge)
+{
+	// check if the given vertex is on the given edge. If so, return true.
 
-int CollisionSolver::isVertexOfRb(Vector2d &intersection, RigidBody *rb, double epsilon = 0.0001)
+	// test if point is on the line. http://stackoverflow.com/questions/7050186/find-if-point-lays-on-line-segment
+	Vector2d a = std::get<0>(edge);
+	Vector2d b = std::get<1>(edge);
+
+	double AB = std::sqrt( pow(b[0] - a[0], 2) * pow(b[1]-a[1], 2) );
+	double AP = std::sqrt( pow(vert[0] - a[0], 2) * pow(vert[1] - a[1], 2) );
+	double PB = std::sqrt( pow(b[0] - vert[0], 2) * pow(b[1] - vert[1], 2) );
+
+	if (AB <= AP + PB + m_tolerance && AB >= AP + PB - m_tolerance) {
+		return true;
+	}
+	else
+		return false;
+}
+
+int CollisionSolver::isVertexOfRb(Vector2d &vertex, RigidBody *rb, double epsilon = 0.0001)
 {
 	auto rbVertices = rb->getVertices();
 
 	for (int i = 0; i < rbVertices.size(); ++i) {
 		Vector2d v = rbVertices[i];
 
-		if (v[0] + epsilon >= intersection[0] && v[0] - epsilon <= intersection[0]) {
-			if (v[1] + epsilon >= intersection[1] && v[1] - epsilon <= intersection[1]) {
+		if (v[0] + epsilon >= vertex[0] && v[0] - epsilon <= vertex[0]) {
+			if (v[1] + epsilon >= vertex[1] && v[1] - epsilon <= vertex[1]) {
 				return i;
 			}
 		}
