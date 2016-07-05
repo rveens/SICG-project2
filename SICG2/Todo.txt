@@ -1,4 +1,7 @@
 TODO
+
+Prioriteit
+-----------------------------------------------------------------------------------
 x vloeistof gaat niet door RB heen
 x vloeistof oefent kracht uit op RB
 - vloeistof word weg gedrukt door beweging van RB
@@ -6,7 +9,9 @@ x vloeistof oefent kracht uit op RB
 x particles toevoegen
 x vloeistof oefent kracht uit op particles
 
-- getBoundaryCells in RigidBodySquare levert dubbele cells op: niet doen
+Iets mindere Prioriteit
+-----------------------------------------------------------------------------------
+x getBoundaryCells in RigidBodySquare levert dubbele cells op: niet doen
 - voxelize alleen binnen het vierkant
 x bewegen rigid body (muis-interactie) gebruikt velocity ipv positie
 - wall object maken dat collisions uitoefend op particles, is ook een fluid wall.
@@ -14,3 +19,4 @@ x bewegen rigid body (muis-interactie) gebruikt velocity ipv positie
 - grootte van particles afhankelijk maken van de grid size
 
 - een tijdstap varibele maken ipv 2 verschillende	(integrator explodeerd te snel)
+	- verlet integrator implementeren

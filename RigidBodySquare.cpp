@@ -259,13 +259,13 @@ std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
 			solid[IX(cell[0], cell[1] + 1)] == 0) {
 			
 			if (solid[IX(cell[0] - 1, cell[1])] == 0)
-				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0] - 1, cell[1]));
+				gridIndicesCloseToBoundary.insert({ cell[0] - 1, cell[1] });
 			if (solid[IX(cell[0], cell[1] - 1)] == 0)
-				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0], cell[1] - 1));
+				gridIndicesCloseToBoundary.insert({ cell[0], cell[1] - 1 });
 			if (solid[IX(cell[0] + 1, cell[1])] == 0)
-				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0] + 1, cell[1]));
+				gridIndicesCloseToBoundary.insert({ cell[0] + 1, cell[1] });
 			if (solid[IX(cell[0], cell[1] + 1)] == 0)
-				gridIndicesCloseToBoundary.push_back(Vector2i(cell[0], cell[1] + 1));
+				gridIndicesCloseToBoundary.insert({ cell[0], cell[1] + 1 });
 
 			bCells.push_back(cell);
 		}

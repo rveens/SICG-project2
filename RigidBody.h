@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <set>
+#include <array>
 
 #include "Eigen/Dense"
 
@@ -41,7 +43,7 @@ public:
 	/* public variables: */
 	std::vector<Vector2i> gridIndicesOccupied;
 	std::vector<Vector2i> gridIndicesOccupiedPreviously;
-	std::vector<Vector2i> gridIndicesCloseToBoundary;
+	std::set<std::array<int, 2>> gridIndicesCloseToBoundary;
 
 	/* constant quantities */
 	const Vector2d m_ConstructPos;

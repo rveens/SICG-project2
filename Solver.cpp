@@ -191,7 +191,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	for (RigidBody *rb : m_rbodies) {
 		double force_x, force_y;
 		rb->getBoundaryCells(N, solid);
-		for (Vector2i cell : rb->gridIndicesCloseToBoundary) {
+		for (std::array<int, 2> cell : rb->gridIndicesCloseToBoundary) {
 			force_x = u[IX(cell[0], cell[1])] / dt;
 			force_y = v[IX(cell[0], cell[1])] / dt;
 			rb->m_Force[0] += force_x;
