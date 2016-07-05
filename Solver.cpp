@@ -1,5 +1,6 @@
 #include "Solver.h"
 #include "RungeKuttaStep.h"
+#include <GL/glut.h>
 
 #include <cmath>
 #include <iostream>
@@ -218,7 +219,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	// 3. loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
 		// save previous(current) state
-		rb->m_PreviousState = rb->getState();	// FIXME not used
+		rb->m_PreviousState = rb->getState();
 		// do next step
 		m_Integrator->integrate(rb, dtrb);
 	}
@@ -247,6 +248,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	}
 
 	// 5. push density
+	/*
 	for (RigidBody *rb : m_rbodies) {
 		// for each boundary cell
 		for (Vector2i &cell : rb->getBoundaryCells(N, solid)) {
@@ -278,6 +280,81 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 			}
 		}
 	}
+	*/
+
+	// 5. push density
+	for (RigidBody *rb : m_rbodies) {
+		// compute transformation matrix: T(center_new)*R(rotation)*T(-center_old)
+		// translation matrix from origin to new center
+		Matrix3d T_new;
+		T_new << 1 , 0 , rb->m_Position[0],
+			     0 , 1 , rb->m_Position[1],
+			     0 , 0 , 1;
+		// rotation matrix from old to new angle
+		Matrix3d R_total, R_new, R_old;
+		R_new << rb->m_Rotation(0,0), rb->m_Rotation(0,1), 0,
+			     rb->m_Rotation(1,0), rb->m_Rotation(1,1), 0,
+			     0                  , 0                  , 1;
+		R_old << rb->m_PreviousState[2], rb->m_PreviousState[3], 0,
+			     rb->m_PreviousState[4], rb->m_PreviousState[5], 0,
+			     0                     , 0                     , 1;
+		R_total = R_new * R_old.transpose();
+		// translation matrix from old center to origin
+		Matrix3d T_old;
+		T_old << 1 , 0 , -rb->m_PreviousState[0],
+			     0 , 1 , -rb->m_PreviousState[1],
+			     0 , 0 , 1;
+		// total transformation matrix
+		Matrix3d transformation = T_new*R_total*T_old;
+		// for each cell
+		for (Vector2i &cell : rb->gridIndicesOccupied) {
+			// if there is density
+			if (dens[IX(cell[0], cell[1])] > 0.0001) {
+				Vector3d cell_hom; // homogeneous coordinates
+				cell_hom << cell[0], cell[1], 1;
+				Vector3d cell_new_hom = transformation * cell_hom;
+				// integer position of new cell (left bottom)
+				Vector2i cell_new;
+				cell_new << (int) cell_new_hom[0], (int) cell_new_hom[1];
+
+				// TEST: draw line from old to new position
+				/*glPointSize(10);
+				glColor3f(0.f, 1.f, 1.f);
+				glBegin(GL_LINES);
+				glVertex2f(cell_hom[0] / (double) N, cell_hom[1] / (double)N);
+				glVertex2f(cell_new_hom[0] / (double)N, cell_new_hom[1] / (double)N);
+				glEnd();*/
+				//std::cout << "Density moved from (" << std::to_string(cell[0]) << "," << std::to_string(cell[1])
+				//	<< ") to (" + std::to_string(cell_new[0]) << "," << std::to_string(cell_new[1]) << ")\n";
+
+				// find the neighbouring non-solid cells
+				std::vector<Vector2i> neighbours;
+				if (solid[IX(cell_new[0]  , cell_new[1]  )] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]  , cell_new[1]  ));
+				if (solid[IX(cell_new[0]+1, cell_new[1]  )] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+1, cell_new[1]  ));
+				if (solid[IX(cell_new[0]  , cell_new[1]+1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]  , cell_new[1]+1));
+				if (solid[IX(cell_new[0]+1, cell_new[1]+1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+1, cell_new[1]+1));
+
+				// if there are no non-solid neighbours, we cannot push density!
+				if (neighbours.empty()) {
+					printf("Density cannot escape!\n");
+				} else {
+					// distribute the density to neighbours, evenly
+					double density = dens[IX(cell[0], cell[1])];
+					density /= neighbours.size();
+					for (Vector2i &neighbour : neighbours) {
+						dens[IX(neighbour[0], neighbour[1])] += density;
+					}
+					dens[IX(cell[0], cell[1])] = 0;
+				}
+			}
+		}
+	}
+
+	
 
 	// check collision test
 	/*if (colsolver.detectCollisionBroad(m_rbodies)) {
