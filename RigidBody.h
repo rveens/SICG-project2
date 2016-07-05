@@ -74,5 +74,5 @@ private:
 	Vector2d m_Velocity;
 	Vector2d m_Omega;
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 };
