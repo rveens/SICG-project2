@@ -30,7 +30,6 @@ public:
 	virtual void drawbb();
 	virtual void drawbbCells(int N);
 	virtual void drawbbCellsOccupied(int N);
-	virtual void drawPushFluidCells(int N);
 	virtual void drawBoundaryCells(int N, int *solid);
 
 private:

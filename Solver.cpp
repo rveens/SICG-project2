@@ -145,7 +145,7 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 
 
 /* public functions: */
-void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
+void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens)
 {
 	double vel_friction = 0.9; // must be <= 1
 	double ang_friction = 0.9;
@@ -246,6 +246,39 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid)
 		}
 	}
 
+	// 5. push density
+	for (RigidBody *rb : m_rbodies) {
+		// for each boundary cell
+		for (Vector2i &cell : rb->getBoundaryCells(N, solid)) {
+			// if there is density
+			if (dens[IX(cell[0], cell[1])] > 0) {
+				// find the neighbouring non-solid cells
+				std::vector<Vector2i> neighbours;
+				if (solid[IX(cell[0] - 1, cell[1])] == 0)
+					neighbours.push_back(Vector2i(cell[0] - 1, cell[1]));
+				if (solid[IX(cell[0], cell[1] - 1)] == 0)
+					neighbours.push_back(Vector2i(cell[0], cell[1] - 1));
+				if (solid[IX(cell[0] + 1, cell[1])] == 0)
+					neighbours.push_back(Vector2i(cell[0] + 1, cell[1]));
+				if (solid[IX(cell[0], cell[1] + 1)] == 0)
+					neighbours.push_back(Vector2i(cell[0], cell[1] + 1));
+
+				// if there are no non-solid neighbours, we cannot push density!
+				if (neighbours.empty()) {
+					printf("Density cannot escape!\n");
+				}
+
+				// distribute the density to neighbours, evenly
+				double density = dens[IX(cell[0], cell[1])];
+				density /= neighbours.size();
+				for (Vector2i &neighbour : neighbours) {
+					dens[IX(neighbour[0], neighbour[1])] += density;
+				}
+				dens[IX(cell[0], cell[1])] = 0;
+			}
+		}
+	}
+
 	// check collision test
 	/*if (colsolver.detectCollisionBroad(m_rbodies)) {
 		for (auto pair : colsolver.overlapping_rbs) {
@@ -270,8 +303,6 @@ void Solver::drawObjects(int N, int *solid)
 			rb->drawbbCells(N);
 		if (m_DrawbbCellsOccupied)
 			rb->drawbbCellsOccupied(N);
-		if (m_DrawPushFluidCells)
-			rb->drawPushFluidCells(N);
 		if (m_DrawBoundaries)
 			rb->drawBoundaryCells(N, solid);
 	}

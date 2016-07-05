@@ -107,27 +107,6 @@ void RigidBodySquare::drawbbCellsOccupied(int N)
 	}
 }
 
-void RigidBodySquare::drawPushFluidCells(int N)
-{
-	for (Vector2i cellIndex : gridIndicesPushFluid) {
-		// compute the world space coordinate
-		Vector2d bl = Vector2d(((double)cellIndex[0]) / N, ((double)cellIndex[1]) / N);
-		Vector2d br = bl + Vector2d(1.0 / N, 0.0);
-		Vector2d tl = bl + Vector2d(0.0, 1.0 / N);
-		Vector2d tr = bl + Vector2d(1.0 / N, 1.0 / N);
-
-		// draw the cells
-		glColor3f(1.f, 0.f, 0.f);
-		glBegin(GL_LINE_STRIP);
-		glVertex2f(bl[0], bl[1]);
-		glVertex2f(br[0], br[1]);
-		glVertex2f(tr[0], tr[1]);
-		glVertex2f(tl[0], tl[1]);
-		glVertex2f(bl[0], bl[1]);
-		glEnd();
-	}
-}
-
 void RigidBodySquare::drawBoundaryCells(int N, int *solid)
 {
 	for (Vector2i cellIndex : getBoundaryCells(N, solid)) {
@@ -243,24 +222,6 @@ void RigidBodySquare::voxelize(int N)
 			}
 		}
 	}
-
-
-	// calculate the new cells that are occupied during moving of the rigid body
-	/*gridIndicesPushFluid.clear();
-	// for each grid cell
-	for (Vector2i &newCell : gridIndicesOccupied) {
-		bool overlap = false;
-		// check if there is no overlap with grid cells of previous voxelization
-		for (Vector2i &oldCell : gridIndicesOccupiedPreviously) {
-			if (oldCell == newCell) {
-				overlap = true;
-			}
-		}
-		// if no overlap, add to gridIndicesPushFluid array.
-		if (!overlap) {
-			gridIndicesPushFluid.push_back(newCell);
-		}
-	}*/
 }
 
 std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)

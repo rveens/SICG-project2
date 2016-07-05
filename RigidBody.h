@@ -34,14 +34,12 @@ public:
 	virtual void drawbb() { };
 	virtual void drawbbCells(int N) { };
 	virtual void drawbbCellsOccupied(int N) { };
-	virtual void drawPushFluidCells(int N) { };
 	virtual void drawBoundaryCells(int N, int *) { };
 
 
 	/* public variables: */
-	std::vector<Vector2i> gridIndicesOccupied; // grid cells indices also correspond to bottom left corner of the cell in world space.
-	std::vector<Vector2i> gridIndicesOccupiedPreviously; // grid cells indices also correspond to bottom left corner of the cell in world space.
-	std::vector<Vector2i> gridIndicesPushFluid;
+	std::vector<Vector2i> gridIndicesOccupied;
+	std::vector<Vector2i> gridIndicesOccupiedPreviously;
 	std::vector<Vector2i> gridIndicesCloseToBoundary;
 
 	/* constant quantities */
