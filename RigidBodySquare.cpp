@@ -148,7 +148,6 @@ void RigidBodySquare::drawEdgeNormals()
 	}
 }
 
-
 std::vector<double> RigidBodySquare::computeAABB()
 {
 	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);

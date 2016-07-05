@@ -60,6 +60,9 @@ private:
 
 	// stuff for rigid bodies
 	void getPointOfCollision(double timeStep);
+
+	// drawing that doesnt really belong in rigid bodies
+	void drawContactPoints();
 };
 
 #endif /* SOLVER_H */

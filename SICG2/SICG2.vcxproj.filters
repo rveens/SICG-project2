@@ -53,9 +53,6 @@
     <ClInclude Include="..\CollisionSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Contact.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\EulerStep.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\SpringForce.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Contact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

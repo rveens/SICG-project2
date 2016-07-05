@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Collision.h"
+#include "Contact.h"
 #include "Integrator.h"
 
 #include <vector>
@@ -31,10 +31,10 @@ public:
 	void findContactPoints(RigidBody *rb1, RigidBody *rb2);
 
 	/* public variables */
-	std::vector<Collision> m_Collisions; // todo
+	std::vector<Contact> m_Contacts; // todo
 
 private:
-	const double m_tolerance = 0.1;
+	const double m_tolerance = 0.001;
 
 	/* helper functions */
 

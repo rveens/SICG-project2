@@ -28,7 +28,6 @@ bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
 	int i = 0;
 	for (auto tuple : rb1_edges) {
 		Vector2d a = std::get<0>(tuple);
-		Vector2d b = std::get<1>(tuple);
 		Vector2d edgeNormal = rb1_normals[i];
 
 		// did we find a gap? if we find no gap for all of them we have a collision
@@ -42,7 +41,6 @@ bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
 	i = 0;
 	for (auto tuple : rb2_edges) {
 		Vector2d a = std::get<0>(tuple);
-		Vector2d b = std::get<1>(tuple);
 		Vector2d edgeNormal = rb2_normals[i];
 
 		// did we find a gap? if we find no gap for all of them we have a collision
@@ -148,8 +146,19 @@ void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 	// check for each vertex of rb1, if the vertex is in contact with an edges of rb2.
 	for (Vector2d &vert : rb1_vertices) {
 		for (std::tuple<Vector2d, Vector2d> &edge : rb2_edges) {
-			if (vertexOnEdge(vert, edge))
+			if (vertexOnEdge(vert, edge)) {
 				printf("Vertex-edge collision!\n");
+				Contact c;
+				c.a = rb1;
+				c.b = rb2;
+				c.p = vert;
+				c.n = { 0, 0 }; // todo
+				c.ea = { 0, 0 }; // todo
+				c.eb = { 0, 0 };
+				c.vf = true;
+				c.edge = edge;
+				m_Contacts.push_back(c);
+			}
 		}
 	}
 
@@ -158,6 +167,16 @@ void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 		for (std::tuple<Vector2d, Vector2d> &edge : rb1_edges) {
 			if (vertexOnEdge(vert, edge)) {
 				printf("Vertex-edge collision!\n");
+				Contact c;
+				c.a = rb2;
+				c.b = rb1;
+				c.p = vert;
+				c.n = { 0, 0 }; // todo
+				c.ea = { 0, 0 }; // todo
+				c.eb = { 0, 0 };
+				c.vf = true;
+				c.edge = edge;
+				m_Contacts.push_back(c);
 			}
 		}
 	}
@@ -169,7 +188,7 @@ bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d
 
 	// test if point is on the line. http://stackoverflow.com/questions/7050186/find-if-point-lays-on-line-segment
 	Vector2d a = std::get<0>(edge);
-	Vector2d b = std::get<1>(edge);
+	Vector2d b = std::get<0>(edge) + std::get<1>(edge);
 
 	double AB = std::sqrt( pow(b[0] - a[0], 2) * pow(b[1]-a[1], 2) );
 	double AP = std::sqrt( pow(vert[0] - a[0], 2) * pow(vert[1] - a[1], 2) );

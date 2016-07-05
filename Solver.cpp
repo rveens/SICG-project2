@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <iostream>
+#include <GL/glut.h>
+
 
 #define IX(i,j) ((i)+(N+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
@@ -279,7 +281,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 		}
 	}
 
-	// check collision test
+	// 6. check collisions
+	colsolver.m_Contacts.clear();
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
 			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
@@ -306,6 +309,9 @@ void Solver::drawObjects(int N, int *solid)
 			rb->drawBoundaryCells(N, solid);
 		if (m_DrawEdgeNormals)
 			rb->drawEdgeNormals();
+		if (true) {
+			drawContactPoints();
+		}
 	}
 		
 	for (Particle *p : m_particles)
@@ -313,6 +319,31 @@ void Solver::drawObjects(int N, int *solid)
 
 	for (Force *f : m_forces)
 		f->draw();
+}
+
+void Solver::drawContactPoints()
+{
+	for (Contact &c : colsolver.m_Contacts) {
+		if (c.vf) {
+			// draw a large point on the position of the vertex
+			glPointSize(10);
+			glLineWidth(10);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glBegin(GL_POINTS);
+			glVertex2d(c.p[0], c.p[1]);
+			glEnd();
+
+			// draw the edge, again, with a funny color
+			Vector2d a = std::get<0>(c.edge);
+			Vector2d b = std::get<0>(c.edge) + std::get<1>(c.edge);
+
+			glBegin(GL_LINE_STRIP);
+			glColor3f(1.0f, 0.5f, 0.0f);
+			glVertex2f(a[0], a[1]);
+			glVertex2f(b[0], b[1]);
+			glEnd();
+		}
+	}
 }
 
 void Solver::addRigidBody(RigidBody *rb)

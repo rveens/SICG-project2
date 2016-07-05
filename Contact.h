@@ -3,7 +3,7 @@
 #include "./Eigen/Dense"
 
 /* might as well be a struct.. */ 
-class Collision
+class Contact
 {
 public:
 	RigidBody	*a;	// body with vertex
@@ -13,4 +13,6 @@ public:
 	Vector2d	ea;	// edge direction for a
 	Vector2d	eb;	// edge direction for b
 	bool		vf;	// vertex face contact
+
+	std::tuple<Vector2d, Vector2d> edge;
 };
