@@ -21,7 +21,7 @@
 #include <GL/glut.h>
 
 #include "Solver.h"
-#include "RigidBodySquare.h"
+#include "RigidBodyRectangle.h"
 #include "GravityForce.h"
 #include "EulerStep.h"
 #include "MidpointStep.h"
@@ -393,7 +393,7 @@ static void open_glut_window ( void )
 
 	glutInitWindowPosition ( 0, 0 );
 	glutInitWindowSize ( win_x, win_y );
-	win_id = glutCreateWindow ( "Alias | wavefront" );
+	win_id = glutCreateWindow ( "Memoryleaker 5000++ Express Edition" );
 
 	glClearColor ( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear ( GL_COLOR_BUFFER_BIT );
@@ -531,7 +531,7 @@ void setupAntTweakBar()
 	rot(1, 1) = 0.7071;
 	Vector2d init_position(0.6, 0.6);
 	Vector2d rb_size(0.1, 0.2);
-	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
+	RigidBody *rb = new RigidBodyRectangle(init_position, rb_size, 1, rot);
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
 
@@ -539,12 +539,12 @@ void setupAntTweakBar()
 	Matrix2d rot2 = Matrix2d::Identity();
 	Vector2d init_position2(0.799, 0.799);
 	Vector2d rb_size2(0.2, 0.2);
-	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
+	RigidBody *rb2 = new RigidBodyRectangle(init_position2, rb_size2, 1, rot2);
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
 
 	// cloth 1
-	//create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
 }
 
 

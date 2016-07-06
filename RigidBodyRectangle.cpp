@@ -1,4 +1,4 @@
-#include "RigidBodySquare.h"
+#include "RigidBodyRectangle.h"
 #include <GL/glut.h>
 
 #include "Eigen/Dense"
@@ -7,7 +7,7 @@
 
 #define IX(i,j) ((i)+(N+2)*(j))
 
-RigidBodySquare::RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size, int mass,
+RigidBodyRectangle::RigidBodyRectangle(const Vector2d & ConstructPos, Vector2d & size, int mass,
 		Matrix2d & rotation) : RigidBody(ConstructPos, mass, rotation),
 					m_Size(size)
 {
@@ -26,12 +26,12 @@ RigidBodySquare::RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size,
 	std::cout << m_IbodyInv << std::endl;
 }
 
-RigidBodySquare::~RigidBodySquare(void)
+RigidBodyRectangle::~RigidBodyRectangle(void)
 {
 
 }
 
-void RigidBodySquare::draw(int N)
+void RigidBodyRectangle::draw(int N)
 {
 	/* printf("1: (%f, %f)\n", m_Position[0], m_Position[1]); */
 	/* printf("2: (%f, %f)\n", m_Position[0]+m_Size[0], m_Position[1]); */
@@ -60,7 +60,7 @@ void RigidBodySquare::draw(int N)
 	glEnd();
 }
 
-void RigidBodySquare::drawbb()
+void RigidBodyRectangle::drawbb()
 {
 	std::vector<double> coords = computeAABB();
 	glColor3f(1.f, 0.f, 0.f);
@@ -74,7 +74,7 @@ void RigidBodySquare::drawbb()
 	glEnd();
 }
 
-void RigidBodySquare::drawbbCells(int N)
+void RigidBodyRectangle::drawbbCells(int N)
 {
 	std::vector<int> coordsAligned = computeAABBcellAligned(64);
 	// convert back to doubles for drawing (divide by 64)
@@ -89,7 +89,7 @@ void RigidBodySquare::drawbbCells(int N)
 	glEnd();
 }
 
-void RigidBodySquare::drawbbCellsOccupied(int N)
+void RigidBodyRectangle::drawbbCellsOccupied(int N)
 {
 	for (Vector2i cellIndex : gridIndicesOccupied) {
 		// compute the world space coordinate
@@ -111,7 +111,7 @@ void RigidBodySquare::drawbbCellsOccupied(int N)
 	}
 }
 
-void RigidBodySquare::drawBoundaryCells(int N, int *solid)
+void RigidBodyRectangle::drawBoundaryCells(int N, int *solid)
 {
 	for (Vector2i cellIndex : getBoundaryCells(N, solid)) {
 		// compute the world space coordinate
@@ -133,7 +133,7 @@ void RigidBodySquare::drawBoundaryCells(int N, int *solid)
 	}
 }
 
-void RigidBodySquare::drawEdgeNormals()
+void RigidBodyRectangle::drawEdgeNormals()
 {
 	std::vector<Vector2d> edgeNormals = getEdgeNormals();
 	std::vector<std::tuple<Vector2d, Vector2d>> edges = getEdges();
@@ -154,7 +154,7 @@ void RigidBodySquare::drawEdgeNormals()
 	}
 }
 
-std::vector<double> RigidBodySquare::computeAABB()
+std::vector<double> RigidBodyRectangle::computeAABB()
 {
 	Vector2d bl = Vector2d(-m_Size[0]/2, -m_Size[1]/2);
 	Vector2d br = Vector2d(+m_Size[0]/2, -m_Size[1]/2);
@@ -186,7 +186,7 @@ std::vector<double> RigidBodySquare::computeAABB()
 	return coords;
 }
 
-std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
+std::vector<int> RigidBodyRectangle::computeAABBcellAligned(int N)
 {
 	std::vector<double> coords;		// contains positions in 2D space
 	std::vector<int> cellCoords;	// contains fluid-grid indexes
@@ -211,7 +211,7 @@ std::vector<int> RigidBodySquare::computeAABBcellAligned(int N)
 	return cellCoords;
 }
 
-void RigidBodySquare::voxelize(int N)
+void RigidBodyRectangle::voxelize(int N)
 {
 	gridIndicesOccupiedPreviously = gridIndicesOccupied;
 	gridIndicesOccupied.clear(); // remove old data of occupied grid cells.
@@ -242,7 +242,7 @@ void RigidBodySquare::voxelize(int N)
 			Vector2d tr = bl + Vector2d(1.0/N, 1.0/N);
 
 			// 3) and 4) are done in checkIfPointInSquare.
-			if (checkIfPointInSquare(bl,N) || checkIfPointInSquare(br,N) || checkIfPointInSquare(tl,N) || checkIfPointInSquare(tr,N)) {
+			if (checkIfPointInRectangle(bl,N) || checkIfPointInRectangle(br,N) || checkIfPointInRectangle(tl,N) || checkIfPointInRectangle(tr,N)) {
 				// save grid cell index (bounding box bottomleft + i and j offsets)
 				gridIndicesOccupied.push_back(Vector2i(cellCoords[0] + i, cellCoords[1] + j));
 			}
@@ -250,7 +250,7 @@ void RigidBodySquare::voxelize(int N)
 	}
 }
 
-std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
+std::vector<Vector2i> RigidBodyRectangle::getBoundaryCells(int N, int *solid)
 {
 	std::vector<Vector2i> bCells;
 	gridIndicesCloseToBoundary.clear();
@@ -279,7 +279,7 @@ std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
 	return bCells;
 }
 
-bool RigidBodySquare::checkIfPointInSquare(Vector2d &point, int N)
+bool RigidBodyRectangle::checkIfPointInRectangle(Vector2d &point, int N)
 {
 	Vector2d pCopy = point;
 	// I assume the given point is in world coordinates.
@@ -301,7 +301,7 @@ bool RigidBodySquare::checkIfPointInSquare(Vector2d &point, int N)
 }
 
 
-std::vector<Vector2d> RigidBodySquare::getVertices()
+std::vector<Vector2d> RigidBodyRectangle::getVertices()
 {
 	Vector2d bl(-m_Size[0]/2, -m_Size[1]/2);
 	Vector2d br(+m_Size[0]/2, -m_Size[1]/2);
@@ -320,7 +320,7 @@ std::vector<Vector2d> RigidBodySquare::getVertices()
 	return std::vector<Vector2d>({bl_rot, br_rot, tr_rot, tl_rot});
 }
 
-std::vector<std::tuple<Vector2d, Vector2d>> RigidBodySquare::getEdges()
+std::vector<std::tuple<Vector2d, Vector2d>> RigidBodyRectangle::getEdges()
 {
 	auto vertices = getVertices();
 	Vector2d edgeblbr = vertices[1] - vertices[0];
@@ -337,7 +337,7 @@ std::vector<std::tuple<Vector2d, Vector2d>> RigidBodySquare::getEdges()
 	return edges;
 }
 
-std::vector<Vector2d> RigidBodySquare::getEdgeNormals()
+std::vector<Vector2d> RigidBodyRectangle::getEdgeNormals()
 {
 	auto vert = getVertices();
 

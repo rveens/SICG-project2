@@ -130,7 +130,7 @@
     <ClCompile Include="..\MidpointStep.cpp" />
     <ClCompile Include="..\Particle.cpp" />
     <ClCompile Include="..\RigidBody.cpp" />
-    <ClCompile Include="..\RigidBodySquare.cpp" />
+    <ClCompile Include="..\RigidBodyRectangle.cpp" />
     <ClCompile Include="..\RungeKuttaStep.cpp" />
     <ClCompile Include="..\Solver.cpp" />
     <ClCompile Include="..\SpringForce.cpp" />
@@ -145,14 +145,14 @@
     <ClInclude Include="..\MidpointStep.h" />
     <ClInclude Include="..\Particle.h" />
     <ClInclude Include="..\RigidBody.h" />
-    <ClInclude Include="..\RigidBodySquare.h" />
+    <ClInclude Include="..\RigidBodyRectangle.h" />
     <ClInclude Include="..\RungeKuttaStep.h" />
     <ClInclude Include="..\Solver.h" />
     <ClInclude Include="..\SolverInterface.h" />
     <ClInclude Include="..\SpringForce.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Todo.txt" />
+    <Text Include="..\Todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

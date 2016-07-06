@@ -249,7 +249,7 @@ void CollisionSolver::applyCollision(Contact &c)
 	c.a->m_LinearMomentum[1] += force[1];
 
 	c.b->m_LinearMomentum[0] -= force[0];
-	c.b->m_LinearMomentum[1] -= force[0];
+	c.b->m_LinearMomentum[1] -= force[1];
 
 
 	c.a->m_AngularMomentum += ra.cross(force)[2];	// gaat dit ok?

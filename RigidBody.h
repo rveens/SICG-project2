@@ -19,11 +19,11 @@ public:
 	/* public functions: */
 	virtual void draw(int N) = 0;
 
-	void reset();
-	void setState(const VectorXd &state);
-	VectorXd getState();
-	VectorXd derivEval();
-	VectorXd derivEval(const VectorXd &input);
+	virtual void setState(const VectorXd &state);
+	virtual VectorXd getState();
+	virtual VectorXd derivEval();
+	virtual VectorXd derivEval(const VectorXd &input);
+
 	virtual std::vector<double> computeAABB() = 0;
 	virtual std::vector<int> computeAABBcellAligned(int N) = 0;
 	virtual std::vector<Vector2d> getVertices() = 0;
