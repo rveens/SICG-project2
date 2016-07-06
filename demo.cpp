@@ -530,7 +530,7 @@ void setupAntTweakBar()
 	rot(1, 0) = 0.7071;
 	rot(1, 1) = 0.7071;
 	Vector2d init_position(0.6, 0.6);
-	Vector2d rb_size(0.2, 0.2);
+	Vector2d rb_size(0.1, 0.2);
 	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
 	solver->addRigidBody(rb);
 	solver->addForce(new GravityForce(rb));
