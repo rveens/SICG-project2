@@ -544,7 +544,7 @@ void setupAntTweakBar()
 	solver->addForce(new GravityForce(rb2));
 
 	// cloth 1
-	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+	//create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
 }
 
 

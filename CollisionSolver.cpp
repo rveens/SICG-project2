@@ -55,7 +55,7 @@ bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
 	return true;
 }
 
-void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
+bool CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 {
 	m_Contacts.clear();
 	auto rb1_edges = rb1->getEdges();
@@ -108,6 +108,8 @@ void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 			i++;
 		}
 	}
+
+	return !m_Contacts.empty();
 }
 
 void CollisionSolver::collisionResponse()
@@ -120,9 +122,6 @@ void CollisionSolver::collisionResponse()
 			if (colliding(c)) {
 				applyCollision(c);
 				had_collision = true;
-
-				// ode discontinuous ?? functie
-
 			}
 		}
 	} while (had_collision == true);
