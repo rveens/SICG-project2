@@ -439,24 +439,26 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 				// if we have a collision but no contact points we need to fix this.
 				if (!colsolver.findContactPoints(m_rbodies[i], m_rbodies[j])) {
 					double mid = dtrb / 2.0;
-					int div = 1;
+					int counter = 1;
 					
 					m_rbodies[i]->setState(m_rbodies[i]->m_PreviousState);
+					m_rbodies[j]->setState(m_rbodies[j]->m_PreviousState);
+
 
 					// integrate back initially, we start in an illegal position
-					m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++div));
-					while (div < 20) {
+					m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++counter));
+					while (counter < 100) { // FIXME this might potentially iterate forever if set to true?
 						if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
 							if (colsolver.findContactPoints(m_rbodies[i], m_rbodies[j])) {
 								// done, we found contact points
 								break;
 							}
 							// still collision, integrate back further
-							m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++div));
+							m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++counter));
 						}
 						else {
 							// integrate forward, we went too far back
-							m_Integrator->integrate(m_rbodies[i], mid + dtrb / pow(2, ++div));
+							m_Integrator->integrate(m_rbodies[i], mid + dtrb / pow(2, ++counter));
 						}
 					}
 				}

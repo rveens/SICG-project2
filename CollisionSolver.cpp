@@ -206,14 +206,12 @@ bool CollisionSolver::colliding(Contact &c)
 	double vrel = c.n.dot(padot - pbdot);
 
 	// tolerances misschien anders maken hier, want dat is in het voorbeeld ook
-	if (vrel > m_tolerance) // moving away
+	if (vrel > m_colliding_threshold) // moving away
 		return false;
-	if (vrel > -m_tolerance) // resting contact
+	if (vrel > -m_colliding_threshold) // resting contact
 		return false;
 	else
 		return true;
-
-	return false;
 }
 
 void CollisionSolver::applyCollision(Contact &c)

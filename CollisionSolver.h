@@ -37,6 +37,8 @@ public:
 
 private:
 	const double m_tolerance = 0.001;
+	const double m_colliding_threshold = 0.1;
+
 
 	/* helper functions */
 
