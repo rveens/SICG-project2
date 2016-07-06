@@ -19,7 +19,7 @@ public:
 	void dens_step(int N, float * x, float * x0, float * u, float * v, int * solid);
 	void vel_step(int N, float * u, float * v, float * u0, float * v0, int * solid);
 
-	void rigidbodySolve(int N, float * u, float * v, int *solid, float *dens);
+	void rigidbodySolve(int N, float * u, float * v, int *solid, float *dens, float * p, float * div);
 	void drawObjects(int N, int *solid);
 	void addRigidBody(RigidBody *rb);
 	void addParticle(Particle *p);
@@ -54,14 +54,14 @@ private:
 	// stuff for fluids
 	void add_source(int N, float * x, float * s);
 	void advect(int N, int b, float * d, float * d0, float * u, float * v, int * solid);
-	void diffuse(int N, int b, float * x, float * x0, int * solid);
+	void diffuse(int N, int b, float * x, float * x0, float diffvisc, int * solid);
 	void lin_solve(int N, int b, float * x, float * x0, float a, float c, int * solid);
 	void project(int N, float * u, float * v, float * p, float * div, int * solid);
 	void confine_vorticity(int N, float * u, float * v, int * solid);
+	double count_density(int N, float * x, int * solid);
+	void preserve_density(int N, float * x, int * solid, double old_density, double new_density);
 
 	// stuff for rigid bodies
-	void getPointOfCollision(double timeStep);
-
 	// drawing that doesnt really belong in rigid bodies
 	void drawContactPoints();
 };

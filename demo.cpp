@@ -353,7 +353,8 @@ static void idle_func ( void )
 	get_from_UI ( dens_prev, u_prev, v_prev, solid );
 	solver->vel_step ( N, u, v, u_prev, v_prev, solid );
 	solver->dens_step ( N, dens, dens_prev, u, v, solid );
-	solver->rigidbodySolve(N, u, v, solid, dens);
+	solver->rigidbodySolve(N, u, v, solid, dens, u_prev, v_prev);
+
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -583,7 +584,7 @@ int main ( int argc, char ** argv )
 		N = 64;
 		dt = 0.1f;
 		diff = 0.00001f; // was 0
-		visc = 0.001f; // was 0
+		visc = 0.0001f; // was 0
 		force = 1.0f; // was 5
 		source = 100.0f;
 		vort = 1.0f; // influence of vorticity confinement

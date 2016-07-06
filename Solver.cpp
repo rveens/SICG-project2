@@ -1,5 +1,6 @@
 #include "Solver.h"
 #include "RungeKuttaStep.h"
+#include <GL/glut.h>
 
 #include <cmath>
 #include <iostream>
@@ -50,9 +51,9 @@ void Solver::lin_solve ( int N, int b, float * x, float * x0, float a, float c, 
 	}
 }
 
-void Solver::diffuse ( int N, int b, float * x, float * x0, int * solid)
+void Solver::diffuse ( int N, int b, float * x, float * x0, float diffvisc, int * solid)
 {
-	float a=dt*diff*N*N;
+	float a=dt*diffvisc*N*N;
 	lin_solve ( N, b, x, x0, a, 1+4*a, solid );
 }
 
@@ -146,10 +147,30 @@ void Solver::confine_vorticity(int N, float * u, float * v, int * solid)
 }
 
 
+double Solver::count_density(int N, float * x, int * solid) {
+	double total_dens = 0;
+	int i, j;
+	FOR_EACH_CELL
+		total_dens += x[IX(i, j)];
+	END_FOR
+	return total_dens;
+}
+
+void Solver::preserve_density(int N, float * x, int * solid, double old_density, double new_density) {
+	if (new_density == 0) return;
+	double difference = old_density - new_density;
+	int i, j;
+	// spread out density difference proportionally over density field
+	FOR_EACH_CELL
+		x[IX(i, j)] += difference * x[IX(i, j)] / new_density;
+	END_FOR
+}
+
+
 /* public functions: */
-void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens)
+void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens, float * p, float * div)
 {
-	double vel_friction = 0.9; // must be <= 1
+	double vel_friction = 0.95; // must be <= 1
 	double ang_friction = 0.9;
 	// 0. apply friction to velocities and momentums
 	for (RigidBody *rb : m_rbodies) {
@@ -190,16 +211,18 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	}
 
 	// 1.2 apply fluid forces and torques to rigid bodies from velocity field
+	double fluidforce = 25;
+	double fluidtorque = 0.05;
 	for (RigidBody *rb : m_rbodies) {
 		double force_x, force_y;
 		rb->getBoundaryCells(N, solid);
 		for (std::array<int, 2> cell : rb->gridIndicesCloseToBoundary) {
 			force_x = u[IX(cell[0], cell[1])] / dt;
 			force_y = v[IX(cell[0], cell[1])] / dt;
-			rb->m_Force[0] += force_x;
-			rb->m_Force[1] += force_y;
+			rb->m_Force[0] += fluidforce * force_x;
+			rb->m_Force[1] += fluidforce * force_y;
 			// torque = (r - center) x Force
-			rb->m_Torque += (cell[0] - rb->m_Position[0])*force_y - (cell[1] - rb->m_Position[1])*force_x;
+			rb->m_Torque += fluidtorque * ( (cell[0] - rb->m_Position[0])*force_y - (cell[1] - rb->m_Position[1])*force_x );
 		}
 	}
 
@@ -220,7 +243,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	// 3. loop through rbodies and user integrator
 	for (RigidBody *rb : m_rbodies) {
 		// save previous(current) state
-		rb->m_PreviousState = rb->getState();	// FIXME not used
+		rb->m_PreviousState = rb->getState();
 		// do next step
 		m_Integrator->integrate(rb, dtrb);
 	}
@@ -248,7 +271,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 		}
 	}
 
-	// 5. push density
+	// 5. push density OLD
+	/*
 	for (RigidBody *rb : m_rbodies) {
 		// for each boundary cell
 		for (Vector2i &cell : rb->getBoundaryCells(N, solid)) {
@@ -280,6 +304,133 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 			}
 		}
 	}
+	*/
+
+	
+	
+	// 5. push density (using previous state of rigid body)
+	for (RigidBody *rb : m_rbodies) {
+		// compute transformation matrix: T(center_new)*R(rotation)*T(-center_old)
+		// translation matrix from origin to new center
+		Matrix3d T_new;
+		T_new << 1 , 0 , rb->m_Position[0],
+			     0 , 1 , rb->m_Position[1],
+			     0 , 0 , 1;
+		// rotation matrix from old to new angle
+		Matrix3d R_total, R_new, R_old;
+		R_new << rb->m_Rotation(0,0), rb->m_Rotation(0,1), 0,
+			     rb->m_Rotation(1,0), rb->m_Rotation(1,1), 0,
+			     0                  , 0                  , 1;
+		R_old << rb->m_PreviousState[2], rb->m_PreviousState[3], 0,
+			     rb->m_PreviousState[4], rb->m_PreviousState[5], 0,
+			     0                     , 0                     , 1;
+		R_total = R_new * R_old.transpose();
+		// translation matrix from old center to origin
+		Matrix3d T_old;
+		T_old << 1 , 0 , -rb->m_PreviousState[0],
+			     0 , 1 , -rb->m_PreviousState[1],
+			     0 , 0 , 1;
+		// total transformation matrix
+		Matrix3d transformation = T_new*R_total*T_old;
+		// for each cell
+		double leftover_density = 0;
+		for (Vector2i &cell : rb->gridIndicesOccupied) {
+			// if there is density
+			if (dens[IX(cell[0], cell[1])] > 0) {
+				Vector3d cell_hom; // homogeneous coordinates
+				cell_hom << cell[0], cell[1], 1;
+				Vector3d cell_new_hom = transformation * cell_hom;
+				// integer position of new cell (left bottom)
+				Vector2i cell_new;
+				cell_new << (int) cell_new_hom[0], (int) cell_new_hom[1];
+
+				// TEST: draw line from old to new position
+				//glPointSize(10);
+				//glColor3f(0.f, 1.f, 1.f);
+				//glBegin(GL_LINES);
+				//glVertex2f(cell_hom[0] / (double) N, cell_hom[1] / (double)N);
+				//glVertex2f(cell_new_hom[0] / (double)N, cell_new_hom[1] / (double)N);
+				//glEnd();
+				//std::cout << "Density moved from (" << std::to_string(cell[0]) << "," << std::to_string(cell[1])
+				//	<< ") to (" + std::to_string(cell_new[0]) << "," << std::to_string(cell_new[1]) << ")\n";
+
+				// find the neighbouring non-solid cells
+				std::vector<Vector2i> neighbours;
+				if (solid[IX(cell_new[0]  , cell_new[1]  )] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]  , cell_new[1]  ));
+				if (solid[IX(cell_new[0]+1, cell_new[1]  )] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+1, cell_new[1]  ));
+				if (solid[IX(cell_new[0]  , cell_new[1]+1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]  , cell_new[1]+1));
+				if (solid[IX(cell_new[0]+1, cell_new[1]+1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+1, cell_new[1]+1));
+				
+				if (solid[IX(cell_new[0]-1, cell_new[1]  )] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]-1, cell_new[1]  ));
+				if (solid[IX(cell_new[0]+2, cell_new[1]  )] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+2, cell_new[1]  ));
+				if (solid[IX(cell_new[0]-1, cell_new[1]+1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]-1, cell_new[1]+1));
+				if (solid[IX(cell_new[0]+2, cell_new[1]+1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+2, cell_new[1]+1));
+
+				if (solid[IX(cell_new[0]  , cell_new[1]-1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]  , cell_new[1]-1));
+				if (solid[IX(cell_new[0]+1, cell_new[1]-1)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+1, cell_new[1]-1));
+				if (solid[IX(cell_new[0]  , cell_new[1]+2)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]  , cell_new[1]+2));
+				if (solid[IX(cell_new[0]+1, cell_new[1]+2)] == 0)
+					neighbours.push_back(Vector2i(cell_new[0]+1, cell_new[1]+2));
+				
+				// density to be pushed
+				double density = dens[IX(cell[0], cell[1])] + leftover_density;
+				leftover_density = 0;
+				// if there are no non-solid neighbours, we cannot push density!
+				if (neighbours.empty()) {
+					//printf("Density cannot escape!\n");
+					leftover_density = density;
+				} else {
+					// distribute the density to neighbours, evenly
+					density /= neighbours.size();
+					for (Vector2i &neighbour : neighbours) {
+						dens[IX(neighbour[0], neighbour[1])] += density;
+					}
+				}
+				// remove density
+				dens[IX(cell[0], cell[1])] = 0;
+			}
+		}
+		if (leftover_density != 0) {
+			std::cout << "There is leftover density: " << std::to_string(leftover_density) << "\n";
+			// spread out leftover density all around RB
+			rb->getBoundaryCells(N, solid);
+			if (rb->gridIndicesCloseToBoundary.size() == 0) {
+				printf("Loss of density!\n");
+			} else {
+				leftover_density /= rb->gridIndicesCloseToBoundary.size();
+				for (auto neighbour : rb->gridIndicesCloseToBoundary) {
+					dens[IX(neighbour[0], neighbour[1])] += leftover_density;
+				}
+			}
+		}
+	}
+	
+
+	// 6. RB applies velocity to fluid
+	double RBtofluid = 0.005;
+	for (RigidBody *rb : m_rbodies) {
+		rb->getBoundaryCells(N, solid);
+		for (auto &cell : rb->gridIndicesCloseToBoundary) {
+			Vector2d velocity = rb->getVelocity();
+			u[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[0] / dt;
+			v[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[1] / dt;
+		}
+	}
+
+	// project velocities again to remain mass preserving
+	project(N, u, v, p, div, solid);
+	
 
 	// 6. check collisions
 	colsolver.m_Contacts.clear();
@@ -389,18 +540,24 @@ RigidBody *Solver::getRigidBodyOnMousePosition(double x, double y)
 void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int * solid )
 {
 	add_source ( N, x, x0);
-	SWAP ( x0, x ); diffuse ( N, 0, x, x0, solid);
+	double old_density = count_density(N, x, solid);
+	std::cout << "Old density: " << std::to_string(old_density) << "\n";
+	SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, solid);
 	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, solid);
+	double new_density = count_density(N, x, solid);
+	std::cout << "New density: " << std::to_string(new_density) << "\n";
+	preserve_density(N, x, solid, old_density, new_density);
 }
 
 void Solver::vel_step ( int N, float * u, float * v, float * u0, float * v0, int * solid)
 {
 	add_source ( N, u, u0); add_source ( N, v, v0);
-	confine_vorticity(N, u, v, solid);
-	SWAP ( u0, u ); diffuse ( N, 1, u, u0, solid);
-	SWAP ( v0, v ); diffuse ( N, 2, v, v0, solid);
+	SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, solid);
+	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, solid);
 	project ( N, u, v, u0, v0, solid );
 	SWAP ( u0, u ); SWAP ( v0, v );
 	advect ( N, 1, u, u0, u0, v0, solid ); advect ( N, 2, v, v0, u0, v0, solid );
+	project ( N, u, v, u0, v0, solid );
+	confine_vorticity(N, u, v, solid);
 	project ( N, u, v, u0, v0, solid );
 }

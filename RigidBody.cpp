@@ -142,3 +142,9 @@ Matrix2d RigidBody::star(Vector2d & a)
 
 	return out;
 }
+
+
+Vector2d RigidBody::getVelocity()
+{
+	return m_Velocity;
+}
