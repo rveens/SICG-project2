@@ -436,8 +436,28 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
 			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
-				printf("Collision between %d and %d\n", m_rbodies[i], m_rbodies[j]);
-				colsolver.findContactPoints(m_rbodies[i], m_rbodies[j]);
+				// if we have a collision but no contact points we need to fix this.
+				if (!colsolver.findContactPoints(m_rbodies[i], m_rbodies[j])) {
+					double mid = dtrb / 2.0;
+					int div = 1;
+					
+					// integrate back initially, we start in an illegal position
+					m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++div));
+					while (div < 20) {
+						if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
+							if (colsolver.findContactPoints(m_rbodies[i], m_rbodies[j])) {
+								// done, we found contact points
+								break;
+							}
+							// still collision, integrate back further
+							m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++div));
+						}
+						else {
+							// integrate forward, we went too far back
+							m_Integrator->integrate(m_rbodies[i], mid + dtrb / pow(2, ++div));
+						}
+					}
+				}
 				colsolver.collisionResponse();
 			} else {
 				printf("No Collisions\n");

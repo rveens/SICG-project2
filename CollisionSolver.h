@@ -28,7 +28,7 @@ public:
 
 	/* functions */
 	bool detectCollision(RigidBody *rb1, RigidBody *rb2);
-	void findContactPoints(RigidBody *rb1, RigidBody *rb2);
+	bool findContactPoints(RigidBody *rb1, RigidBody *rb2);
 	void collisionResponse();
 
 
