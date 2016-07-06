@@ -199,6 +199,16 @@ bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d
 	}
 	else
 		return false;
+
+	/*Vector2d a = std::get<0>(edge);
+	Vector2d b = std::get<0>(edge) + std::get<1>(edge);
+	double lhs = (vert[0] - a[0]) / (b[0] - a[0]);
+	double rhs = (vert[1] - a[1]) / (b[1] - a[1]);
+	if (lhs <= rhs + m_tolerance && lhs >= rhs - m_tolerance) {
+		return true;
+	}
+	else
+		return false;*/
 }
 
 int CollisionSolver::isVertexOfRb(Vector2d &vertex, RigidBody *rb, double epsilon = 0.0001)

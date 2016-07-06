@@ -9,6 +9,11 @@ x vloeistof oefent kracht uit op RB
 x particles toevoegen
 x vloeistof oefent kracht uit op particles
 
+x collision detection (SAT)
+- contact points bepalen
+- bepalen of vertex-edge of edge-edge
+- collision response volgens notesg
+
 Iets mindere Prioriteit
 -----------------------------------------------------------------------------------
 x getBoundaryCells in RigidBodySquare levert dubbele cells op: niet doen
