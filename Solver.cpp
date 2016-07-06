@@ -441,6 +441,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 					double mid = dtrb / 2.0;
 					int div = 1;
 					
+					m_rbodies[i]->setState(m_rbodies[i]->m_PreviousState);
+
 					// integrate back initially, we start in an illegal position
 					m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++div));
 					while (div < 20) {
