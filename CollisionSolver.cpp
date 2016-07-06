@@ -137,6 +137,7 @@ bool CollisionSolver::vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vec
 
 void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 {
+	m_Contacts.clear();
 	auto rb1_edges = rb1->getEdges();
 	auto rb2_edges = rb2->getEdges();
 
@@ -190,9 +191,9 @@ bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d
 	Vector2d a = std::get<0>(edge);
 	Vector2d b = std::get<0>(edge) + std::get<1>(edge);
 
-	double AB = std::sqrt( pow(b[0] - a[0], 2) * pow(b[1]-a[1], 2) );
-	double AP = std::sqrt( pow(vert[0] - a[0], 2) * pow(vert[1] - a[1], 2) );
-	double PB = std::sqrt( pow(b[0] - vert[0], 2) * pow(b[1] - vert[1], 2) );
+	double AB = std::sqrt( pow(b[0] - a[0], 2) + pow(b[1]-a[1], 2) );
+	double AP = std::sqrt( pow(vert[0] - a[0], 2) + pow(vert[1] - a[1], 2) );
+	double PB = std::sqrt( pow(b[0] - vert[0], 2) + pow(b[1] - vert[1], 2) );
 
 	if (AB <= AP + PB + m_tolerance && AB >= AP + PB - m_tolerance) {
 		return true;
