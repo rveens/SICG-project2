@@ -37,5 +37,5 @@ public:
 private:
 	Vector2d m_Size;
 
-	bool checkIfPointInSquare(Vector2d &point);
+	bool checkIfPointInSquare(Vector2d &point, int N);
 };

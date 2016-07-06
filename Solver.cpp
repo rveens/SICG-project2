@@ -402,11 +402,10 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 			}
 		}
 		if (leftover_density != 0) {
-			std::cout << "There is leftover density: " << std::to_string(leftover_density) << "\n";
 			// spread out leftover density all around RB
 			rb->getBoundaryCells(N, solid);
 			if (rb->gridIndicesCloseToBoundary.size() == 0) {
-				printf("Loss of density!\n");
+				//printf("Loss of density!\n");
 			} else {
 				leftover_density /= rb->gridIndicesCloseToBoundary.size();
 				for (auto neighbour : rb->gridIndicesCloseToBoundary) {
@@ -418,7 +417,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	
 
 	// 6. RB applies velocity to fluid
-	double RBtofluid = 0.005;
+	double RBtofluid = 0.001;
 	for (RigidBody *rb : m_rbodies) {
 		rb->getBoundaryCells(N, solid);
 		for (auto &cell : rb->gridIndicesCloseToBoundary) {
@@ -432,7 +431,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	project(N, u, v, p, div, solid);
 	
 
-	// 6. check collisions
+	// 7. check collisions
 	colsolver.m_Contacts.clear();
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
@@ -541,11 +540,9 @@ void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int
 {
 	add_source ( N, x, x0);
 	double old_density = count_density(N, x, solid);
-	std::cout << "Old density: " << std::to_string(old_density) << "\n";
 	SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, solid);
 	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, solid);
 	double new_density = count_density(N, x, solid);
-	std::cout << "New density: " << std::to_string(new_density) << "\n";
 	preserve_density(N, x, solid, old_density, new_density);
 }
 

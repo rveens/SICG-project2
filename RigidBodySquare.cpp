@@ -242,7 +242,7 @@ void RigidBodySquare::voxelize(int N)
 			Vector2d tr = bl + Vector2d(1.0/N, 1.0/N);
 
 			// 3) and 4) are done in checkIfPointInSquare.
-			if (checkIfPointInSquare(bl) || checkIfPointInSquare(br) || checkIfPointInSquare(tl) || checkIfPointInSquare(tr)) {
+			if (checkIfPointInSquare(bl,N) || checkIfPointInSquare(br,N) || checkIfPointInSquare(tl,N) || checkIfPointInSquare(tr,N)) {
 				// save grid cell index (bounding box bottomleft + i and j offsets)
 				gridIndicesOccupied.push_back(Vector2i(cellCoords[0] + i, cellCoords[1] + j));
 			}
@@ -279,7 +279,7 @@ std::vector<Vector2i> RigidBodySquare::getBoundaryCells(int N, int *solid)
 	return bCells;
 }
 
-bool RigidBodySquare::checkIfPointInSquare(Vector2d &point)
+bool RigidBodySquare::checkIfPointInSquare(Vector2d &point, int N)
 {
 	Vector2d pCopy = point;
 	// I assume the given point is in world coordinates.
@@ -292,8 +292,10 @@ bool RigidBodySquare::checkIfPointInSquare(Vector2d &point)
 	pCopy = m_Rotation.transpose() * pCopy;
 
 	// now we can check if the point is inside our outside the (unrotated) square.
-	if (pCopy[0] < m_Size[0] / 2 && pCopy[0] > -m_Size[0] / 2)
-		if (pCopy[1] < m_Size[1] / 2 && pCopy[1] > -m_Size[1] / 2)
+	double N0 = N;
+	int offset = 2;
+	if (pCopy[0] < m_Size[0]/2 - offset/(N0+2) && pCopy[0] > -m_Size[0]/2 + offset/(N0+2))
+		if (pCopy[1] < m_Size[1]/2 - offset /(N0+2) && pCopy[1] > -m_Size[1]/2 + offset /(N0+2))
 			return true;
 	return false;
 }
