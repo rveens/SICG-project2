@@ -170,7 +170,7 @@ void Solver::preserve_density(int N, float * x, int * solid, double old_density,
 /* public functions: */
 void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens, float * p, float * div)
 {
-	double vel_friction = 0.95; // must be <= 1
+	double vel_friction = 0.92; // must be <= 1
 	double ang_friction = 0.9;
 	// 0. apply friction to velocities and momentums
 	for (RigidBody *rb : m_rbodies) {
@@ -417,13 +417,13 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	
 
 	// 6. RB applies velocity to fluid
-	double RBtofluid = 0.001;
+	double RBtofluid = 0.00003;
 	for (RigidBody *rb : m_rbodies) {
 		rb->getBoundaryCells(N, solid);
 		for (auto &cell : rb->gridIndicesCloseToBoundary) {
 			Vector2d velocity = rb->getVelocity();
-			u[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[0] / dt;
-			v[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[1] / dt;
+			u[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[0] / dtrb;
+			v[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[1] / dtrb;
 		}
 	}
 

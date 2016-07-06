@@ -2,8 +2,10 @@
   ======================================================================
    demo.c --- protoype to show off the simple solver
   ----------------------------------------------------------------------
-   Author : Jos Stam (jstam@aw.sgi.com)
+   Original Author : Jos Stam (jstam@aw.sgi.com)
    Creation Date : Jan 9 2003
+
+   Additions: Loek Tonnaer & Rick Veens (2016)
 
    Description:
 
@@ -38,7 +40,7 @@
 static Solver *solver;
 
 static int N;
-static float force, source;
+static float force, source, rbmove;
 static int dvel;
 static bool mouse_drag = false; // whether mouse was dragged previous timestep
 
@@ -262,8 +264,8 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 		RigidBody *rb = solver->getRigidBodyOnMousePosition(x, y);
 		if (rb != nullptr) {
 			// 2) set the new position of the rigid body
-			rb->m_LinearMomentum[0] = force * (mx - omx);
-			rb->m_LinearMomentum[1] = force * (omy - my);
+			rb->m_LinearMomentum[0] = rbmove * (mx - omx);
+			rb->m_LinearMomentum[1] = rbmove * (omy - my);
 		}
 	}
 
@@ -409,60 +411,6 @@ static void open_glut_window ( void )
 	glutDisplayFunc ( display_func );
 }
 
-
-/*
-----------------------------------------------------------------------
-Ant Tweak Bar + demo setup
-----------------------------------------------------------------------
-*/
-
-void setupAntTweakBar()
-{
-	TwInit(TW_OPENGL, NULL);
-
-	// - Directly redirect GLUT mouse "passive" motion events to AntTweakBar (same as MouseMotion)
-	glutPassiveMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT);
-	// - Directly redirect GLUT special key events to AntTweakBar
-	glutSpecialFunc((GLUTspecialfun)TwEventSpecialGLUT);
-	// - Send 'glutGetModifers' function pointer to AntTweakBar;
-	//   required because the GLUT key event functions do not report key modifiers states.
-	TwGLUTModifiersFunc(glutGetModifiers);
-
-	// Create a tweak bar
-	TwBar *bar = TwNewBar("TweakBar");
-	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLUT and OpenGL.' "); // Message added to the help bar.
-	TwDefine(" TweakBar size='200 200' color='96 216 224' "); // change default tweak bar size and color
-
-	TwAddVarRW(bar, "Boundingbox", TW_TYPE_BOOLCPP, &solver->m_Drawbb, " group='Draw'");
-	TwAddVarRW(bar, "Boundingbox cell-aligned", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
-	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
-	TwAddVarRW(bar, "Boundary cells", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
-	TwAddVarRW(bar, "Edge normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
-	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
-
-
-	// rb one
-	Matrix2d rot = Matrix2d::Identity();
-	rot(0, 0) = 0.7071;
-	rot(0, 1) = -0.7071;
-	rot(1, 0) = 0.7071;
-	rot(1, 1) = 0.7071;
-	Vector2d init_position(0.6, 0.6);
-	Vector2d rb_size(0.2, 0.2);
-	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
-	solver->addRigidBody(rb);
-	solver->addForce(new GravityForce(rb));
-
-	// rb two
-	Matrix2d rot2 = Matrix2d::Identity();
-	Vector2d init_position2(0.799, 0.799);
-	Vector2d rb_size2(0.2, 0.2);
-	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
-	solver->addRigidBody(rb2);
-	solver->addForce(new GravityForce(rb2));
-}
-
-
 /*
 ----------------------------------------------------------------------
 particles
@@ -479,13 +427,13 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 	Particle *** p_storage;
 
 	// Allocate memory
-	p_storage = new Particle**[h+1];
-	for (int i = 0; i < h+1; ++i)
-		p_storage[i] = new Particle*[w+1];
-	
+	p_storage = new Particle**[h + 1];
+	for (int i = 0; i < h + 1; ++i)
+		p_storage[i] = new Particle*[w + 1];
+
 	//Particle *p_storage[h + 1][w + 1];	// 2x2 'grid' results in a 3x3 particle system
 
-										// create particles
+	// create particles
 	for (int j = 0; j <= h; j++) {
 		for (int i = 0; i <= w; i++) {
 			p_storage[j][i] = new Particle(Vector2d(startx + i*gridSize, starty - j*gridSize), pMass);
@@ -541,16 +489,66 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 		/* solver->addConstraint(new CircularWireConstraint(p_storage[0][i], Vec2(center[0], center[1] + dist), dist)); */
 		p_storage[0][i]->m_Static = true;
 	}
-
-	/*
-	// add wind 
-	for (int j = 0; j <= h; j++) {
-		for (int i = 0; i <= w; i++) {
-			solver->addForce(new WindForce(p_storage[j][i], Vector2d(2.0, 0)));
-		}
-	}
-	*/
 }
+
+
+/*
+----------------------------------------------------------------------
+Ant Tweak Bar + demo setup
+----------------------------------------------------------------------
+*/
+
+void setupAntTweakBar()
+{
+	TwInit(TW_OPENGL, NULL);
+
+	// - Directly redirect GLUT mouse "passive" motion events to AntTweakBar (same as MouseMotion)
+	glutPassiveMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT);
+	// - Directly redirect GLUT special key events to AntTweakBar
+	glutSpecialFunc((GLUTspecialfun)TwEventSpecialGLUT);
+	// - Send 'glutGetModifers' function pointer to AntTweakBar;
+	//   required because the GLUT key event functions do not report key modifiers states.
+	TwGLUTModifiersFunc(glutGetModifiers);
+
+	// Create a tweak bar
+	TwBar *bar = TwNewBar("TweakBar");
+	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLUT and OpenGL.' "); // Message added to the help bar.
+	TwDefine(" TweakBar size='200 200' color='96 216 224' "); // change default tweak bar size and color
+
+	TwAddVarRW(bar, "Boundingbox", TW_TYPE_BOOLCPP, &solver->m_Drawbb, " group='Draw'");
+	TwAddVarRW(bar, "Boundingbox cell-aligned", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
+	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
+	TwAddVarRW(bar, "Boundary cells", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
+	TwAddVarRW(bar, "Edge normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
+	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
+
+
+	// rb one
+	Matrix2d rot = Matrix2d::Identity();
+	rot(0, 0) = 0.7071;
+	rot(0, 1) = -0.7071;
+	rot(1, 0) = 0.7071;
+	rot(1, 1) = 0.7071;
+	Vector2d init_position(0.6, 0.6);
+	Vector2d rb_size(0.2, 0.2);
+	RigidBody *rb = new RigidBodySquare(init_position, rb_size, 1, rot);
+	solver->addRigidBody(rb);
+	solver->addForce(new GravityForce(rb));
+
+	// rb two
+	Matrix2d rot2 = Matrix2d::Identity();
+	Vector2d init_position2(0.799, 0.799);
+	Vector2d rb_size2(0.2, 0.2);
+	RigidBody *rb2 = new RigidBodySquare(init_position2, rb_size2, 1, rot2);
+	solver->addRigidBody(rb2);
+	solver->addForce(new GravityForce(rb2));
+
+	// cloth 1
+	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+}
+
+
+
 
 /*
   ----------------------------------------------------------------------
@@ -567,14 +565,15 @@ int main ( int argc, char ** argv )
 	float visc;
 	float vort;
 
-	if ( argc != 1 && argc != 7 ) {
-		fprintf ( stderr, "usage : %s N dt diff visc force source vort\n", argv[0] );
+	if ( argc != 1 && argc != 8 ) {
+		fprintf ( stderr, "usage : %s N dt diff visc force rbmove source vort\n", argv[0] );
 		fprintf ( stderr, "where:\n" );\
 		fprintf ( stderr, "\t N      : grid resolution\n" );
 		fprintf ( stderr, "\t dt     : time step\n" );
 		fprintf ( stderr, "\t diff   : diffusion rate of the density\n" );
 		fprintf ( stderr, "\t visc   : viscosity of the fluid\n" );
-		fprintf ( stderr, "\t force  : scales the mouse movement that generate a force\n" );
+		fprintf ( stderr, "\t force  : scales the mouse movement that generates a force on fluids\n" );
+		fprintf ( stderr, "\t rbmove : scales the mouse movement that generates a force on rigid bodies\n" );
 		fprintf ( stderr, "\t source : amount of density that will be deposited\n" );
 		fprintf ( stderr, "\t vort   : strength of vorticity confinement\n" );
 		exit ( 1 );
@@ -586,34 +585,32 @@ int main ( int argc, char ** argv )
 		diff = 0.00001f; // was 0
 		visc = 0.0001f; // was 0
 		force = 1.0f; // was 5
+		rbmove = 0.3f; // influence of middle mouse button drag
 		source = 100.0f;
 		vort = 1.0f; // influence of vorticity confinement
-		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g vort=%g\n",
-			N, dt, diff, visc, force, source, vort );
+		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force=%g rbmove=%g source=%g vort=%g\n",
+			N, dt, diff, visc, force, rbmove, source, vort );
 	} else {
 		N = atoi(argv[1]);
 		dt = atof(argv[2]);
 		diff = atof(argv[3]);
 		visc = atof(argv[4]);
 		force = atof(argv[5]);
-		source = atof(argv[6]);
-		vort = atof(argv[7]);
+		rbmove = atof(argv[6]);
+		source = atof(argv[7]);
+		vort = atof(argv[8]);
 	}
 
 	/* init stuff */
-	solver = new Solver(dt, 0.001, diff, visc, vort);
+	solver = new Solver(dt, 0.003, diff, visc, vort);
 	setupAntTweakBar();
-
-	// cloth 1
-	//create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
-
 	/* end init stuff */
 	
 
 	printf ( "\n\nHow to use this demo:\n\n" );
 	printf ( "\t Add densities with the right mouse button\n" );
 	printf ( "\t Add velocities with the left mouse button and dragging the mouse\n" );
-	printf ( "\t Toggle density/velocity display with the 'v' key\n" );
+	printf ( "\t Toggle velocity display with the 'v' key\n" );
 	printf ( "\t Clear the simulation by pressing the 'c' key\n" );
 	printf ( "\t Quit by pressing the 'q' key\n" );
 
