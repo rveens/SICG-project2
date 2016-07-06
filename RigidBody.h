@@ -32,8 +32,8 @@ public:
 	virtual void voxelize(int N) = 0;
 	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid) = 0;
 	Vector2d getVelocity();
-	Vector2d getOmega();
-	Matrix2d getIinv();
+	double getOmega();
+	double getIinv();
 	virtual void computeAuxVariables();
 
 
@@ -53,14 +53,14 @@ public:
 	/* constant quantities */
 	const Vector2d m_ConstructPos;
 	int m_Mass;
-	Matrix2d m_Ibody,
+	double m_Ibody,
 		 m_IbodyInv;
 
 	/* state variables */
 	Vector2d m_Position;		// x
 	Matrix2d m_Rotation;		// R
 	Vector2d m_LinearMomentum; 	// P
-	Vector2d m_AngularMomentum;	// L
+	double m_AngularMomentum;	// L
 
 
 	/* computed quantities */
@@ -76,9 +76,9 @@ private:
 
 
 	/* derived quantities */
-	Matrix2d m_Iinv;
+	double m_Iinv;
 	Vector2d m_Velocity;
-	Vector2d m_Omega;
+	double m_Omega;
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 };

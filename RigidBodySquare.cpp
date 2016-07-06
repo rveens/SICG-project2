@@ -12,12 +12,12 @@ RigidBodySquare::RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size,
 					m_Size(size)
 {
 	// calc Ibody
-	m_Ibody(0, 0) = m_Size[0];
-	m_Ibody(1, 1) = m_Size[1];
-	m_Ibody *= 1.0/12.0;
+	double x = m_Size[0];
+	double y = m_Size[1];
+	m_Ibody = m_Mass*(x*x + y*y) / 12.0;
 
 	// calc IbodyInv
-	m_IbodyInv = m_Ibody.inverse();
+	m_IbodyInv = 1/m_Ibody;
 
 	std::cout << "ibody:" << std::endl;
 	std::cout << m_Ibody << std::endl;
@@ -178,7 +178,7 @@ std::vector<double> RigidBodySquare::computeAABB()
 
 	std::vector<double> coords;
 
-	coords.push_back( std::min_element(xcoords.cbegin(), xcoords.cend())[0] );
+	coords.push_back(std::min_element(xcoords.cbegin(), xcoords.cend())[0] );
 	coords.push_back(std::min_element(ycoords.cbegin(), ycoords.cend())[0] );
 	coords.push_back(std::max_element(xcoords.cbegin(), xcoords.cend())[0] );
 	coords.push_back(std::max_element(ycoords.cbegin(), ycoords.cend())[0] );
