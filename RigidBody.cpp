@@ -160,12 +160,12 @@ Vector2d RigidBody::getVelocity()
 	return m_Velocity;
 }
 
-Vector2d RigidBody::getOmega()
+double RigidBody::getOmega()
 {
 	return m_Omega;
 }
 
-Matrix2d RigidBody::getIinv()
+double RigidBody::getIinv()
 {
 	return m_Iinv;
 }

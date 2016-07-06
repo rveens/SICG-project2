@@ -193,7 +193,7 @@ bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d
 
 Vector2d CollisionSolver::pointVelocity(RigidBody *rb, Vector2d &point)
 {
-	double omega = rb->getOmega()[0];
+	double omega = rb->getOmega();
 	double x = point[0] - rb->m_Position[0];
 	double y = point[1] - rb->m_Position[1];
 
@@ -234,26 +234,14 @@ void CollisionSolver::applyCollision(Contact &c)
 	Vector3d rb = Vector3d(c.p[0] - c.b->m_Position[0], c.p[1] - c.b->m_Position[1], 0); ;
 	double vrel = n.dot(padot - pbdot);
 	double numerator = -(1 + m_tolerance) * vrel;
-	Matrix3d aInv;
-	{
-		Matrix2d temp = c.a->getIinv();
-		aInv << temp(0, 0), temp(1, 0), 0,
-				temp(0, 1), temp(1, 1), 0,
-				0,			0,			0;
-	}
 
-	Matrix3d bInv;
-	{
-		Matrix2d temp = c.b->getIinv();
-		bInv << temp(0, 0), temp(1, 0), 0,
-				temp(0, 1), temp(1, 1), 0,
-				0,			0,			0;
-	}
+	double aInv = c.a->getIinv();
+	double bInv = c.b->getIinv();
 
 	double term1 = 1 / c.a->m_Mass;
 	double term2 = 1 / c.b->m_Mass;
 	
-	double term3 = n.dot(aInv * (ra.cross(n)).cross(ra));	// gaat dit goed?
+	double term3 = n.dot(aInv * (ra.cross(n)).cross(ra)); // gaat dit goed?
 	double term4 = n.dot(bInv * (rb.cross(n)).cross(rb)); // gaat dit goed?
 
 	double j = numerator / (term1 + term2 + term3 + term4);
@@ -267,11 +255,9 @@ void CollisionSolver::applyCollision(Contact &c)
 	c.b->m_LinearMomentum[1] -= force[0];
 
 
-	c.a->m_AngularMomentum[0] = ra.cross(force)[0];	// gaat dit ok?
-	c.a->m_AngularMomentum[1] = ra.cross(force)[1];	// gaat dit ok?
+	c.a->m_AngularMomentum += ra.cross(force)[2];	// gaat dit ok?
 
-	c.b->m_AngularMomentum[0] -= rb.cross(force)[0];	// gaat dit ok?
-	c.b->m_AngularMomentum[1] -= rb.cross(force)[1];	// gaat dit ok?
+	c.b->m_AngularMomentum -= rb.cross(force)[2];	// gaat dit ok?
 
 
 	// compute aux vars
