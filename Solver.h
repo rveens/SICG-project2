@@ -27,6 +27,8 @@ public:
 	void setIntegrator(Integrator *i);
 	RigidBody *getRigidBodyOnMousePosition(double x, double y);
 
+	void clearRigidBodies();
+
 	/* drawing variables: */
 	bool m_Drawbb = false;
 	bool m_DrawbbCells = false;

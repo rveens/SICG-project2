@@ -433,6 +433,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 
 	// 7. check collisions
 	colsolver.m_Contacts.clear();
+	if (m_rbodies.empty())
+		return;
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
 			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
@@ -534,6 +536,11 @@ void Solver::addParticle(Particle *p)
 void Solver::addForce(Force *f)
 {
 	m_forces.push_back(f);
+}
+
+void Solver::clearRigidBodies()
+{
+	m_rbodies.clear();
 }
 
 void Solver::setIntegrator(Integrator *i)

@@ -53,6 +53,7 @@ static int win_x, win_y;
 static int mouse_down[3];
 static int omx, omy, mx, my;
 
+static bool scene_rbodies = false;
 
 /*
   ----------------------------------------------------------------------
@@ -492,6 +493,47 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 }
 
 
+void TW_CALL SetupRigidGetCallback(void *value, void *clientData)
+{
+	//*(MyVariableType *)value = myVariable;  // for instance
+	*(bool *)value = scene_rbodies;
+}
+
+void TW_CALL SetupRigidBodies(const void *value, void *clientData)
+{
+	static RigidBody *rb, *rb2;
+
+	scene_rbodies = !scene_rbodies;
+
+	if (scene_rbodies) {
+		// add rbodies
+
+		// rb one
+		Matrix2d rot = Matrix2d::Identity();
+		rot(0, 0) = 0.7071;
+		rot(0, 1) = -0.7071;
+		rot(1, 0) = 0.7071;
+		rot(1, 1) = 0.7071;
+		Vector2d init_position(0.6, 0.6);
+		Vector2d rb_size(0.1, 0.2);
+		rb = new RigidBodyRectangle(init_position, rb_size, 1, rot);
+		solver->addRigidBody(rb);
+		solver->addForce(new GravityForce(rb));
+
+		// rb two
+		Matrix2d rot2 = Matrix2d::Identity();
+		Vector2d init_position2(0.799, 0.799);
+		Vector2d rb_size2(0.2, 0.2);
+		rb2 = new RigidBodyRectangle(init_position2, rb_size2, 1, rot2);
+		solver->addRigidBody(rb2);
+		solver->addForce(new GravityForce(rb2));
+	}
+	else {
+		// remove rbodies
+		solver->clearRigidBodies();
+	}
+}
+
 /*
 ----------------------------------------------------------------------
 Ant Tweak Bar + demo setup
@@ -523,25 +565,7 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
 
 
-	// rb one
-	Matrix2d rot = Matrix2d::Identity();
-	rot(0, 0) = 0.7071;
-	rot(0, 1) = -0.7071;
-	rot(1, 0) = 0.7071;
-	rot(1, 1) = 0.7071;
-	Vector2d init_position(0.6, 0.6);
-	Vector2d rb_size(0.1, 0.2);
-	RigidBody *rb = new RigidBodyRectangle(init_position, rb_size, 1, rot);
-	solver->addRigidBody(rb);
-	solver->addForce(new GravityForce(rb));
-
-	// rb two
-	Matrix2d rot2 = Matrix2d::Identity();
-	Vector2d init_position2(0.799, 0.799);
-	Vector2d rb_size2(0.2, 0.2);
-	RigidBody *rb2 = new RigidBodyRectangle(init_position2, rb_size2, 1, rot2);
-	solver->addRigidBody(rb2);
-	solver->addForce(new GravityForce(rb2));
+	TwAddVarCB(bar, "Rigid bodies", TW_TYPE_BOOLCPP, SetupRigidBodies, SetupRigidGetCallback, NULL, NULL);
 
 	// cloth 1
 	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
