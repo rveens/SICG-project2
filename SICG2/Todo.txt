@@ -10,7 +10,7 @@ x particles toevoegen
 x vloeistof oefent kracht uit op particles
 
 x collision detection (SAT)
-- contact points bepalen
+x contact points bepalen
 - bepalen of vertex-edge of edge-edge
 - collision response volgens notesg
 

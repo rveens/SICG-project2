@@ -432,13 +432,14 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	project(N, u, v, p, div, solid);
 	
 
-	// 6. check collisions
+	// 7. check collisions
 	colsolver.m_Contacts.clear();
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
 			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
 				printf("Collision between %d and %d\n", m_rbodies[i], m_rbodies[j]);
 				colsolver.findContactPoints(m_rbodies[i], m_rbodies[j]);
+				colsolver.collisionResponse();
 			} else {
 				printf("No Collisions\n");
 			}
@@ -475,25 +476,25 @@ void Solver::drawObjects(int N, int *solid)
 void Solver::drawContactPoints()
 {
 	for (Contact &c : colsolver.m_Contacts) {
-		if (c.vf) {
-			// draw a large point on the position of the vertex
-			glPointSize(10);
-			glLineWidth(10);
-			glColor3f(1.0f, 0.0f, 0.0f);
-			glBegin(GL_POINTS);
-			glVertex2d(c.p[0], c.p[1]);
-			glEnd();
+		//if (c.vf) {
+		// draw a large point on the position of the vertex
+		glPointSize(10);
+		glLineWidth(10);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_POINTS);
+		glVertex2d(c.p[0], c.p[1]);
+		glEnd();
 
-			// draw the edge, again, with a funny color
-			Vector2d a = std::get<0>(c.edge);
-			Vector2d b = std::get<0>(c.edge) + std::get<1>(c.edge);
+		// draw the edge, again, with a funny color
+		Vector2d a = std::get<0>(c.edge);
+		Vector2d b = std::get<0>(c.edge) + std::get<1>(c.edge);
 
-			glBegin(GL_LINE_STRIP);
-			glColor3f(1.0f, 0.5f, 0.0f);
-			glVertex2f(a[0], a[1]);
-			glVertex2f(b[0], b[1]);
-			glEnd();
-		}
+		glBegin(GL_LINE_STRIP);
+		glColor3f(1.0f, 0.5f, 0.0f);
+		glVertex2f(a[0], a[1]);
+		glVertex2f(b[0], b[1]);
+		glEnd();
+		//}
 	}
 }
 

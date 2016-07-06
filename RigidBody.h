@@ -32,6 +32,10 @@ public:
 	virtual void voxelize(int N) = 0;
 	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid) = 0;
 	Vector2d getVelocity();
+	Vector2d getOmega();
+	Matrix2d getIinv();
+	virtual void computeAuxVariables();
+
 
 	// drawing functions
 	virtual void drawbb() { };

@@ -55,6 +55,79 @@ bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
 	return true;
 }
 
+void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
+{
+	m_Contacts.clear();
+	auto rb1_edges = rb1->getEdges();
+	auto rb2_edges = rb2->getEdges();
+
+	auto rb1_vertices = rb1->getVertices();
+	auto rb2_vertices = rb2->getVertices();
+
+	auto rb1_edgeNormals = rb1->getEdgeNormals();
+	auto rb2_edgeNormals = rb2->getEdgeNormals();
+
+	// check for each vertex of rb1, if the vertex is in contact with an edges of rb2.
+	for (Vector2d &vert : rb1_vertices) {
+		int i = 0;
+		for (std::tuple<Vector2d, Vector2d> &edge : rb2_edges) {
+			if (vertexOnEdge(vert, edge)) {
+				printf("Vertex-edge collision!\n");
+				Contact c;
+				c.a = rb1;
+				c.b = rb2;
+				c.p = vert;
+				c.n = rb2_edgeNormals[i];
+				//c.ea = { 0, 0 }; // todo
+				//c.eb = { 0, 0 };
+				//c.vf = true;
+				c.edge = edge;
+				m_Contacts.push_back(c);
+			}
+			i++;
+		}
+	}
+
+	// check for each vertex of rb2, if the vertex is in contact with an edge of rb1.
+	for (Vector2d &vert : rb2_vertices) {
+		int i = 0;
+		for (std::tuple<Vector2d, Vector2d> &edge : rb1_edges) {
+			if (vertexOnEdge(vert, edge)) {
+				printf("Vertex-edge collision!\n");
+				Contact c;
+				c.a = rb2;
+				c.b = rb1;
+				c.p = vert;
+				c.n = rb1_edgeNormals[i];
+				//c.ea = { 0, 0 }; // todo
+				//c.eb = { 0, 0 };
+				//c.vf = true;
+				c.edge = edge;
+				m_Contacts.push_back(c);
+			}
+			i++;
+		}
+	}
+}
+
+void CollisionSolver::collisionResponse()
+{
+	bool had_collision;
+	do {
+		had_collision = false;
+
+		for (Contact &c : m_Contacts) {
+			if (colliding(c)) {
+				applyCollision(c);
+				had_collision = true;
+
+				// ode discontinuous ?? functie
+
+			}
+		}
+	} while (had_collision == true);
+}
+
 double CollisionSolver::projectOnEdgeNormal(Vector2d &v, Vector2d &a, Vector2d &ab_normal)
 {
 	return (v - a).dot(ab_normal);
@@ -99,90 +172,6 @@ bool CollisionSolver::SATIntervalTest(Vector2d &edgeNorm, Vector2d &a, std::vect
 		return true;
 }
 
-double CollisionSolver::cross2D(Vector2d &v, Vector2d &w)
-{
-	return v[0]*w[1] -v[1]*w[0];
-}
-
-bool CollisionSolver::vectorIntersect(Vector2d &p, Vector2d &r, Vector2d &q, Vector2d &s, Vector2d &intersectionPoint)
-{
-	Vector2d qminp = q - p;
-	// case 1 colinear
-	if (cross2D(r, s) == 0 && cross2D(qminp, r) == 0) {
-		if ( (0 <= (q - p).dot(r) && (q - p).dot(r) <= r.dot(r)) || 
-			 (0 <= (p - q).dot(s) && (p - q).dot(s) <= s.dot(s)) )
-			return true;
-
-		return false;
-	}
-	// case 2 parallel and no intersection
-	if (cross2D(r, s) == 0 && cross2D(qminp, r) != 0) {
-		// parallel
-		return false;
-	}
-	Vector2d t_second = s / cross2D(r, s);
-	double t = cross2D(qminp, t_second);
-	Vector2d u_second = r / cross2D(r, s);
-	double u = cross2D(qminp, u_second);
-
-	// case 3 intersection
-	if (cross2D(r, s) != 0 && (t >= 0 && t <= 1) && (u >= 0 && u <= 1)) {
-		// intersection at p + tr OR q + us
-		intersectionPoint = p + t*r;
-		return true;
-	}
-	// case 4 Not parallel, no intersection
-	return false;
-}
-
-void CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
-{
-	m_Contacts.clear();
-	auto rb1_edges = rb1->getEdges();
-	auto rb2_edges = rb2->getEdges();
-
-	auto rb1_vertices = rb1->getVertices();
-	auto rb2_vertices = rb2->getVertices();
-
-	// check for each vertex of rb1, if the vertex is in contact with an edges of rb2.
-	for (Vector2d &vert : rb1_vertices) {
-		for (std::tuple<Vector2d, Vector2d> &edge : rb2_edges) {
-			if (vertexOnEdge(vert, edge)) {
-				printf("Vertex-edge collision!\n");
-				Contact c;
-				c.a = rb1;
-				c.b = rb2;
-				c.p = vert;
-				c.n = { 0, 0 }; // todo
-				c.ea = { 0, 0 }; // todo
-				c.eb = { 0, 0 };
-				c.vf = true;
-				c.edge = edge;
-				m_Contacts.push_back(c);
-			}
-		}
-	}
-
-	// check for each vertex of rb2, if the vertex is in contact with an edge of rb1.
-	for (Vector2d &vert : rb2_vertices) {
-		for (std::tuple<Vector2d, Vector2d> &edge : rb1_edges) {
-			if (vertexOnEdge(vert, edge)) {
-				printf("Vertex-edge collision!\n");
-				Contact c;
-				c.a = rb2;
-				c.b = rb1;
-				c.p = vert;
-				c.n = { 0, 0 }; // todo
-				c.ea = { 0, 0 }; // todo
-				c.eb = { 0, 0 };
-				c.vf = true;
-				c.edge = edge;
-				m_Contacts.push_back(c);
-			}
-		}
-	}
-}
-
 bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d> &edge)
 {
 	// check if the given vertex is on the given edge. If so, return true.
@@ -191,40 +180,107 @@ bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d
 	Vector2d a = std::get<0>(edge);
 	Vector2d b = std::get<0>(edge) + std::get<1>(edge);
 
-	double AB = std::sqrt( pow(b[0] - a[0], 2) + pow(b[1]-a[1], 2) );
-	double AP = std::sqrt( pow(vert[0] - a[0], 2) + pow(vert[1] - a[1], 2) );
-	double PB = std::sqrt( pow(b[0] - vert[0], 2) + pow(b[1] - vert[1], 2) );
+	double AB = std::sqrt(pow(b[0] - a[0], 2) + pow(b[1] - a[1], 2));
+	double AP = std::sqrt(pow(vert[0] - a[0], 2) + pow(vert[1] - a[1], 2));
+	double PB = std::sqrt(pow(b[0] - vert[0], 2) + pow(b[1] - vert[1], 2));
 
 	if (AB <= AP + PB + m_tolerance && AB >= AP + PB - m_tolerance) {
 		return true;
 	}
 	else
 		return false;
-
-	/*Vector2d a = std::get<0>(edge);
-	Vector2d b = std::get<0>(edge) + std::get<1>(edge);
-	double lhs = (vert[0] - a[0]) / (b[0] - a[0]);
-	double rhs = (vert[1] - a[1]) / (b[1] - a[1]);
-	if (lhs <= rhs + m_tolerance && lhs >= rhs - m_tolerance) {
-		return true;
-	}
-	else
-		return false;*/
 }
 
-int CollisionSolver::isVertexOfRb(Vector2d &vertex, RigidBody *rb, double epsilon = 0.0001)
+Vector2d CollisionSolver::pointVelocity(RigidBody *rb, Vector2d &point)
 {
-	auto rbVertices = rb->getVertices();
+	double omega = rb->getOmega()[0];
+	double x = point[0] - rb->m_Position[0];
+	double y = point[1] - rb->m_Position[1];
 
-	for (int i = 0; i < rbVertices.size(); ++i) {
-		Vector2d v = rbVertices[i];
+	return rb->getVelocity() + Vector2d(-omega*y, omega*x);
+}
 
-		if (v[0] + epsilon >= vertex[0] && v[0] - epsilon <= vertex[0]) {
-			if (v[1] + epsilon >= vertex[1] && v[1] - epsilon <= vertex[1]) {
-				return i;
-			}
-		}
+bool CollisionSolver::colliding(Contact &c)
+{
+	Vector2d padot = pointVelocity(c.a, c.p);
+	Vector2d pbdot = pointVelocity(c.b, c.p);
+	double vrel = c.n.dot(padot - pbdot);
+
+	// tolerances misschien anders maken hier, want dat is in het voorbeeld ook
+	if (vrel > m_tolerance) // moving away
+		return false;
+	if (vrel > -m_tolerance) // resting contact
+		return false;
+	else
+		return true;
+
+	return false;
+}
+
+void CollisionSolver::applyCollision(Contact &c)
+{
+	Vector3d padot;
+	{
+		Vector2d temp = pointVelocity(c.a, c.p);
+		padot= Vector3d(temp[0], temp[1], 0);
+	}
+	Vector3d pbdot;
+	{
+		Vector2d temp = pointVelocity(c.b, c.p);
+		pbdot = Vector3d(temp[0], temp[1], 0);
+	}
+	Vector3d n = Vector3d(c.n[0], c.n[1], 0);
+	Vector3d ra = Vector3d(c.p[0] - c.a->m_Position[0], c.p[1] - c.a->m_Position[1], 0); ;
+	Vector3d rb = Vector3d(c.p[0] - c.b->m_Position[0], c.p[1] - c.b->m_Position[1], 0); ;
+	double vrel = n.dot(padot - pbdot);
+	double numerator = -(1 + m_tolerance) * vrel;
+	Matrix3d aInv;
+	{
+		Matrix2d temp = c.a->getIinv();
+		aInv << temp(0, 0), temp(1, 0), 0,
+				temp(0, 1), temp(1, 1), 0,
+				0,			0,			0;
 	}
 
-	return -1;
+	Matrix3d bInv;
+	{
+		Matrix2d temp = c.b->getIinv();
+		bInv << temp(0, 0), temp(1, 0), 0,
+				temp(0, 1), temp(1, 1), 0,
+				0,			0,			0;
+	}
+
+	double term1 = 1 / c.a->m_Mass;
+	double term2 = 1 / c.b->m_Mass;
+	
+	double term3 = n.dot(aInv * (ra.cross(n)).cross(ra));	// gaat dit goed?
+	double term4 = n.dot(bInv * (rb.cross(n)).cross(rb)); // gaat dit goed?
+
+	double j = numerator / (term1 + term2 + term3 + term4);
+	Vector3d force = j*n;
+
+	// apply impulse to bodies
+	c.a->m_LinearMomentum[0] += force[0];
+	c.a->m_LinearMomentum[1] += force[1];
+
+	c.b->m_LinearMomentum[0] -= force[0];
+	c.b->m_LinearMomentum[1] -= force[0];
+
+
+	c.a->m_AngularMomentum[0] = ra.cross(force)[0];	// gaat dit ok?
+	c.a->m_AngularMomentum[1] = ra.cross(force)[1];	// gaat dit ok?
+
+	c.b->m_AngularMomentum[0] -= rb.cross(force)[0];	// gaat dit ok?
+	c.b->m_AngularMomentum[1] -= rb.cross(force)[1];	// gaat dit ok?
+
+
+	// compute aux vars
+	c.a->computeAuxVariables();
+	c.b->computeAuxVariables();
+}
+
+
+double CollisionSolver::cross2D(Vector2d &v, Vector2d &w)
+{
+	return v[0]*w[1] -v[1]*w[0];
 }

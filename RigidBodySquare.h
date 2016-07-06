@@ -20,6 +20,7 @@ public:
 	virtual std::vector<double> computeAABB();
 	virtual std::vector<int> computeAABBcellAligned(int N);
 	virtual std::vector<Vector2d> getVertices();
+
 	virtual std::vector<std::tuple<Vector2d, Vector2d>> getEdges();
 	virtual std::vector<Vector2d> getEdgeNormals();
 	virtual void voxelize(int N);

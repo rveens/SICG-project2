@@ -148,3 +148,19 @@ Vector2d RigidBody::getVelocity()
 {
 	return m_Velocity;
 }
+
+Vector2d RigidBody::getOmega()
+{
+	return m_Omega;
+}
+
+Matrix2d RigidBody::getIinv()
+{
+	return m_Iinv;
+}
+
+void RigidBody::computeAuxVariables()
+{
+	m_Velocity = m_LinearMomentum / m_Mass;
+	m_Omega = m_Iinv * m_AngularMomentum;
+}
