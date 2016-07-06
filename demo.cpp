@@ -583,7 +583,7 @@ int main ( int argc, char ** argv )
 		N = 64;
 		dt = 0.1f;
 		diff = 0.00001f; // was 0
-		visc = 0.001f; // was 0
+		visc = 0.0001f; // was 0
 		force = 1.0f; // was 5
 		source = 100.0f;
 		vort = 1.0f; // influence of vorticity confinement

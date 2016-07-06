@@ -53,13 +53,15 @@ private:
 	// stuff for fluids
 	void add_source(int N, float * x, float * s);
 	void advect(int N, int b, float * d, float * d0, float * u, float * v, int * solid);
-	void diffuse(int N, int b, float * x, float * x0, int * solid);
+	void diffuse(int N, int b, float * x, float * x0, float diffvisc, int * solid);
 	void lin_solve(int N, int b, float * x, float * x0, float a, float c, int * solid);
 	void project(int N, float * u, float * v, float * p, float * div, int * solid);
 	void confine_vorticity(int N, float * u, float * v, int * solid);
+	double count_density(int N, float * x, int * solid);
+	void preserve_density(int N, float * x, int * solid, double old_density, double new_density);
 
 	// stuff for rigid bodies
-	void getPointOfCollision(double timeStep);
+	//void getPointOfCollision(double timeStep);
 };
 
 #endif /* SOLVER_H */
