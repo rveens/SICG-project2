@@ -13,6 +13,8 @@ x collision detection (SAT)
 x contact points bepalen
 x collision response volgens notesg
 - gravityForce voor Rigid Bodies correct implementeren
+- penetratie bij collision fixen (terug gaan met integrator)
+- Iinv veranderen in een scalar
 
 Iets mindere Prioriteit
 -----------------------------------------------------------------------------------
