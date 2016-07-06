@@ -4,15 +4,15 @@ Prioriteit
 -----------------------------------------------------------------------------------
 x vloeistof gaat niet door RB heen
 x vloeistof oefent kracht uit op RB
-- vloeistof word weg gedrukt door beweging van RB
-- RB oefent kracht uit op vloeistof
+~ vloeistof word weg gedrukt door beweging van RB
+~ RB oefent kracht uit op vloeistof
 x particles toevoegen
 x vloeistof oefent kracht uit op particles
 
 x collision detection (SAT)
 x contact points bepalen
-- bepalen of vertex-edge of edge-edge
-- collision response volgens notesg
+x collision response volgens notesg
+- gravityForce voor Rigid Bodies correct implementeren
 
 Iets mindere Prioriteit
 -----------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ x bewegen rigid body (muis-interactie) gebruikt velocity ipv positie
 - wall object maken dat collisions uitoefend op particles, is ook een fluid wall.
 - functie maken voor grid cell index <--> world coordinates.
 - grootte van particles afhankelijk maken van de grid size
+- edge-edge collisions?
 
 - een tijdstap varibele maken ipv 2 verschillende	(integrator explodeerd te snel)
 	- verlet integrator implementeren

@@ -170,7 +170,7 @@ void Solver::preserve_density(int N, float * x, int * solid, double old_density,
 /* public functions: */
 void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens, float * p, float * div)
 {
-	double vel_friction = 0.95; // must be <= 1
+	double vel_friction = 0.92; // must be <= 1
 	double ang_friction = 0.9;
 	// 0. apply friction to velocities and momentums
 	for (RigidBody *rb : m_rbodies) {
@@ -402,11 +402,10 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 			}
 		}
 		if (leftover_density != 0) {
-			std::cout << "There is leftover density: " << std::to_string(leftover_density) << "\n";
 			// spread out leftover density all around RB
 			rb->getBoundaryCells(N, solid);
 			if (rb->gridIndicesCloseToBoundary.size() == 0) {
-				printf("Loss of density!\n");
+				//printf("Loss of density!\n");
 			} else {
 				leftover_density /= rb->gridIndicesCloseToBoundary.size();
 				for (auto neighbour : rb->gridIndicesCloseToBoundary) {
@@ -418,13 +417,13 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	
 
 	// 6. RB applies velocity to fluid
-	double RBtofluid = 0.005;
+	double RBtofluid = 0.00003;
 	for (RigidBody *rb : m_rbodies) {
 		rb->getBoundaryCells(N, solid);
 		for (auto &cell : rb->gridIndicesCloseToBoundary) {
 			Vector2d velocity = rb->getVelocity();
-			u[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[0] / dt;
-			v[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[1] / dt;
+			u[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[0] / dtrb;
+			v[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[1] / dtrb;
 		}
 	}
 
@@ -542,11 +541,9 @@ void Solver::dens_step ( int N, float * x, float * x0, float * u, float * v, int
 {
 	add_source ( N, x, x0);
 	double old_density = count_density(N, x, solid);
-	std::cout << "Old density: " << std::to_string(old_density) << "\n";
 	SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, solid);
 	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, solid);
 	double new_density = count_density(N, x, solid);
-	std::cout << "New density: " << std::to_string(new_density) << "\n";
 	preserve_density(N, x, solid, old_density, new_density);
 }
 
