@@ -1,7 +1,7 @@
 #include "MouseForce.h"
 #include <GL/glut.h>
 
-MouseForce::MouseForce(RigidBody* rb, Vector2d &mousePos, double strength, bool mouse_dragged) :
+MouseForce::MouseForce(std::shared_ptr<RigidBody> rb, Vector2d &mousePos, double strength, bool mouse_dragged) :
 	m_rb(rb), m_mousePos(mousePos), m_strength(strength), m_mouse_dragged(mouse_dragged) {}
 
 MouseForce::~MouseForce()

@@ -1,5 +1,6 @@
 #include "CollisionSolver.h"
 
+#include <memory>
 #include <map>
 #include <stack>
 #include <iostream>
@@ -14,7 +15,7 @@ CollisionSolver::~CollisionSolver()
 
 }
 
-bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
+bool CollisionSolver::detectCollision(std::shared_ptr<RigidBody> rb1, std::shared_ptr<RigidBody> rb2)
 {
 	auto rb1_edges = rb1->getEdges();
 	auto rb2_edges = rb2->getEdges();
@@ -55,7 +56,7 @@ bool CollisionSolver::detectCollision(RigidBody *rb1, RigidBody *rb2)
 	return true;
 }
 
-bool CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
+bool CollisionSolver::findContactPoints(std::shared_ptr<RigidBody> rb1, std::shared_ptr<RigidBody> rb2)
 {
 	m_Contacts.clear();
 	auto rb1_edges = rb1->getEdges();
@@ -190,7 +191,7 @@ bool CollisionSolver::vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d
 		return false;
 }
 
-Vector2d CollisionSolver::pointVelocity(RigidBody *rb, Vector2d &point)
+Vector2d CollisionSolver::pointVelocity(std::shared_ptr<RigidBody> rb, Vector2d &point)
 {
 	double omega = rb->getOmega();
 	double x = point[0] - rb->m_Position[0];

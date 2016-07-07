@@ -14,7 +14,7 @@
 
 
 Solver::Solver(float _dtfluid, float _dtrb, float _diff, float _visc, float _vort) :
-	m_Integrator(new RungeKuttaStep()), dt(_dtfluid), dtrb(_dtrb),
+	m_Integrator(std::unique_ptr<Integrator>(new RungeKuttaStep)), dt(_dtfluid), dtrb(_dtrb),
 	diff(_diff), visc(_visc), vort(_vort)
 {
 
@@ -22,7 +22,7 @@ Solver::Solver(float _dtfluid, float _dtrb, float _diff, float _visc, float _vor
 
 Solver::~Solver()
 {
-	delete m_Integrator;
+	
 }
 
 /* private functions: */
@@ -173,25 +173,25 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	double vel_friction = 0.92; // must be <= 1
 	double ang_friction = 0.9;
 	// 0. apply friction to velocities and momentums
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->m_LinearMomentum *= vel_friction;
 		rb->m_AngularMomentum *= ang_friction;
 	}
-	for (Particle *p : m_particles) {
+	for (std::shared_ptr<Particle> p : m_particles) {
 		p->m_Velocity *= vel_friction;
 	}
 
 	// 1. set forces to zero
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->m_Force = Vector2d(0.0, 0.0);
 		rb->m_Torque = 0;
 	}
-	for (Particle *p : m_particles) {
+	for (std::shared_ptr<Particle> p : m_particles) {
 		p->m_Force = Vector2d(0.0, 0.0); // dit hoeft in principe niet meer, na fluid forces
 	}
 
 	// 1.1 apply fluid forces to particles from velocity field
-	for (Particle *p : m_particles) {
+	for (std::shared_ptr<Particle> p : m_particles) {
 		double x, y, s0, s1, t0, t1;
 		int i0, i1, j0, j1;
 		x = (p->m_Position[0])*(N + 2);
@@ -213,7 +213,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	// 1.2 apply fluid forces and torques to rigid bodies from velocity field
 	double fluidforce = 25;
 	double fluidtorque = 0.05;
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		double force_x, force_y;
 		rb->getBoundaryCells(N, solid);
 		std::set<std::array<int, 2>> surroundingCells = rb->getSurroundingCells(N, solid);
@@ -228,12 +228,12 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	}
 
 	// 2. loop through objects and compute forces
-	for (Force *f : m_forces) {
+	for (std::shared_ptr<Force> f : m_forces) {
 		f->calculateForce();
 	}
 
 	// 2.1 turn off rigid body solids
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		for (Vector2i &index : rb->gridIndicesOccupied) {
 			if (solid[IX(index[0], index[1])] != 2) {
 				solid[IX(index[0], index[1])] = 0;
@@ -242,24 +242,24 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	}
 
 	// 3. loop through rbodies and user integrator
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		// save previous(current) state
 		rb->m_PreviousState = rb->getState();
 		// do next step
 		m_Integrator->integrate(rb, dtrb);
 	}
-	for (Particle *p : m_particles) {
+	for (std::shared_ptr<Particle> p : m_particles) {
 		m_Integrator->integrate(p, dtrb);
 	}
 
 	// 3.1 set static particles
-	for (Particle *p : m_particles) {
+	for (std::shared_ptr<Particle> p : m_particles) {
 		if (p->m_Static)
 			p->reset();
 	}
 
 	// 4. voxelize rbodies
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->voxelize(N);
 		// 4.1 turn on rigid body solids
 		for (Vector2i &index : rb->gridIndicesOccupied) {
@@ -310,7 +310,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	
 	
 	// 5. push density (using previous state of rigid body)
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		// compute transformation matrix: T(center_new)*R(rotation)*T(-center_old)
 		// translation matrix from origin to new center
 		Matrix3d T_new;
@@ -422,7 +422,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	
 	// 6. RB applies velocity to fluid
 	double RBtofluid = 0.00003;
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->getBoundaryCells(N, solid);
 		for (auto &cell : rb->gridIndicesCloseToBoundary) {
 			Vector2d direction = Vector2d(cell[0], cell[1]) - rb->m_Position;
@@ -493,7 +493,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 
 void Solver::drawObjects(int N, int *solid)
 {
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->draw(N);
 		if (m_Drawbb)
 			rb->drawbb();
@@ -510,10 +510,10 @@ void Solver::drawObjects(int N, int *solid)
 		}
 	}
 		
-	for (Particle *p : m_particles)
+	for (std::shared_ptr<Particle> p : m_particles)
 		p->draw();
 
-	for (Force *f : m_forces)
+	for (std::shared_ptr<Force> f : m_forces)
 		f->draw();
 }
 
@@ -542,35 +542,34 @@ void Solver::drawContactPoints()
 	}
 }
 
-void Solver::addRigidBody(RigidBody *rb)
+void Solver::addRigidBody(std::shared_ptr<RigidBody> rb)
 {
 	m_rbodies.push_back(rb);
 }
 
-void Solver::addParticle(Particle *p)
+void Solver::addParticle(std::shared_ptr<Particle> p)
 {
 	m_particles.push_back(p);
 }
 
-void Solver::addForce(Force *f)
+void Solver::addForce(std::shared_ptr<Force> f)
 {
 	m_forces.push_back(f);
 }
 
-void Solver::setIntegrator(Integrator *i)
+void Solver::setIntegrator(std::unique_ptr<Integrator> i)
 {
 	if (!i)
 		return;
-
-	delete m_Integrator;
-	m_Integrator = i;
 	std::cout << "Integrator switched to: " << i->getString() << std::endl;
+
+	m_Integrator = std::move(i);
 }
 
-RigidBody *Solver::getRigidBodyOnMousePosition(double x, double y)
+std::shared_ptr<RigidBody> Solver::getRigidBodyOnMousePosition(double x, double y)
 {
 	// loop over the rigid bodies (m_rbodies) and 
-	for (RigidBody *rb : m_rbodies) {
+	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		// check if the given coordinates are in the bounding box of RigidBody 'rb' 
 		std::vector<double> bb = rb->computeAABB();
 		if (x > bb[0] && x < bb[2] &&

@@ -12,7 +12,7 @@ RungeKuttaStep::~RungeKuttaStep()
 
 }
 
-void RungeKuttaStep::integrate(SolverInterface *obj, double timeStep)
+void RungeKuttaStep::integrate(std::shared_ptr<SolverInterface> obj, double timeStep)
 {
 	VectorXd k1 = timeStep * obj->derivEval();
 	/* std::cout << "k1:" << std::endl; */

@@ -15,7 +15,7 @@ x collision response volgens notesg
 x gravityForce voor Rigid Bodies correct implementeren
 ~ penetratie bij collision fixen (terug gaan met integrator)
 x Iinv veranderen in een scalar
-- wall object maken dat collisions uitoefend op particles, is ook een fluid wall.
+x wall object maken dat collisions uitoefend op particles, is ook een fluid wall.
 
 Iets mindere Prioriteit
 -----------------------------------------------------------------------------------
