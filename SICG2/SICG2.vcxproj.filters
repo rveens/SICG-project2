@@ -48,6 +48,9 @@
     <ClCompile Include="..\RigidBodyRectangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\RigidBodyWall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CollisionSolver.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\RigidBodyRectangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RigidBodyWall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -131,6 +131,7 @@
     <ClCompile Include="..\Particle.cpp" />
     <ClCompile Include="..\RigidBody.cpp" />
     <ClCompile Include="..\RigidBodyRectangle.cpp" />
+    <ClCompile Include="..\RigidBodyWall.cpp" />
     <ClCompile Include="..\RungeKuttaStep.cpp" />
     <ClCompile Include="..\Solver.cpp" />
     <ClCompile Include="..\SpringForce.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="..\Particle.h" />
     <ClInclude Include="..\RigidBody.h" />
     <ClInclude Include="..\RigidBodyRectangle.h" />
+    <ClInclude Include="..\RigidBodyWall.h" />
     <ClInclude Include="..\RungeKuttaStep.h" />
     <ClInclude Include="..\Solver.h" />
     <ClInclude Include="..\SolverInterface.h" />

@@ -22,6 +22,7 @@
 
 #include "Solver.h"
 #include "RigidBodyRectangle.h"
+#include "RigidBodyWall.h"
 #include "GravityForce.h"
 #include "EulerStep.h"
 #include "MidpointStep.h"
@@ -542,6 +543,14 @@ void setupAntTweakBar()
 	RigidBody *rb2 = new RigidBodyRectangle(init_position2, rb_size2, 1, rot2);
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
+
+	// rb three
+	Matrix2d rot3 = Matrix2d::Identity();
+	Vector2d init_position3(0.5, 0.01);
+	Vector2d rb_size3(0.8, 0.05);
+	RigidBody *rb3 = new RigidBodyWall(init_position3, rb_size3, 1, rot3);
+	solver->addRigidBody(rb3);
+	solver->addForce(new GravityForce(rb3));
 
 	// cloth 1
 	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);

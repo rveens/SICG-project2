@@ -35,7 +35,7 @@ public:
 	virtual void drawEdgeNormals();
 
 
-private:
+protected:
 	Vector2d m_Size;
 
 	bool checkIfPointInRectangle(Vector2d &point, int N);

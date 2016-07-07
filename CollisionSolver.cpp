@@ -245,7 +245,7 @@ void CollisionSolver::applyCollision(Contact &c)
 	Vector3d force = j*n;
 
 	// apply impulse to bodies
-	double collision_strength = 1.5;
+	double collision_strength = 5;
 	c.a->m_LinearMomentum[0] += force[0] * collision_strength;
 	c.a->m_LinearMomentum[1] += force[1] * collision_strength;
 
