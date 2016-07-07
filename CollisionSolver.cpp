@@ -245,16 +245,17 @@ void CollisionSolver::applyCollision(Contact &c)
 	Vector3d force = j*n;
 
 	// apply impulse to bodies
-	c.a->m_LinearMomentum[0] += force[0];
-	c.a->m_LinearMomentum[1] += force[1];
+	double collision_strength = 1.5;
+	c.a->m_LinearMomentum[0] += force[0] * collision_strength;
+	c.a->m_LinearMomentum[1] += force[1] * collision_strength;
 
-	c.b->m_LinearMomentum[0] -= force[0];
-	c.b->m_LinearMomentum[1] -= force[1];
+	c.b->m_LinearMomentum[0] -= force[0] * collision_strength;
+	c.b->m_LinearMomentum[1] -= force[1] * collision_strength;
 
 
-	c.a->m_AngularMomentum += ra.cross(force)[2];	// gaat dit ok?
+	c.a->m_AngularMomentum += ra.cross(force)[2];
 
-	c.b->m_AngularMomentum -= rb.cross(force)[2];	// gaat dit ok?
+	c.b->m_AngularMomentum -= rb.cross(force)[2];
 
 
 	// compute aux vars
