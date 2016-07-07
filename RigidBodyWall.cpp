@@ -45,3 +45,11 @@ VectorXd RigidBodyWall::derivEval(const VectorXd &input)
 	// do nothing on purpose
 	return getState();
 }
+
+void RigidBodyWall::voxelize(int N)
+{
+	if (!hasVoxelized) {
+		RigidBodyRectangle::voxelize(N);
+		hasVoxelized = true;
+	}
+}

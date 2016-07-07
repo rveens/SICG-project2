@@ -7,19 +7,6 @@
 #include <map>
 
 
-struct INTVL {
-	double si = 0.0;
-	double ei = 0.0;
-	RigidBody *rb = 0;
-	RigidBody *rb_other = 0;
-	bool overlap = false;
-	int dimension = 0;
-};
-enum INTVL_TYPE {
-	Si,
-	Ei
-};
-
 class CollisionSolver
 {
 public:
@@ -33,7 +20,7 @@ public:
 
 
 	/* public variables */
-	std::vector<Contact> m_Contacts; // todo
+	std::vector<Contact> m_Contacts;
 
 private:
 	const double m_tolerance = 0.001;
