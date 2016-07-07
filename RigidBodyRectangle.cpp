@@ -20,11 +20,11 @@ RigidBodyRectangle::RigidBodyRectangle(const Vector2d & ConstructPos, Vector2d &
 	// calc IbodyInv
 	m_IbodyInv = 1/m_Ibody;
 
-	std::cout << "ibody:" << std::endl;
-	std::cout << m_Ibody << std::endl;
+	//std::cout << "ibody:" << std::endl;
+	//std::cout << m_Ibody << std::endl;
 
-	std::cout << "ibodyInv:" << std::endl;
-	std::cout << m_IbodyInv << std::endl;
+	//std::cout << "ibodyInv:" << std::endl;
+	//std::cout << m_IbodyInv << std::endl;
 }
 
 RigidBodyRectangle::~RigidBodyRectangle(void)
