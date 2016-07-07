@@ -512,6 +512,10 @@ void sceneRigidBodies()
 {
 	Matrix2d rot_i = Matrix2d::Identity();
 
+	// add mouse force
+	mouseForceRB = std::make_shared<MouseForce>(nullptr, Vector2d(0, 0), rbmove, false);
+	solver->addForce(mouseForceRB);
+
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	rot(0, 0) = 0.7071;
@@ -685,9 +689,6 @@ int main ( int argc, char ** argv )
 	solver = new Solver(dt, 0.003, diff, visc, vort);
 	setupAntTweakBar();
 	sceneRigidBodies();
-	// add mouse force
-	mouseForceRB = std::make_shared<MouseForce>(nullptr, Vector2d(0, 0), rbmove, false);
-	solver->addForce(mouseForceRB);
 	/* end init stuff */
 	
 
