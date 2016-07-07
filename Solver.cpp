@@ -216,7 +216,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		double force_x, force_y;
 		rb->getBoundaryCells(N, solid);
-		for (std::array<int, 2> cell : rb->gridIndicesCloseToBoundary) {
+		std::set<std::array<int, 2>> surroundingCells = rb->getSurroundingCells(N, solid);
+		for (std::array<int, 2> cell : surroundingCells) {
 			force_x = u[IX(cell[0], cell[1])] / dt;
 			force_y = v[IX(cell[0], cell[1])] / dt;
 			rb->m_Force[0] += fluidforce * force_x;
@@ -391,10 +392,13 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 					//printf("Density cannot escape!\n");
 					leftover_density = density;
 				} else {
-					// distribute the density to neighbours, evenly
+					// distribute the density and velocity over neighbours, evenly
 					density /= neighbours.size();
+					//double velocitySize = 0.1 / (double)neighbours.size();
 					for (Vector2i &neighbour : neighbours) {
 						dens[IX(neighbour[0], neighbour[1])] += density;
+						//u[IX(neighbour[0], neighbour[1])] += (neighbour[0] - cell[0]) * velocitySize;
+						//v[IX(neighbour[0], neighbour[1])] += (neighbour[1] - cell[1]) * velocitySize;
 					}
 				}
 				// remove density
@@ -415,17 +419,20 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 		}
 	}
 	
-
+	
 	// 6. RB applies velocity to fluid
 	double RBtofluid = 0.00003;
 	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->getBoundaryCells(N, solid);
 		for (auto &cell : rb->gridIndicesCloseToBoundary) {
-			Vector2d velocity = rb->getVelocity();
-			u[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[0] / dtrb;
-			v[IX(cell[0], cell[1])] += RBtofluid * rb->m_Mass * velocity[1] / dtrb;
+			Vector2d direction = Vector2d(cell[0], cell[1]) - rb->m_Position;
+			direction.normalize();
+			Vector2d applyForce = direction.dot(rb->m_LinearMomentum) * direction;
+			u[IX(cell[0], cell[1])] += RBtofluid * applyForce[0] / dtrb;
+			v[IX(cell[0], cell[1])] += RBtofluid * applyForce[1] / dtrb;
 		}
 	}
+	
 
 	// project velocities again to remain mass preserving
 	project(N, u, v, p, div, solid);
@@ -443,28 +450,44 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 					double mid = dtrb / 2.0;
 					int counter = 1;
 					
+					// step back to position/state of previous timestep first
 					m_rbodies[i]->setState(m_rbodies[i]->m_PreviousState);
+					m_rbodies[j]->setState(m_rbodies[j]->m_PreviousState);
 
-					// integrate back initially, we start in an illegal position
-					m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++counter));
-					while (counter < 100) { // FIXME this might potentially iterate forever if set to true?
+					// integrate with a half step initially
+					m_Integrator->integrate(m_rbodies[i], mid);
+					m_Integrator->integrate(m_rbodies[j], mid);
+
+					while (counter < 10) { // FIXME this might potentially iterate forever if set to true?
 						if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
 							if (colsolver.findContactPoints(m_rbodies[i], m_rbodies[j])) {
 								// done, we found contact points
 								break;
 							}
-							// still collision, integrate back further
-							m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++counter));
+							// still penetration, integrate back further
+							mid -= dtrb / pow(2, ++counter);
+							// step back to position/state of previous timestep first
+							m_rbodies[i]->setState(m_rbodies[i]->m_PreviousState);
+							m_rbodies[j]->setState(m_rbodies[j]->m_PreviousState);
+							// integrate again
+							m_Integrator->integrate(m_rbodies[i], mid);
+							m_Integrator->integrate(m_rbodies[j], mid);
 						}
 						else {
 							// integrate forward, we went too far back
-							m_Integrator->integrate(m_rbodies[i], mid + dtrb / pow(2, ++counter));
+							mid += dtrb / pow(2, ++counter);
+							// step back to position/state of previous timestep first
+							m_rbodies[i]->setState(m_rbodies[i]->m_PreviousState);
+							m_rbodies[j]->setState(m_rbodies[j]->m_PreviousState);
+							// integrate again
+							m_Integrator->integrate(m_rbodies[i], mid);
+							m_Integrator->integrate(m_rbodies[j], mid);
 						}
 					}
 				}
 				colsolver.collisionResponse();
 			} else {
-				printf("No Collisions\n");
+				//printf("No Collisions\n");
 			}
 		}
 	}

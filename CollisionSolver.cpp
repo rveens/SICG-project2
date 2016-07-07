@@ -73,7 +73,7 @@ bool CollisionSolver::findContactPoints(std::shared_ptr<RigidBody> rb1, std::sha
 		int i = 0;
 		for (std::tuple<Vector2d, Vector2d> &edge : rb2_edges) {
 			if (vertexOnEdge(vert, edge)) {
-				printf("Vertex-edge collision!\n");
+				//printf("Vertex-edge collision!\n");
 				Contact c;
 				c.a = rb1;
 				c.b = rb2;
@@ -94,7 +94,7 @@ bool CollisionSolver::findContactPoints(std::shared_ptr<RigidBody> rb1, std::sha
 		int i = 0;
 		for (std::tuple<Vector2d, Vector2d> &edge : rb1_edges) {
 			if (vertexOnEdge(vert, edge)) {
-				printf("Vertex-edge collision!\n");
+				//printf("Vertex-edge collision!\n");
 				Contact c;
 				c.a = rb2;
 				c.b = rb1;
@@ -246,7 +246,7 @@ void CollisionSolver::applyCollision(Contact &c)
 	Vector3d force = j*n;
 
 	// apply impulse to bodies
-	double collision_strength = 5;
+	double collision_strength = 1.5;
 	c.a->m_LinearMomentum[0] += force[0] * collision_strength;
 	c.a->m_LinearMomentum[1] += force[1] * collision_strength;
 

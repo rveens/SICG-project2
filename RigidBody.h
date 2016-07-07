@@ -31,6 +31,7 @@ public:
 	virtual std::vector<Vector2d> getEdgeNormals() = 0;
 	virtual void voxelize(int N) = 0;
 	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid) = 0;
+	virtual std::set<std::array<int, 2>> getSurroundingCells(int N, int *solid) = 0;
 	virtual void computeAuxVariables();
 
 	// getters and setters

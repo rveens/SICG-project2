@@ -128,6 +128,7 @@
     <ClCompile Include="..\EulerStep.cpp" />
     <ClCompile Include="..\GravityForce.cpp" />
     <ClCompile Include="..\MidpointStep.cpp" />
+    <ClCompile Include="..\MouseForce.cpp" />
     <ClCompile Include="..\Particle.cpp" />
     <ClCompile Include="..\RigidBody.cpp" />
     <ClCompile Include="..\RigidBodyRectangle.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="..\GravityForce.h" />
     <ClInclude Include="..\Integrator.h" />
     <ClInclude Include="..\MidpointStep.h" />
+    <ClInclude Include="..\MouseForce.h" />
     <ClInclude Include="..\Particle.h" />
     <ClInclude Include="..\RigidBody.h" />
     <ClInclude Include="..\RigidBodyRectangle.h" />

@@ -25,6 +25,7 @@ public:
 	virtual std::vector<Vector2d> getEdgeNormals();
 	virtual void voxelize(int N);
 	virtual std::vector<Vector2i> getBoundaryCells(int N, int *solid);
+	virtual std::set<std::array<int, 2>> getSurroundingCells(int N, int *solid);
 
 
 	// drawing functions
