@@ -138,18 +138,6 @@ static void set_solid_boundary(int t)
 	}
 }
 
-/* set centered inside square boundary of solids, with width w */
-static void set_solid_square_center(int w)
-{
-	int i, j;
-	float t = ((N - w) / 2.0f);
-	for (i = std::floorf(t) + 1; i <= N - std::ceilf(t); i++) {
-		for (j = std::floorf(t) + 1; j <= N - std::ceilf(t); j++) {
-			solid[IX(i, j)] = 2;
-		}
-	}
-}
-
 
 /*
   ----------------------------------------------------------------------
@@ -523,6 +511,8 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Edge normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
 	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
 
+	Matrix2d rot_i = Matrix2d::Identity();
+
 
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
@@ -537,20 +527,29 @@ void setupAntTweakBar()
 	solver->addForce(new GravityForce(rb));
 
 	// rb two
-	Matrix2d rot2 = Matrix2d::Identity();
-	Vector2d init_position2(0.799, 0.799);
-	Vector2d rb_size2(0.2, 0.2);
-	RigidBody *rb2 = new RigidBodyRectangle(init_position2, rb_size2, 1, rot2);
+	RigidBody *rb2 = new RigidBodyRectangle(Vector2d{ 0.799, 0.799 }, Vector2d{ 0.2, 0.2 }, 1, rot_i);
 	solver->addRigidBody(rb2);
 	solver->addForce(new GravityForce(rb2));
 
-	// rb three
-	Matrix2d rot3 = Matrix2d::Identity();
-	Vector2d init_position3(0.5, 0.01);
-	Vector2d rb_size3(0.8, 0.05);
-	RigidBody *rb3 = new RigidBodyWall(init_position3, rb_size3, 1, rot3);
+	// wall 1 (bottom)
+	RigidBody *rb3 = new RigidBodyWall(Vector2d{ 0.5, 0.01 }, Vector2d{ 0.92, 0.05 }, 1, rot_i);
 	solver->addRigidBody(rb3);
-	solver->addForce(new GravityForce(rb3));
+
+	// wall 2 (middle)
+	RigidBody *rb4 = new RigidBodyWall(Vector2d{0.5, 0.5}, Vector2d{0.1, 0.1}, 1, rot_i);
+	solver->addRigidBody(rb4);
+
+	// wall 3 (right)
+	RigidBody *rb5 = new RigidBodyWall(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i);
+	solver->addRigidBody(rb5);
+
+	// wall 4 (top)
+	RigidBody *rb6 = new RigidBodyWall(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i);
+	solver->addRigidBody(rb6);
+
+	// wall 5 (left)
+	RigidBody *rb7 = new RigidBodyWall(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i);
+	solver->addRigidBody(rb7);
 
 	// cloth 1
 	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
@@ -628,8 +627,7 @@ int main ( int argc, char ** argv )
 	if ( !allocate_data () ) exit ( 1 );
 	clear_data ();
 	clear_solid_data();
-	set_solid_boundary(5);
-	set_solid_square_center(6);
+	set_solid_boundary(1);
 
 	win_x = 720;
 	win_y = 720;

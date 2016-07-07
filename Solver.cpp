@@ -442,8 +442,6 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 					int counter = 1;
 					
 					m_rbodies[i]->setState(m_rbodies[i]->m_PreviousState);
-					m_rbodies[j]->setState(m_rbodies[j]->m_PreviousState);
-
 
 					// integrate back initially, we start in an illegal position
 					m_Integrator->integrate(m_rbodies[i], mid - dtrb / pow(2, ++counter));
