@@ -6,6 +6,6 @@ public:
 	EulerStep();
 	virtual ~EulerStep();
 
-	void integrate(SolverInterface *rb, double timeStep);
+	void integrate(std::shared_ptr<SolverInterface> rb, double timeStep);
 	std::string getString();
 };

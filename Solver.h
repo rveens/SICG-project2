@@ -2,6 +2,7 @@
 #define SOLVER_H
 
 #include <vector>
+#include <memory>
 
 #include "RigidBody.h"
 #include "Particle.h"
@@ -21,11 +22,11 @@ public:
 
 	void rigidbodySolve(int N, float * u, float * v, int *solid, float *dens, float * p, float * div);
 	void drawObjects(int N, int *solid);
-	void addRigidBody(RigidBody *rb);
-	void addParticle(Particle *p);
-	void addForce(Force *f);
-	void setIntegrator(Integrator *i);
-	RigidBody *getRigidBodyOnMousePosition(double x, double y);
+	void addRigidBody(std::shared_ptr<RigidBody> rb);
+	void addParticle(std::shared_ptr<Particle> p);
+	void addForce(std::shared_ptr<Force> f);
+	void setIntegrator(std::unique_ptr<Integrator> i);
+	std::shared_ptr<RigidBody> getRigidBodyOnMousePosition(double x, double y);
 
 	/* drawing variables: */
 	bool m_Drawbb = false;
@@ -36,7 +37,7 @@ public:
 	bool m_DrawContacts = false;
 
 private:
-	Integrator *m_Integrator;
+	std::unique_ptr<Integrator> m_Integrator;
 	CollisionSolver colsolver;
 	
 	/* private variables: */
@@ -45,9 +46,9 @@ private:
 	float diff;
 	float visc;
 	float vort;
-	std::vector<RigidBody *> m_rbodies;
-	std::vector<Particle *> m_particles;
-	std::vector<Force *> m_forces;
+	std::vector<std::shared_ptr<RigidBody>> m_rbodies;
+	std::vector<std::shared_ptr<Particle>> m_particles;
+	std::vector<std::shared_ptr<Force>> m_forces;
 
 	/* private functions: */ 
 

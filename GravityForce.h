@@ -3,16 +3,17 @@
 #include "Force.h"
 #include "SolverInterface.h"
 
+#include <memory>
 
 class GravityForce : public Force
 {
 public:
-	GravityForce(SolverInterface *obj);
+	GravityForce(std::shared_ptr<SolverInterface> obj);
 	virtual ~GravityForce();
 
 	void calculateForce();
 	void draw();
 private:
 	const double m_g = 9.81;
-	SolverInterface *const m_obj;
+	const std::shared_ptr<SolverInterface> m_obj;
 };

@@ -27,8 +27,8 @@ public:
 	virtual ~CollisionSolver();
 
 	/* functions */
-	bool detectCollision(RigidBody *rb1, RigidBody *rb2);
-	bool findContactPoints(RigidBody *rb1, RigidBody *rb2);
+	bool detectCollision(std::shared_ptr<RigidBody> rb1, std::shared_ptr<RigidBody> rb2);
+	bool findContactPoints(std::shared_ptr<RigidBody> rb1, std::shared_ptr<RigidBody> rb2);
 	void collisionResponse();
 
 
@@ -48,7 +48,7 @@ private:
 	bool vertexOnEdge(Vector2d &vert, std::tuple<Vector2d, Vector2d> &edge);
 
 	// used for findAllCollisions
-	Vector2d pointVelocity(RigidBody *rb, Vector2d &point);
+	Vector2d pointVelocity(std::shared_ptr<RigidBody> rb, Vector2d &point);
 	bool colliding(Contact &c);
 	void applyCollision(Contact &c);
 						

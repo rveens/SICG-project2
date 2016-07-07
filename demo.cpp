@@ -250,7 +250,7 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 		double y = (double)j / (double)N;
 
 		// 1) search rigid body on mouse position
-		RigidBody *rb = solver->getRigidBodyOnMousePosition(x, y);
+		std::shared_ptr<RigidBody> rb = solver->getRigidBodyOnMousePosition(x, y);
 		if (rb != nullptr) {
 			// 2) set the new position of the rigid body
 			rb->m_LinearMomentum[0] = rbmove * (mx - omx);
@@ -297,13 +297,13 @@ static void key_func ( unsigned char key, int x, int y )
 			break;
 		case '1':
 			if (solver)
-			solver->setIntegrator(new EulerStep());
+			solver->setIntegrator(std::make_unique<EulerStep>());
 			break;
 		case '2':
-			solver->setIntegrator(new MidpointStep());
+			solver->setIntegrator(std::make_unique<MidpointStep>());
 			break;
 		case '3':
-			solver->setIntegrator(new RungeKuttaStep());
+			solver->setIntegrator(std::make_unique<RungeKuttaStep>());
 			break;
 	}
 
@@ -413,20 +413,23 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 		exit(0);
 	}
 
-	Particle *** p_storage;
+	std::vector<std::vector<std::shared_ptr<Particle>>> p_storage(h + 1, std::vector<std::shared_ptr<Particle>>(w + 1, nullptr));
+	//Particle *** p_storage;
 
 	// Allocate memory
-	p_storage = new Particle**[h + 1];
-	for (int i = 0; i < h + 1; ++i)
-		p_storage[i] = new Particle*[w + 1];
+	for (int i = 0; i < h + 1; i++) {
+		for (int j = 0; j < w + 1; j++) {
+			p_storage[j][i] = std::make_shared<Particle>(Vector2d(startx + i*gridSize, starty - j*gridSize), pMass);
+			solver->addParticle(p_storage[j][i]);
+		}
+	}
 
 	//Particle *p_storage[h + 1][w + 1];	// 2x2 'grid' results in a 3x3 particle system
 
 	// create particles
 	for (int j = 0; j <= h; j++) {
 		for (int i = 0; i <= w; i++) {
-			p_storage[j][i] = new Particle(Vector2d(startx + i*gridSize, starty - j*gridSize), pMass);
-			solver->addParticle(p_storage[j][i]);
+			
 		}
 	}
 
@@ -435,9 +438,9 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 	for (int j = 0; j <= h; j++) {
 		for (int i = 0; i <= w; i++) {
 			if (i < w)
-				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j][i + 1], gridSize, ks_struct, kd_struct));
+				solver->addForce(std::make_shared<SpringForce>(p_storage[j][i], p_storage[j][i + 1], gridSize, ks_struct, kd_struct));
 			if (j < h)
-				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j + 1][i], gridSize, ks_struct, kd_struct));
+				solver->addForce(std::make_shared<SpringForce>(p_storage[j][i], p_storage[j + 1][i], gridSize, ks_struct, kd_struct));
 		}
 	}
 
@@ -445,8 +448,8 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 	// create shear springs
 	for (int j = 0; j < h; j++) {
 		for (int i = 0; i < w; i++) {
-			solver->addForce(new SpringForce(p_storage[j][i], p_storage[j + 1][i + 1], gridSize*sqrt(2), ks_shear, kd_shear));
-			solver->addForce(new SpringForce(p_storage[j][i + 1], p_storage[j + 1][i], gridSize*sqrt(2), ks_shear, kd_shear));
+			solver->addForce(std::make_shared<SpringForce>(p_storage[j][i], p_storage[j + 1][i + 1], gridSize*sqrt(2), ks_shear, kd_shear));
+			solver->addForce(std::make_shared<SpringForce>(p_storage[j][i + 1], p_storage[j + 1][i], gridSize*sqrt(2), ks_shear, kd_shear));
 		}
 	}
 
@@ -455,9 +458,9 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 	for (int j = 0; j <= h; j++) {
 		for (int i = 0; i <= w; i++) {
 			if (i < w - 1)
-				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j][i + 2], gridSize * 2, ks_flexion, kd_flexion));
+				solver->addForce(std::make_shared<SpringForce>(p_storage[j][i], p_storage[j][i + 2], gridSize * 2, ks_flexion, kd_flexion));
 			if (j < h - 1)
-				solver->addForce(new SpringForce(p_storage[j][i], p_storage[j + 2][i], gridSize * 2, ks_flexion, kd_flexion));
+				solver->addForce(std::make_shared<SpringForce>(p_storage[j][i], p_storage[j + 2][i], gridSize * 2, ks_flexion, kd_flexion));
 		}
 	}
 
@@ -465,7 +468,7 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 	// add gravity
 	for (int j = 0; j <= h; j++) {
 		for (int i = 0; i <= w; i++) {
-			solver->addForce(new GravityForce(p_storage[j][i]));
+			solver->addForce(std::make_shared<GravityForce>(p_storage[j][i]));
 		}
 	}
 
@@ -520,36 +523,29 @@ void setupAntTweakBar()
 	rot(0, 1) = -0.7071;
 	rot(1, 0) = 0.7071;
 	rot(1, 1) = 0.7071;
-	Vector2d init_position(0.6, 0.6);
-	Vector2d rb_size(0.1, 0.2);
-	RigidBody *rb = new RigidBodyRectangle(init_position, rb_size, 1, rot);
+	auto rb = std::make_shared<RigidBodyRectangle>(Vector2d{ 0.6, 0.6 }, Vector2d{ 0.1, 0.2 }, 1, rot);
 	solver->addRigidBody(rb);
-	solver->addForce(new GravityForce(rb));
+	solver->addForce(std::make_shared<GravityForce>(rb));
 
 	// rb two
-	RigidBody *rb2 = new RigidBodyRectangle(Vector2d{ 0.799, 0.799 }, Vector2d{ 0.2, 0.2 }, 1, rot_i);
+	auto rb2 = std::make_shared<RigidBodyRectangle>(Vector2d{ 0.799, 0.799 }, Vector2d{ 0.2, 0.2 }, 1, rot_i);
 	solver->addRigidBody(rb2);
-	solver->addForce(new GravityForce(rb2));
+	solver->addForce(std::make_shared<GravityForce>(rb2));
 
 	// wall 1 (bottom)
-	RigidBody *rb3 = new RigidBodyWall(Vector2d{ 0.5, 0.01 }, Vector2d{ 0.92, 0.05 }, 1, rot_i);
-	solver->addRigidBody(rb3);
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.01 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
 
 	// wall 2 (middle)
-	RigidBody *rb4 = new RigidBodyWall(Vector2d{0.5, 0.5}, Vector2d{0.1, 0.1}, 1, rot_i);
-	solver->addRigidBody(rb4);
+	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.5 }, Vector2d{ 0.1, 0.1 }, 1, rot_i));
 
 	// wall 3 (right)
-	RigidBody *rb5 = new RigidBodyWall(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i);
-	solver->addRigidBody(rb5);
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
 
 	// wall 4 (top)
-	RigidBody *rb6 = new RigidBodyWall(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i);
-	solver->addRigidBody(rb6);
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
 
 	// wall 5 (left)
-	RigidBody *rb7 = new RigidBodyWall(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i);
-	solver->addRigidBody(rb7);
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
 
 	// cloth 1
 	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);

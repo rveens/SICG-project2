@@ -13,7 +13,7 @@ EulerStep::~EulerStep()
 
 }
 
-void EulerStep::integrate(SolverInterface *obj, double timeStep)
+void EulerStep::integrate(std::shared_ptr<SolverInterface> obj, double timeStep)
 {
 	VectorXd F = obj->derivEval();
 	VectorXd result = obj->getState() + timeStep*F;

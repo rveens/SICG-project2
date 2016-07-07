@@ -3,9 +3,11 @@
 #include "Particle.h"
 #include "Force.h"
 
+#include <memory>
+
 class SpringForce : public Force {
 public:
-  SpringForce(Particle *p1, Particle * p2, double dist, double ks, double kd);
+  SpringForce(std::shared_ptr<Particle> p1, std::shared_ptr<Particle> p2, double dist, double ks, double kd);
   virtual ~SpringForce();
 
   virtual void draw();
@@ -13,8 +15,8 @@ public:
 
 protected:
 
-  Particle * const m_p1;   // particle 1
-  Particle * const m_p2;   // particle 2 
+  std::shared_ptr<Particle> const m_p1;   // particle 1
+  std::shared_ptr<Particle> const m_p2;   // particle 2 
   double const m_dist;     // rest length
   double const m_ks, m_kd; // spring strength constants
 };
