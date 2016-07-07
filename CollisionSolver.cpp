@@ -72,7 +72,7 @@ bool CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 		int i = 0;
 		for (std::tuple<Vector2d, Vector2d> &edge : rb2_edges) {
 			if (vertexOnEdge(vert, edge)) {
-				printf("Vertex-edge collision!\n");
+				//printf("Vertex-edge collision!\n");
 				Contact c;
 				c.a = rb1;
 				c.b = rb2;
@@ -93,7 +93,7 @@ bool CollisionSolver::findContactPoints(RigidBody *rb1, RigidBody *rb2)
 		int i = 0;
 		for (std::tuple<Vector2d, Vector2d> &edge : rb1_edges) {
 			if (vertexOnEdge(vert, edge)) {
-				printf("Vertex-edge collision!\n");
+				//printf("Vertex-edge collision!\n");
 				Contact c;
 				c.a = rb2;
 				c.b = rb1;

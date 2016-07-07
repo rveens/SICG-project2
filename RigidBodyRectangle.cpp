@@ -279,6 +279,41 @@ std::vector<Vector2i> RigidBodyRectangle::getBoundaryCells(int N, int *solid)
 	return bCells;
 }
 
+std::set<std::array<int, 2>> RigidBodyRectangle::getSurroundingCells(int N, int *solid)
+{
+	std::set<std::array<int,2>> sCells;
+	// sCells should contain all the cells that are
+	// next to at least one cell in gridIndicesCloseToBoundary and have solid==0,
+	// but which themselves are NOT part of gridIndicesCloseToBoundary
+
+	// NOTE! Call getBoundaryCells() first to ensure gridIndicesCloseToBoundary contains the correct cells!
+	
+	for (auto &cell : gridIndicesCloseToBoundary) {
+		if (solid[IX(cell[0] - 1, cell[1])] == 0 ||
+			solid[IX(cell[0], cell[1] - 1)] == 0 ||
+			solid[IX(cell[0] + 1, cell[1])] == 0 ||
+			solid[IX(cell[0], cell[1] + 1)] == 0) {
+
+			if (solid[IX(cell[0] - 1, cell[1])] == 0)
+				sCells.insert({ cell[0] - 1, cell[1] });
+			if (solid[IX(cell[0], cell[1] - 1)] == 0)
+				sCells.insert({ cell[0], cell[1] - 1 });
+			if (solid[IX(cell[0] + 1, cell[1])] == 0)
+				sCells.insert({ cell[0] + 1, cell[1] });
+			if (solid[IX(cell[0], cell[1] + 1)] == 0)
+				sCells.insert({ cell[0], cell[1] + 1 });
+		}
+	}
+
+	// remove those cells from gridIndicesCloseToBoundary from sCells
+	for (auto &cell : gridIndicesCloseToBoundary) {
+		sCells.erase(cell);
+	}
+
+	return sCells;
+}
+
+
 bool RigidBodyRectangle::checkIfPointInRectangle(Vector2d &point, int N)
 {
 	Vector2d pCopy = point;

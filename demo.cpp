@@ -27,6 +27,7 @@
 #include "MidpointStep.h"
 #include "RungeKuttaStep.h"
 #include "SpringForce.h"
+#include "MouseForce.h"
 
 #include "Eigen/Dense"
 #include "AntTweakBar.h"
@@ -42,7 +43,9 @@ static Solver *solver;
 static int N;
 static float force, source, rbmove;
 static int dvel;
-static bool mouse_drag = false; // whether mouse was dragged previous timestep
+static bool mouse_drag0 = false; // whether left mouse button was dragged in previous timestep
+static bool mouse_drag1 = false; // whether middle mouse button was dragged in previous timestep
+static MouseForce* mouseForceRB;
 
 static float * u, * v, * u_prev, * v_prev;
 static float * dens, * dens_prev;
@@ -235,46 +238,71 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 {
 	int i, j, size = (N+2)*(N+2);
 
+	// clear velocity/density to be added
 	for ( i=0 ; i<size ; i++ ) {
 		u[i] = v[i] = d[i] = 0.0f;
 	}
 
+	// set dragging to false if no corresponding mouse event
+	if (!mouse_down[0]) {
+		mouse_drag0 = false;
+	}
+	if (!mouse_down[1]) {
+		mouse_drag1 = false;
+		mouseForceRB->m_mouse_dragged = false;
+	}
+
+	// if no mouse activity at all, return
 	if (!mouse_down[0] && !mouse_down[1] && !mouse_down[2]) {
-		mouse_drag = false;
 		return;
 	}
 
+	// find cell (i,j) at mouse position
 	i = (int)((       mx /(float)win_x)*N+1);
 	j = (int)(((win_y-my)/(float)win_y)*N+1);
 
-
-	if ( mouse_down[0] && mouse_drag && solid[IX(i, j)] == 0) {
+	// add velocities with left mouse button
+	if ( mouse_down[0] && mouse_drag0 && solid[IX(i, j)] == 0) {
 		u[IX(i, j)] = force * (mx - omx);
 		v[IX(i, j)] = force * (omy - my);
 	}
+	if (mouse_down[0]) {
+		mouse_drag0 = true;
+	}
 
-	if (mouse_down[1] && mouse_drag) {
-		int i = (int)((mx / (float)win_x)*N + 1);
-		int j = (int)(((win_y - my) / (float)win_y)*N + 1);
+	// apply force from mouseTargetRB to current mouse position
+	if (mouse_down[1] && mouse_drag1) {
+		printf("dragging RB\n");
 		// 0) get mouse postion in world coordinates
 		double x = (double)i / (double)N;
 		double y = (double)j / (double)N;
 
+		mouseForceRB->m_mousePos = Vector2d(x, y);
+	}
+	// select RB to apply force to (force from RB to mouse)
+	// if successful, mouse_drag1 is set to true, and mouseTargetRB contains the selected RB
+	if (mouse_down[1] && !mouse_drag1) {
+		printf("selecting RB\n");
+		// 0) get mouse postion in world coordinates
+		double x = (double)i / (double)N;
+		double y = (double)j / (double)N;
 		// 1) search rigid body on mouse position
-		RigidBody *rb = solver->getRigidBodyOnMousePosition(x, y);
-		if (rb != nullptr) {
-			// 2) set the new position of the rigid body
-			rb->m_LinearMomentum[0] = rbmove * (mx - omx);
-			rb->m_LinearMomentum[1] = rbmove * (omy - my);
+		RigidBody* mouseTargetRB = solver->getRigidBodyOnMousePosition(x, y);
+		if (mouseTargetRB != nullptr) {
+			printf("RB successfully selected\n");
+			mouse_drag1 = true;
+			mouseForceRB->m_rb = mouseTargetRB;
+			mouseForceRB->m_mousePos = Vector2d(x, y);
+			mouseForceRB->m_mouse_dragged = true;
 		}
 	}
 
-	mouse_drag = true;
-
+	// add density with right mouse button
 	if ( mouse_down[2] && solid[IX(i, j)] == 0) {
 		d[IX(i,j)] = source;
 	}
 
+	// store old mouse position for dragging
 	omx = mx;
 	omy = my;
 
@@ -523,6 +551,10 @@ void setupAntTweakBar()
 	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
 
 
+	// add mouse force
+	mouseForceRB = new MouseForce(nullptr, Vector2d(0, 0), rbmove, false);
+	solver->addForce(mouseForceRB);
+
 	// rb one
 	Matrix2d rot = Matrix2d::Identity();
 	rot(0, 0) = 0.7071;
@@ -582,10 +614,10 @@ int main ( int argc, char ** argv )
 	if ( argc == 1 ) {
 		N = 64;
 		dt = 0.1f;
-		diff = 0.00001f; // was 0
+		diff = 0.0001f; // was 0
 		visc = 0.0001f; // was 0
 		force = 1.0f; // was 5
-		rbmove = 0.3f; // influence of middle mouse button drag
+		rbmove = 2000.0f; // influence of middle mouse button drag
 		source = 100.0f;
 		vort = 1.0f; // influence of vorticity confinement
 		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force=%g rbmove=%g source=%g vort=%g\n",
