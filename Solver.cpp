@@ -6,11 +6,7 @@
 #include <iostream>
 #include <GL/glut.h>
 
-
-#define IX(i,j) ((i)+(N+2)*(j))
-#define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
-#define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) { if (solid[((i)+(N+2)*(j))]==0) {
-#define END_FOR }}}
+#include "FluidSolverDefines.h"
 
 
 Solver::Solver(float _dtfluid, float _dtrb, float _diff, float _visc, float _vort) :

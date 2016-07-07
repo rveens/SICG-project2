@@ -104,6 +104,9 @@
     <ClInclude Include="..\RigidBodyWall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\FluidSolverDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Todo.txt" />

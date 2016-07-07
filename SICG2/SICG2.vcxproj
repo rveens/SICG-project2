@@ -141,6 +141,7 @@
     <ClInclude Include="..\CollisionSolver.h" />
     <ClInclude Include="..\Contact.h" />
     <ClInclude Include="..\EulerStep.h" />
+    <ClInclude Include="..\FluidSolverDefines.h" />
     <ClInclude Include="..\Force.h" />
     <ClInclude Include="..\GravityForce.h" />
     <ClInclude Include="..\Integrator.h" />

@@ -5,7 +5,8 @@
 
 #include <iostream>
 
-#define IX(i,j) ((i)+(N+2)*(j))
+#include "FluidSolverDefines.h"
+
 
 RigidBodyRectangle::RigidBodyRectangle(const Vector2d & ConstructPos, Vector2d & size, int mass,
 		Matrix2d & rotation) : RigidBody(ConstructPos, mass, rotation),

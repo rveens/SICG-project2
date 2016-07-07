@@ -36,7 +36,7 @@
 
 /* macros */
 
-#define IX(i,j) ((i)+(N+2)*(j))
+#include "FluidSolverDefines.h"
 
 /* global variables */
 static Solver *solver;
