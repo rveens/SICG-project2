@@ -433,6 +433,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 
 	// 7. check collisions
 	colsolver.m_Contacts.clear();
+	if (m_rbodies.empty())
+		return;
 	for (int i = 0; i < m_rbodies.size() - 1; i++) {
 		for (int j = i + 1; j < m_rbodies.size(); j++) {
 			if (colsolver.detectCollision(m_rbodies[i], m_rbodies[j])) {
@@ -541,6 +543,13 @@ void Solver::setIntegrator(std::unique_ptr<Integrator> i)
 	std::cout << "Integrator switched to: " << i->getString() << std::endl;
 
 	m_Integrator = std::move(i);
+}
+
+void Solver::reset()
+{
+	m_rbodies.clear();
+	m_forces.clear();
+	m_particles.clear();
 }
 
 std::shared_ptr<RigidBody> Solver::getRigidBodyOnMousePosition(double x, double y)

@@ -55,6 +55,13 @@ static int mouse_down[3];
 static int omx, omy, mx, my;
 
 
+// stuff for anttweakbar
+typedef enum { EULER = 1, MIDPOINT, RUNGEKUTTA } GUIIntegrator;
+static GUIIntegrator guiIntergrator = GUIIntegrator::RUNGEKUTTA;
+
+typedef enum { RIGIDBODIES = 1, CLOTH } GUIScene;
+static GUIScene guiScene = GUIScene::RIGIDBODIES;
+
 /*
   ----------------------------------------------------------------------
    free/clear/allocate simulation data
@@ -295,16 +302,6 @@ static void key_func ( unsigned char key, int x, int y )
 		case 'V':
 			dvel = !dvel;
 			break;
-		case '1':
-			if (solver)
-			solver->setIntegrator(std::make_unique<EulerStep>());
-			break;
-		case '2':
-			solver->setIntegrator(std::make_unique<MidpointStep>());
-			break;
-		case '3':
-			solver->setIntegrator(std::make_unique<RungeKuttaStep>());
-			break;
 	}
 
 	TwEventKeyboardGLUT(key, x, y);
@@ -483,6 +480,40 @@ static void create_rectangular_cloth(int w, int h, double gridSize, double start
 	}
 }
 
+void sceneRigidBodies()
+{
+	Matrix2d rot_i = Matrix2d::Identity();
+
+	// rb one
+	Matrix2d rot = Matrix2d::Identity();
+	rot(0, 0) = 0.7071;
+	rot(0, 1) = -0.7071;
+	rot(1, 0) = 0.7071;
+	rot(1, 1) = 0.7071;
+	auto rb = std::make_shared<RigidBodyRectangle>(Vector2d{ 0.6, 0.6 }, Vector2d{ 0.1, 0.2 }, 1, rot);
+	solver->addRigidBody(rb);
+	solver->addForce(std::make_shared<GravityForce>(rb));
+
+	// rb two
+	auto rb2 = std::make_shared<RigidBodyRectangle>(Vector2d{ 0.799, 0.799 }, Vector2d{ 0.2, 0.2 }, 1, rot_i);
+	solver->addRigidBody(rb2);
+	solver->addForce(std::make_shared<GravityForce>(rb2));
+
+	// wall 1 (bottom)
+	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.01 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
+
+	// wall 2 (middle)
+	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.5 }, Vector2d{ 0.1, 0.1 }, 1, rot_i));
+
+	// wall 3 (right)
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
+
+	// wall 4 (top)
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
+
+	// wall 5 (left)
+	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
+}
 
 /*
 ----------------------------------------------------------------------
@@ -507,48 +538,65 @@ void setupAntTweakBar()
 	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLUT and OpenGL.' "); // Message added to the help bar.
 	TwDefine(" TweakBar size='200 200' color='96 216 224' "); // change default tweak bar size and color
 
-	TwAddVarRW(bar, "Boundingbox", TW_TYPE_BOOLCPP, &solver->m_Drawbb, " group='Draw'");
-	TwAddVarRW(bar, "Boundingbox cell-aligned", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
+	TwAddVarRW(bar, "AABB", TW_TYPE_BOOLCPP, &solver->m_Drawbb, " group='Draw'");
+	TwAddVarRW(bar, "AABB cell", TW_TYPE_BOOLCPP, &solver->m_DrawbbCells, " group='Draw'");
 	TwAddVarRW(bar, "Voxelize", TW_TYPE_BOOLCPP, &solver->m_DrawbbCellsOccupied, " group='Draw'");
-	TwAddVarRW(bar, "Boundary cells", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
-	TwAddVarRW(bar, "Edge normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
-	TwAddVarRW(bar, "Contact points", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
+	TwAddVarRW(bar, "Boundary", TW_TYPE_BOOLCPP, &solver->m_DrawBoundaries, " group='Draw'");
+	TwAddVarRW(bar, "Normals", TW_TYPE_BOOLCPP, &solver->m_DrawEdgeNormals, " group='Draw'");
+	TwAddVarRW(bar, "Collisions", TW_TYPE_BOOLCPP, &solver->m_DrawContacts, " group='Draw'");
 
-	Matrix2d rot_i = Matrix2d::Identity();
+	{
+		TwEnumVal integratorEV[] = { { EULER, "Euler" },{ MIDPOINT, "Midpoint" },{ RUNGEKUTTA, "Runge-Kutta" } };
+		TwType integratorType = TwDefineEnum("IntegratorType", integratorEV, 3);
+		TwAddVarCB(bar, "Integrator", integratorType, 
+			[](const void *value, void *clientData) {	// set call back
+			if (*(GUIIntegrator*)value != guiIntergrator) {
+				guiIntergrator = *(GUIIntegrator*)value;
+				switch (guiIntergrator) {
+				case GUIIntegrator::EULER:
+					solver->setIntegrator(std::make_unique<EulerStep>());
+					break;
+				case GUIIntegrator::MIDPOINT:
+					solver->setIntegrator(std::make_unique<MidpointStep>());
+					break;
+				case GUIIntegrator::RUNGEKUTTA:
+					solver->setIntegrator(std::make_unique<RungeKuttaStep>());
+					break;
+				}
+			}
+			},
+			[](void *value, void *clientData) {	// get call back
+				*(GUIIntegrator*)value = guiIntergrator;
+			},
+			NULL, NULL);
+	}
+	{
+		TwEnumVal sceneEV[] = { { RIGIDBODIES, "Rigid bodies" },{ CLOTH, "Cloth" } };
+		TwType sceneType = TwDefineEnum("SceneType", sceneEV, 2);
+		TwAddVarCB(bar, "Scene", sceneType,
+			[](const void *value, void *clientData) {	// set call back
+			if (*(GUIScene*)value != guiScene) {
+				clear_data();
+				clear_solid_data();
+				set_solid_boundary(1);
+				solver->reset();
 
-
-	// rb one
-	Matrix2d rot = Matrix2d::Identity();
-	rot(0, 0) = 0.7071;
-	rot(0, 1) = -0.7071;
-	rot(1, 0) = 0.7071;
-	rot(1, 1) = 0.7071;
-	auto rb = std::make_shared<RigidBodyRectangle>(Vector2d{ 0.6, 0.6 }, Vector2d{ 0.1, 0.2 }, 1, rot);
-	solver->addRigidBody(rb);
-	solver->addForce(std::make_shared<GravityForce>(rb));
-
-	// rb two
-	auto rb2 = std::make_shared<RigidBodyRectangle>(Vector2d{ 0.799, 0.799 }, Vector2d{ 0.2, 0.2 }, 1, rot_i);
-	solver->addRigidBody(rb2);
-	solver->addForce(std::make_shared<GravityForce>(rb2));
-
-	// wall 1 (bottom)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.01 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
-
-	// wall 2 (middle)
-	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.5 }, Vector2d{ 0.1, 0.1 }, 1, rot_i));
-
-	// wall 3 (right)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
-
-	// wall 4 (top)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
-
-	// wall 5 (left)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
-
-	// cloth 1
-	create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+				guiScene = *(GUIScene*)value;
+				switch (guiScene) {
+				case GUIScene::CLOTH:
+					create_rectangular_cloth(10, 10, 0.05, 0.1, 0.9, 0.1);
+					break;
+				case GUIScene::RIGIDBODIES:
+					sceneRigidBodies();
+					break;
+				}
+			}
+		},
+			[](void *value, void *clientData) {	// get call back
+			*(GUIScene*)value = guiScene;
+		},
+			NULL, NULL);
+	}
 }
 
 
@@ -608,6 +656,7 @@ int main ( int argc, char ** argv )
 	/* init stuff */
 	solver = new Solver(dt, 0.003, diff, visc, vort);
 	setupAntTweakBar();
+	sceneRigidBodies();
 	/* end init stuff */
 	
 

@@ -28,6 +28,8 @@ public:
 	void setIntegrator(std::unique_ptr<Integrator> i);
 	std::shared_ptr<RigidBody> getRigidBodyOnMousePosition(double x, double y);
 
+	void reset();
+
 	/* drawing variables: */
 	bool m_Drawbb = false;
 	bool m_DrawbbCells = false;
