@@ -9,12 +9,12 @@
 using namespace Eigen;
 
 
-class RigidBodySquare : public RigidBody
+class RigidBodyRectangle : public RigidBody
 {
 public:
-	RigidBodySquare(const Vector2d & ConstructPos, Vector2d & size, int mass,
+	RigidBodyRectangle(const Vector2d & ConstructPos, Vector2d & size, int mass,
 			Matrix2d & rotation);
-	virtual ~RigidBodySquare(void);
+	virtual ~RigidBodyRectangle(void);
 
 	virtual void draw(int N);
 	virtual std::vector<double> computeAABB();
@@ -38,5 +38,5 @@ public:
 private:
 	Vector2d m_Size;
 
-	bool checkIfPointInSquare(Vector2d &point, int N);
+	bool checkIfPointInRectangle(Vector2d &point, int N);
 };

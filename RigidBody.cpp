@@ -17,11 +17,6 @@ RigidBody::~RigidBody(void)
 
 }
 
-void RigidBody::reset()
-{
-
-}
-
 void RigidBody::setState(const VectorXd &state)
 {
 	int i = 0;

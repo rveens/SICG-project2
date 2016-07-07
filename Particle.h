@@ -16,16 +16,15 @@ public:
 	};
 
 public:
-
 	Particle(const Vector2d & ConstructPos, double mass);
 	virtual ~Particle(void);
 
 	void reset();
 	void draw();
 	virtual void setState(const VectorXd &state);	// nieuw
-	virtual VectorXd getState();		// nieuw
-	virtual VectorXd derivEval();// nieuw
-	virtual VectorXd derivEval(const VectorXd &input); 	// nieuw
+	VectorXd getState();	// nieuw
+	VectorXd derivEval();	// nieuw
+	VectorXd derivEval(const VectorXd &input); 	// nieuw
 	Particle *checkSelected(double x_given, double y_given);
 
 	Vector2d m_ConstructPos; 	// initial position?
@@ -36,4 +35,6 @@ public:
 	bool m_Static = false;
 private:
 	const double h = 0.01; // TODO: make dependent of grid size
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 };

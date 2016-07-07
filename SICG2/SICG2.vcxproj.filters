@@ -33,9 +33,6 @@
     <ClCompile Include="..\RigidBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\RigidBodySquare.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\RungeKuttaStep.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -47,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="..\SpringForce.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RigidBodyRectangle.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +71,6 @@
     <ClInclude Include="..\RigidBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\RigidBodySquare.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\RungeKuttaStep.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -92,8 +89,11 @@
     <ClInclude Include="..\Contact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\RigidBodyRectangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Todo.txt" />
+    <Text Include="..\Todo.txt" />
   </ItemGroup>
 </Project>
