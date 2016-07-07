@@ -261,7 +261,7 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 
 	// apply force from mouseTargetRB to current mouse position
 	if (mouse_down[1] && mouse_drag1) {
-		printf("dragging RB\n");
+		//printf("dragging RB\n");
 		// 0) get mouse postion in world coordinates
 		double x = (double)i / (double)N;
 		double y = (double)j / (double)N;
@@ -271,14 +271,14 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 	// select RB to apply force to (force from RB to mouse)
 	// if successful, mouse_drag1 is set to true, and mouseTargetRB contains the selected RB
 	if (mouse_down[1] && !mouse_drag1) {
-		printf("selecting RB\n");
+		//printf("selecting RB\n");
 		// 0) get mouse postion in world coordinates
 		double x = (double)i / (double)N;
 		double y = (double)j / (double)N;
 		// 1) search rigid body on mouse position
 	std::shared_ptr<RigidBody> mouseTargetRB = solver->getRigidBodyOnMousePosition(x, y);
 		if (mouseTargetRB != nullptr) {
-			printf("RB successfully selected\n");
+			//printf("RB successfully selected\n");
 			mouse_drag1 = true;
 			mouseForceRB->m_rb = mouseTargetRB;
 			mouseForceRB->m_mousePos = Vector2d(x, y);
