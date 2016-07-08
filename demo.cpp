@@ -284,7 +284,7 @@ static void get_from_UI ( float * d, float * u, float * v, int * solid )
 		double y = (double)j / (double)N;
 		// 1) search rigid body on mouse position
 	std::shared_ptr<RigidBody> mouseTargetRB = solver->getRigidBodyOnMousePosition(x, y);
-		if (mouseTargetRB != nullptr) {
+		if (mouseTargetRB != nullptr && std::dynamic_pointer_cast<RigidBodyWall>(mouseTargetRB) == nullptr) {
 			//printf("RB successfully selected\n");
 			mouse_drag1 = true;
 			mouseForceRB->m_rb = mouseTargetRB;
@@ -704,7 +704,7 @@ int main ( int argc, char ** argv )
 	if ( !allocate_data () ) exit ( 1 );
 	clear_data ();
 	clear_solid_data();
-	set_solid_boundary(1);
+	set_solid_boundary(2);
 
 	win_x = 720;
 	win_y = 720;
