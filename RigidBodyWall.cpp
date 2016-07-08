@@ -53,3 +53,8 @@ void RigidBodyWall::voxelize(int N)
 		hasVoxelized = true;
 	}
 }
+
+void RigidBodyWall::computeAuxVariables()
+{
+	// do nothing on purpose
+}

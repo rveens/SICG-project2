@@ -15,6 +15,8 @@ public:
 	VectorXd derivEval(const VectorXd &input) override;
 
 	void voxelize(int N) override;
+
+	void computeAuxVariables() override;
 private:
 	const Matrix2d m_constructRotation;
 	bool hasVoxelized = false;

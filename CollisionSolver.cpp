@@ -209,6 +209,7 @@ bool CollisionSolver::colliding(Contact &c)
 	// tolerances misschien anders maken hier, want dat is in het voorbeeld ook
 	if (vrel > m_colliding_threshold) // moving away
 		return false;
+	// we now know vrel < m_colliding_threshold
 	if (vrel > -m_colliding_threshold) // resting contact
 		return false;
 	else
@@ -246,7 +247,7 @@ void CollisionSolver::applyCollision(Contact &c)
 	Vector3d force = j*n;
 
 	// apply impulse to bodies
-	double collision_strength = 1.5;
+	double collision_strength = 3;
 	c.a->m_LinearMomentum[0] += force[0] * collision_strength;
 	c.a->m_LinearMomentum[1] += force[1] * collision_strength;
 
