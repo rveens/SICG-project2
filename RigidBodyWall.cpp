@@ -58,3 +58,13 @@ void RigidBodyWall::computeAuxVariables()
 {
 	// do nothing on purpose
 }
+
+void RigidBodyWall::setLinearMomentum(Vector2d &linMom)
+{
+	// do nothing on purpose
+}
+
+void RigidBodyWall::setAngularMomentum(double angMom)
+{
+	// do nothing on purpose
+}

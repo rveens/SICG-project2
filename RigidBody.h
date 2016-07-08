@@ -38,7 +38,8 @@ public:
 	Vector2d getVelocity();
 	double getOmega();
 	double getIinv();
-
+	virtual void setLinearMomentum(Vector2d &linMom);
+	virtual void setAngularMomentum(double angMom);
 
 
 	// drawing functions
@@ -63,8 +64,8 @@ public:
 	/* state variables */
 	Vector2d m_Position;		// x
 	Matrix2d m_Rotation;		// R
-	Vector2d m_LinearMomentum; 	// P
-	double m_AngularMomentum;	// L
+	const Vector2d &m_LinearMomentum = pm_LinearMomentum; 	// P
+	const double &m_AngularMomentum = pm_AngularMomentum;	// L
 
 
 	/* computed quantities */
@@ -74,8 +75,11 @@ public:
 	/* previous state for collision detection */
 	VectorXd m_PreviousState;
 private:
+	// private members
+	Vector2d pm_LinearMomentum;
+	double pm_AngularMomentum;
+	
 	// helper function, compute a* matrix
-
 	Matrix2d star(Vector2d & a);
 
 

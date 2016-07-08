@@ -610,7 +610,7 @@ void setupAntTweakBar()
 			if (*(GUIScene*)value != guiScene) {
 				clear_data();
 				clear_solid_data();
-				set_solid_boundary(1);
+				set_solid_boundary(2);
 				solver->reset();
 
 				guiScene = *(GUIScene*)value;

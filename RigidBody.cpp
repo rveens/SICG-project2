@@ -5,8 +5,8 @@
 
 RigidBody::RigidBody(const Vector2d & ConstructPos, int mass, Matrix2d & rotation)
 	: m_ConstructPos(ConstructPos), m_Mass(mass),
-	m_Position(ConstructPos), m_Rotation(rotation), m_LinearMomentum(Vector2d(0, 0)),
-	m_AngularMomentum(0),
+	m_Position(ConstructPos), m_Rotation(rotation), pm_LinearMomentum(Vector2d(0, 0)),
+	pm_AngularMomentum(0),
 	m_Iinv(0), m_Velocity(Vector2d(0, 0)), m_Omega(0), 
 	m_Force(Vector2d(0, 0)), m_Torque(0.0)
 {
@@ -29,10 +29,10 @@ void RigidBody::setState(const VectorXd &state)
 	m_Rotation(1, 0) = state(i++);
 	m_Rotation(1, 1) = state(i++);
 
-	m_LinearMomentum[0] = state(i++);
-	m_LinearMomentum[1] = state(i++);
+	pm_LinearMomentum[0] = state(i++);
+	pm_LinearMomentum[1] = state(i++);
 
-	m_AngularMomentum = state(i++);
+	pm_AngularMomentum = state(i++);
 
 	/* compute some stuff */
 	m_Velocity = m_LinearMomentum / m_Mass;
@@ -169,4 +169,12 @@ void RigidBody::computeAuxVariables()
 {
 	m_Velocity = m_LinearMomentum / m_Mass;
 	m_Omega = m_Iinv * m_AngularMomentum;
+}
+
+void RigidBody::setLinearMomentum(Vector2d &linMom){
+	pm_LinearMomentum = linMom;
+}
+
+void RigidBody::setAngularMomentum(double angMom) {
+	pm_AngularMomentum = angMom;
 }

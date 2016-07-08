@@ -16,6 +16,9 @@ public:
 
 	void voxelize(int N) override;
 
+	void setLinearMomentum(Vector2d &linMom) override;
+	void setAngularMomentum(double angMom) override;
+
 	void computeAuxVariables() override;
 private:
 	const Matrix2d m_constructRotation;

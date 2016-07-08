@@ -248,16 +248,26 @@ void CollisionSolver::applyCollision(Contact &c)
 
 	// apply impulse to bodies
 	double collision_strength = 3;
-	c.a->m_LinearMomentum[0] += force[0] * collision_strength;
-	c.a->m_LinearMomentum[1] += force[1] * collision_strength;
+	
+	//c.a->m_LinearMomentum[0] += force[0] * collision_strength;
+	//c.a->m_LinearMomentum[1] += force[1] * collision_strength;
+	c.a->setLinearMomentum(
+		Vector2d(c.a->m_LinearMomentum[0] + force[0] * collision_strength,
+				 c.a->m_LinearMomentum[1] + force[1] * collision_strength)
+	);
 
-	c.b->m_LinearMomentum[0] -= force[0] * collision_strength;
-	c.b->m_LinearMomentum[1] -= force[1] * collision_strength;
+	//c.b->m_LinearMomentum[0] -= force[0] * collision_strength;
+	//c.b->m_LinearMomentum[1] -= force[1] * collision_strength;
+	c.b->setLinearMomentum(
+		Vector2d(c.b->m_LinearMomentum[0] - force[0] * collision_strength,
+				 c.b->m_LinearMomentum[1] - force[1] * collision_strength)
+	);
+	
+	//c.a->m_AngularMomentum += ra.cross(force)[2];
+	c.a->setAngularMomentum(c.a->m_AngularMomentum + ra.cross(force)[2]);
 
-
-	c.a->m_AngularMomentum += ra.cross(force)[2];
-
-	c.b->m_AngularMomentum -= rb.cross(force)[2];
+	//c.b->m_AngularMomentum -= rb.cross(force)[2];
+	c.b->setAngularMomentum(c.b->m_AngularMomentum + rb.cross(force)[2]);
 
 
 	// compute aux vars

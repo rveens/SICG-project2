@@ -170,8 +170,11 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	double ang_friction = 0.9;
 	// 0. apply friction to velocities and momentums
 	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
-		rb->m_LinearMomentum *= vel_friction;
-		rb->m_AngularMomentum *= ang_friction;
+		//rb->m_LinearMomentum *= vel_friction;
+		Vector2d newLinMom = rb->m_LinearMomentum * vel_friction;
+		rb->setLinearMomentum(newLinMom);
+		//rb->m_AngularMomentum *= ang_friction;
+		rb->setAngularMomentum(rb->m_AngularMomentum * ang_friction);
 	}
 	for (std::shared_ptr<Particle> p : m_particles) {
 		p->m_Velocity *= vel_friction;
@@ -207,8 +210,8 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	}
 
 	// 1.2 apply fluid forces and torques to rigid bodies from velocity field
-	double fluidforce = 25;
-	double fluidtorque = 0.05;
+	double fluidforce = 20;
+	double fluidtorque = 0.04;
 	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		double force_x, force_y;
 		rb->getBoundaryCells(N, solid);
@@ -417,7 +420,7 @@ void Solver::rigidbodySolve(int N, float * u, float * v, int *solid, float *dens
 	
 	
 	// 6. RB applies velocity to fluid
-	double RBtofluid = 0.00003;
+	double RBtofluid = 0.00007;
 	for (std::shared_ptr<RigidBody> rb : m_rbodies) {
 		rb->getBoundaryCells(N, solid);
 		for (auto &cell : rb->gridIndicesCloseToBoundary) {
