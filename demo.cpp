@@ -538,13 +538,13 @@ void sceneRigidBodies()
 	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.5 }, Vector2d{ 0.1, 0.1 }, 1, rot_i));
 
 	// wall 3 (right)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
+	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.99, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
 
 	// wall 4 (top)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
+	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.5, 0.99 }, Vector2d{ 0.92, 0.05 }, 1, rot_i));
 
 	// wall 5 (left)
-	//solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
+	solver->addRigidBody(std::make_shared<RigidBodyWall>(Vector2d{ 0.0, 0.5 }, Vector2d{ 0.05, 0.92 }, 1, rot_i));
 }
 
 /*
