@@ -18,7 +18,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/glut.h>
+#include <iostream>
+#include <cmath>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+#include <Eigen/Dense>
+#include <AntTweakBar.h>
 
 #include "Solver.h"
 #include "RigidBodyRectangle.h"
@@ -30,9 +35,6 @@
 #include "SpringForce.h"
 #include "MouseForce.h"
 
-#include "Eigen/Dense"
-#include "AntTweakBar.h"
-#include <cmath>
 
 /* macros */
 
@@ -57,6 +59,7 @@ static int win_x, win_y;
 static int mouse_down[3];
 static int omx, omy, mx, my;
 
+static GLuint program;
 
 // stuff for anttweakbar
 typedef enum { EULER = 1, MIDPOINT, RUNGEKUTTA } GUIIntegrator;
@@ -389,7 +392,10 @@ static void display_func ( void )
 	}
 	solver->drawObjects(N, solid);
 
-	TwDraw();
+	//TwDraw();
+	glUseProgram(program);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glUseProgram(0);
 
 	post_display ();
 }
@@ -404,10 +410,23 @@ static void display_func ( void )
 static void open_glut_window ( void )
 {
 	glutInitDisplayMode ( GLUT_RGBA | GLUT_DOUBLE );
+	//glutInitContextVersion(3, 2);
+	glutInitContextFlags(GLUT_COMPATIBILITY_PROFILE);
 
 	glutInitWindowPosition ( 0, 0 );
 	glutInitWindowSize ( win_x, win_y );
 	win_id = glutCreateWindow ( "Memoryleaker 5000++ Express Edition" );
+
+	GLenum err = glewInit();
+	if (GLEW_OK != err) {
+		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
+	}
+	else {
+		if (GLEW_VERSION_3_2)
+		{
+			std::cout << "Driver supports OpenGL 3.2\nDetails:" << std::endl;
+		}
+	}
 
 	glClearColor ( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear ( GL_COLOR_BUFFER_BIT );
@@ -709,6 +728,51 @@ int main ( int argc, char ** argv )
 	win_x = 720;
 	win_y = 720;
 	open_glut_window ();
+
+	GLuint  vao;
+	static const char * vs_source[] =
+	{
+		"#version 420 core                                                 \n"
+		"                                                                  \n"
+		"void main(void)                                                   \n"
+		"{                                                                 \n"
+		"    const vec4 vertices[] = vec4[](vec4( 0.25, -0.25, 0.5, 1.0),  \n"
+		"                                   vec4(-0.25, -0.25, 0.5, 1.0),  \n"
+		"                                   vec4( 0.25,  0.25, 0.5, 1.0)); \n"
+		"                                                                  \n"
+		"    gl_Position = vertices[gl_VertexID];                          \n"
+		"}                                                                 \n"
+	};
+
+	static const char * fs_source[] =
+	{
+		"#version 420 core                                                 \n"
+		"                                                                  \n"
+		"out vec4 color;                                                   \n"
+		"                                                                  \n"
+		"void main(void)                                                   \n"
+		"{                                                                 \n"
+		"    color = vec4(0.0, 0.8, 1.0, 1.0);                             \n"
+		"}                                                                 \n"
+	};
+
+	program = glCreateProgram();
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, fs_source, NULL);
+	glCompileShader(fs);
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, vs_source, NULL);
+	glCompileShader(vs);
+
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
+
+	glLinkProgram(program);
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glUseProgram(0);
 
 	glutMainLoop ();
 
