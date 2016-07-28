@@ -35,6 +35,8 @@
 #include "SpringForce.h"
 #include "MouseForce.h"
 
+#include "Shader.h"
+
 
 /* macros */
 
@@ -59,7 +61,7 @@ static int win_x, win_y;
 static int mouse_down[3];
 static int omx, omy, mx, my;
 
-static GLuint program;
+static GLuint shaderprogram;
 
 // stuff for anttweakbar
 typedef enum { EULER = 1, MIDPOINT, RUNGEKUTTA } GUIIntegrator;
@@ -393,7 +395,7 @@ static void display_func ( void )
 	solver->drawObjects(N, solid);
 
 	//TwDraw();
-	glUseProgram(program);
+	glUseProgram(shaderprogram);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glUseProgram(0);
 
@@ -729,50 +731,12 @@ int main ( int argc, char ** argv )
 	win_y = 720;
 	open_glut_window ();
 
-	GLuint  vao;
-	static const char * vs_source[] =
-	{
-		"#version 420 core                                                 \n"
-		"                                                                  \n"
-		"void main(void)                                                   \n"
-		"{                                                                 \n"
-		"    const vec4 vertices[] = vec4[](vec4( 0.25, -0.25, 0.5, 1.0),  \n"
-		"                                   vec4(-0.25, -0.25, 0.5, 1.0),  \n"
-		"                                   vec4( 0.25,  0.25, 0.5, 1.0)); \n"
-		"                                                                  \n"
-		"    gl_Position = vertices[gl_VertexID];                          \n"
-		"}                                                                 \n"
-	};
+	GLuint vao;
+	GLuint shaders[2];
 
-	static const char * fs_source[] =
-	{
-		"#version 420 core                                                 \n"
-		"                                                                  \n"
-		"out vec4 color;                                                   \n"
-		"                                                                  \n"
-		"void main(void)                                                   \n"
-		"{                                                                 \n"
-		"    color = vec4(0.0, 0.8, 1.0, 1.0);                             \n"
-		"}                                                                 \n"
-	};
-
-	program = glCreateProgram();
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fs, 1, fs_source, NULL);
-	glCompileShader(fs);
-
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vs, 1, vs_source, NULL);
-	glCompileShader(vs);
-
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-
-	glLinkProgram(program);
-
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	glUseProgram(0);
+	shaders[0] = shader::load("B://Code//SICG-project2//RigidBody.vert", GL_VERTEX_SHADER);
+	shaders[1] = shader::load("B://Code//SICG-project2//RigidBody.frag", GL_FRAGMENT_SHADER);
+	shaderprogram = program::link_from_shaders(shaders, 2, false);
 
 	glutMainLoop ();
 

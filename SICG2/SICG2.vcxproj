@@ -139,12 +139,14 @@
     <ClCompile Include="..\RigidBodyRectangle.cpp" />
     <ClCompile Include="..\RigidBodyWall.cpp" />
     <ClCompile Include="..\RungeKuttaStep.cpp" />
+    <ClCompile Include="..\Shader.cpp" />
     <ClCompile Include="..\Solver.cpp" />
     <ClCompile Include="..\SpringForce.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CollisionSolver.h" />
     <ClInclude Include="..\Contact.h" />
+    <ClInclude Include="..\demo.h" />
     <ClInclude Include="..\EulerStep.h" />
     <ClInclude Include="..\FluidSolverDefines.h" />
     <ClInclude Include="..\Force.h" />
@@ -157,12 +159,17 @@
     <ClInclude Include="..\RigidBodyRectangle.h" />
     <ClInclude Include="..\RigidBodyWall.h" />
     <ClInclude Include="..\RungeKuttaStep.h" />
+    <ClInclude Include="..\Shader.h" />
     <ClInclude Include="..\Solver.h" />
     <ClInclude Include="..\SolverInterface.h" />
     <ClInclude Include="..\SpringForce.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Todo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\RigidBody.frag" />
+    <None Include="..\RigidBody.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
