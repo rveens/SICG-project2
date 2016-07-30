@@ -394,9 +394,9 @@ static void display_func ( void )
 	}
 	solver->drawObjects(N, solid);
 
-	//TwDraw();
-	glUseProgram(shaderprogram);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	TwDraw();
+	//glUseProgram(shaderprogram);
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
 	glUseProgram(0);
 
 	post_display ();
@@ -707,7 +707,7 @@ int main ( int argc, char ** argv )
 	}
 
 	/* init stuff */
-	solver = new Solver(dt, 0.003, diff, visc, vort);
+	solver = new Solver(dt, 0.005, diff, visc, vort);
 	setupAntTweakBar();
 	sceneRigidBodies();
 	/* end init stuff */
